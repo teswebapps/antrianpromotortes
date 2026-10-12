@@ -479,6 +479,24 @@ body.dark-mode .logout-btn:hover {
     background: linear-gradient(135deg, #ff1f3d 0%, #ff1f3d 100%) !important;
     box-shadow: 0 0 35px rgba(255, 31, 61, 1) !important;
 }
+  /* ===== FIX: Tombol "DI LUAR RADIUS" di dark mode = PUTIH TERANG ===== */
+body.dark-mode .app-container .btn-disabled,
+body.dark-mode .app-container button.btn-disabled,
+body.dark-mode #btn-hadir.btn-disabled,
+body.dark-mode #btn-daftar-antrian.btn-disabled,
+body.dark-mode #btn-utama-customer.btn-disabled,
+body.dark-mode #btn-selesai-closing.btn-disabled,
+body.dark-mode #btn-utama-cs.btn-disabled,
+body.dark-mode #btn-utama-ibadah.btn-disabled,
+body.dark-mode #btn-keluar-istirahat.btn-disabled {
+    background: #3d000a !important;
+    color: #ffffff !important;
+    border: 2px solid #7f1d1d !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3) !important;
+    font-weight: 700 !important;
+}
 </style>
 </head>
 <body>

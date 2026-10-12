@@ -1258,10 +1258,11 @@ body.dark-mode .logout-btn:hover {
             </div>
 
             <div class="section-title">1. Manajemen Operasional Sistem</div>
-            <div class="admin-grid">
-                <button type="button" id="btn-buka-sistem" class="btn-black-custom" onclick="bukaModalToggleSistem('BUKA')">Buka Sistem Antrian</button>
-                <button type="button" id="btn-tutup-sistem" onclick="bukaModalToggleSistem('TUTUP')">Tutup Sistem Antrian</button>
-            </div>
+<div class="admin-grid">
+    <button type="button" id="btn-buka-sistem" class="btn-black-custom" onclick="bukaModalToggleSistem('BUKA')">Buka Sistem Antrian</button>
+    <button type="button" id="btn-tutup-sistem" onclick="bukaModalToggleSistem('TUTUP')">Tutup Sistem Antrian</button>
+    <button type="button" class="btn-black-custom" onclick="bukaModalBranding()">🎨 Pengaturan Branding</button>
+</div>
 
             <div class="section-title">2. Manajemen Urutan Antrian</div>
             <div class="admin-grid">
@@ -1308,6 +1309,7 @@ body.dark-mode .logout-btn:hover {
         let riwayatBulananGlobal = {};
         let statusSistemGlobal = "BUKA";
         let koordinatTokoAdmin = { lat: "", lng: "", radius: 50 };
+window.settingGlobal = {};
         let savedPinAdmin = "";
         let unsubAntrian = null, unsubSetting = null, unsubStatistik = null, unsubMaster = null, unsubLock = null, unsubCheckin = null, unsubRiwayat = null, unsubPinPromotor = null;
         let pinPromotorGlobal = {};
@@ -1408,15 +1410,16 @@ if (savedPinAdmin) {
                 renderStatistikAdmin();
             });
 
-            unsubSetting = window.dbOnValue(window.dbRef(db, 'setting'), snapshot => {
-                const s = snapshot.val() || {};
-                statusSistemGlobal = s.statusAntrian || "BUKA";
-                koordinatTokoAdmin.lat = s.latToko || "";
-                koordinatTokoAdmin.lng = s.lngToko || "";
-                koordinatTokoAdmin.radius = Number(s.radiusToko) || 50;
-                renderStatusSistem();
-                renderStatusGPS();
-            });
+         unsubSetting = window.dbOnValue(window.dbRef(db, 'setting'), snapshot => {
+    const s = snapshot.val() || {};
+    statusSistemGlobal = s.statusAntrian || "BUKA";
+    koordinatTokoAdmin.lat = s.latToko || "";
+    koordinatTokoAdmin.lng = s.lngToko || "";
+    koordinatTokoAdmin.radius = Number(s.radiusToko) || 50;
+    window.settingGlobal = s;
+    renderStatusSistem();
+    renderStatusGPS();
+});
 
             unsubStatistik = window.dbOnValue(window.dbRef(db, 'statistikAktivitas'), snapshot => {
                 const dataRaw = snapshot.val();
@@ -2118,7 +2121,83 @@ if (savedPinAdmin) {
                 tampilkanModal("Gagal", "Tidak bisa mengubah status sistem.");
             }
         }
+function bukaModalBranding() {
+    document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding";
+    
+    const s = window.settingGlobal || {};
+    const namaTokoSekarang = s.namaToko || "";
+    const namaSistemSekarang = s.namaSistem || "";
+    const logoUrlSekarang = s.logoUrl || "";
+    
+    document.getElementById('modal-desc').innerHTML = `
+        <div style="font-size:12px; margin-bottom:12px; color:#64748b;">
+            Ubah branding aplikasi. Perubahan akan langsung tampil di semua HP promotor.
+        </div>
+        
+        <label style="font-size:11px; font-weight:700;">Nama Sistem:</label><br>
+        <input type="text" id="branding-nama-sistem" 
+            value="${namaSistemSekarang.replace(/"/g, '&quot;')}"
+            placeholder="Contoh: Antrian Walk-In Promotor"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        
+        <label style="font-size:11px; font-weight:700;">Nama Toko:</label><br>
+        <input type="text" id="branding-nama-toko" 
+            value="${namaTokoSekarang.replace(/"/g, '&quot;')}"
+            placeholder="Contoh: UFO Malang Kebonsari"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        
+        <label style="font-size:11px; font-weight:700;">URL Logo (opsional):</label><br>
+        <input type="url" id="branding-logo-url" 
+            value="${logoUrlSekarang.replace(/"/g, '&quot;')}"
+            placeholder="https://..."
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        
+        <div style="font-size:10px; color:#94a3b8; padding:8px; background:#f1f5f9; border-radius:8px; line-height:1.5;">
+            💡 <b>Tips logo:</b> Upload logo ke Google Drive / Imgur / situs lain, lalu paste link-nya di atas. Kosongkan jika ingin pakai logo default.
+        </div>
+    `;
+    
+    document.getElementById('modal-actions').innerHTML = `
+        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
+        <button type="button" id="btn-modal-action-ok" onclick="eksekusiSimpanBranding()">Simpan</button>
+    `;
+    
+    document.getElementById('custom-modal').classList.add('active');
+}
 
+async function eksekusiSimpanBranding() {
+    const namaSistem = document.getElementById('branding-nama-sistem').value.trim();
+    const namaToko = document.getElementById('branding-nama-toko').value.trim();
+    const logoUrl = document.getElementById('branding-logo-url').value.trim();
+    
+    if (!namaSistem) { tampilkanModal("Perhatian", "Nama Sistem tidak boleh kosong!"); return; }
+    if (!namaToko) { tampilkanModal("Perhatian", "Nama Toko tidak boleh kosong!"); return; }
+    
+    const btn = document.getElementById('btn-modal-action-ok');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+    
+    try {
+        await window.dbUpdate(window.dbRef(window.db, 'setting'), {
+            namaSistem: namaSistem,
+            namaToko: namaToko,
+            logoUrl: logoUrl
+        });
+        
+        tutupModal();
+        tampilkanModal("Berhasil", 
+            `Branding berhasil disimpan!<br><br>` +
+            `<b>Nama Sistem:</b> ${namaSistem}<br>` +
+            `<b>Nama Toko:</b> ${namaToko}<br>` +
+            `<b>Logo:</b> ${logoUrl || "(default)"}<br><br>` +
+            `<span style="font-size:11px; color:#64748b;">Perubahan akan langsung tampil di HP promotor.</span>`
+        );
+    } catch (e) {
+        console.warn("Error simpan branding:", e);
+        tutupModal();
+        tampilkanModal("Gagal", "Tidak bisa menyimpan branding. Cek koneksi internet.");
+    }
+}
         function bukaModalTambahMasterSales() {
             document.getElementById('modal-title').innerText = "Tambah Nama Promotor Baru";
             document.getElementById('modal-desc').innerHTML = `Masukkan Nama Promotor Baru:<br><input type="text" id="input-nama-baru" placeholder="Nama Lengkap Promotor">`;
@@ -2852,6 +2931,8 @@ if (savedPinAdmin) {
         window.logoutAdmin = logoutAdmin;
         window.bukaModalToggleSistem = bukaModalToggleSistem;
         window.eksekusiToggleSistem = eksekusiToggleSistem;
+        window.bukaModalBranding = bukaModalBranding;
+window.eksekusiSimpanBranding = eksekusiSimpanBranding;
         window.bukaModalTambahMasterSales = bukaModalTambahMasterSales;
         window.eksekusiTambahMasterSales = eksekusiTambahMasterSales;
         window.bukaModalKelolaPIN = bukaModalKelolaPIN;

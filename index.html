@@ -579,6 +579,26 @@ body.dark-mode #custom-modal button {
     font-weight: 800 !important;
     letter-spacing: 0.3px !important;
 }
+  /* ===== FIX: Tombol Disabled di LIGHT MODE — mengikuti tema terang ===== */
+
+/* Light mode: tombol disabled = putih soft + border abu tipis (netral tapi nyambung) */
+body:not(.dark-mode) .app-container .btn-disabled,
+body:not(.dark-mode) .app-container button.btn-disabled,
+body:not(.dark-mode) #btn-hadir.btn-disabled,
+body:not(.dark-mode) #btn-daftar-antrian.btn-disabled,
+body:not(.dark-mode) #btn-utama-customer.btn-disabled,
+body:not(.dark-mode) #btn-selesai-closing.btn-disabled,
+body:not(.dark-mode) #btn-utama-cs.btn-disabled,
+body:not(.dark-mode) #btn-utama-ibadah.btn-disabled,
+body:not(.dark-mode) #btn-keluar-istirahat.btn-disabled {
+    background: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+}
 </style>
 </head>
 <body>

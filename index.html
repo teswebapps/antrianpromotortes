@@ -423,6 +423,62 @@ body.dark-mode .login-toast-name { color: #34d399; }
     .gradient-header h2 { font-size: 18px; }
     .promotor-nama-aktif { font-size: 17px; }
 }
+  /* ============================================ */
+/* ===== FIX DARK MODE — SEMUA JUDUL MERAH ==== */
+/* ============================================ */
+
+/* Semua judul aktivitas (Bawa Customer, Ibadah, List Bawa, Total Customer, Autokick) */
+body.dark-mode .aktivitas-title {
+    background: linear-gradient(135deg, #ff1f3d 0%, #99001f 100%) !important;
+    color: #ffffff !important;
+    border: 2px solid #ff1f3d !important;
+    box-shadow: 0 0 25px rgba(255, 31, 61, 0.7) !important;
+}
+body.dark-mode .aktivitas-title .count {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+body.dark-mode .aktivitas-title .judul-kategori {
+    color: #ffffff !important;
+}
+body.dark-mode .aktivitas-title .aktivitas-icon {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+body.dark-mode .aktivitas-title .aktivitas-icon svg {
+    stroke: #ffffff !important;
+}
+
+/* Khusus "List Bawa Customer per Promotor" dan "Total Customer Walk-In per Bulan"
+   — karena pakai class .t-rekap, jadi warna sama dengan yang atas */
+
+/* Badge Status Antrian */
+body.dark-mode .status-badge-sistem {
+    background: #ff1f3d !important;
+    color: #ffffff !important;
+    border: 2px solid #ff1f3d !important;
+    box-shadow: 0 0 30px rgba(255, 31, 61, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
+}
+body.dark-mode .status-badge-sistem .dot {
+    background: #ffffff !important;
+    box-shadow: 0 0 15px #ffffff, 0 0 30px #ff1f3d !important;
+}
+body.dark-mode .status-badge-sistem #badge-status-text {
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Tombol Logout (di atas) */
+body.dark-mode .logout-btn {
+    background: linear-gradient(135deg, #ff1f3d 0%, #99001f 100%) !important;
+    color: #ffffff !important;
+    border: 2px solid #ff1f3d !important;
+    box-shadow: 0 0 25px rgba(255, 31, 61, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.5) !important;
+}
+body.dark-mode .logout-btn:hover {
+    background: linear-gradient(135deg, #ff1f3d 0%, #ff1f3d 100%) !important;
+    box-shadow: 0 0 35px rgba(255, 31, 61, 1) !important;
+}
 </style>
 </head>
 <body>

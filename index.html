@@ -892,10 +892,10 @@
                 </div>
             </div>
 
-            <div class="fut-live-status">
-                <span class="fut-pulse-dot"></span>
-                <span>3 Orang Sedang Antri</span>
-            </div>
+           <div class="fut-live-status" id="live-status-box">
+    <span class="fut-pulse-dot"></span>
+    <span id="live-status-text">Memuat...</span>
+</div>
         </div>
 
         <div class="fut-right">
@@ -2151,8 +2151,31 @@ function gabungRentang(list, aksiMulai, aksiSelesai) {
         return { ...a, label };
     });
 }
-
+function updateLiveStatus() {
+    const el = document.getElementById('live-status-text');
+    if (!el) return;
+    
+    // Hitung semua yang ada di antrian (status apapun)
+    const total = daftarAntrianGlobal.length;
+    
+    // Hitung berdasarkan kategori (opsional, bisa dipakai nanti)
+    const haCount = daftarAntrianGlobal.filter(i => String(i.kategori || 'HA').toUpperCase() === 'HA').length;
+    const avCount = daftarAntrianGlobal.filter(i => String(i.kategori || 'HA').toUpperCase() === 'AV').length;
+    
+    // Update teks
+    if (total === 0) {
+        el.innerText = 'Belum ada yang antri';
+        // Ganti dot jadi abu-abu kalau kosong
+        const box = document.getElementById('live-status-box');
+        if (box) box.style.opacity = '0.6';
+    } else {
+        el.innerText = `${total} Orang Sedang Antri`;
+        const box = document.getElementById('live-status-box');
+        if (box) box.style.opacity = '1';
+    }
+}
 function renderUI() {
+    updateLiveStatus();
     const badge = document.getElementById('badge-status-sistem');
     const badgeText = document.getElementById('badge-status-text');
     if (badge && badgeText) {

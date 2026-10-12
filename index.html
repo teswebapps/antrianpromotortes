@@ -1318,6 +1318,521 @@ body::before {
     background: #f43f5e; 
     box-shadow: 0 0 10px rgba(244, 63, 94, 0.7); 
 }
+  /* ============================================================ */
+/* ========== CYBER BLUE THEME — BAGIAN 3/3 =================== */
+/* ===== Aktivitas + Tabel + Modal + Badge + Footer =========== */
+/* ============================================================ */
+
+/* ===== AKTIVITAS SECTION ===== */
+.aktivitas-section {
+    margin-top: 20px;
+    text-align: left;
+}
+
+/* Header toggle (Aktivitas Hari Ini) */
+.aktivitas-header-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0c1e33, #071321);
+    color: var(--cyber-text);
+    margin-bottom: 0;
+    border: 1px solid var(--cyber-border);
+    transition: all 0.2s ease;
+    box-shadow: 0 0 15px -5px rgba(56, 189, 248, 0.2);
+}
+
+.aktivitas-header-toggle:hover {
+    background: linear-gradient(135deg, #133052, #0c1e33);
+    border-color: var(--cyber-cyan);
+    box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.4);
+}
+
+.aktivitas-header-toggle .judul {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--cyber-cyan);
+}
+
+.aktivitas-header-toggle .judul svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--cyber-cyan);
+    stroke-width: 2.4;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.aktivitas-header-toggle .arrow {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.aktivitas-header-toggle .arrow svg {
+    width: 12px;
+    height: 12px;
+    stroke: var(--cyber-cyan);
+    stroke-width: 2.6;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.aktivitas-header-toggle.open .arrow {
+    transform: rotate(180deg);
+}
+
+/* Content */
+.aktivitas-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+    padding: 0;
+}
+
+.aktivitas-content.open {
+    max-height: none;
+    opacity: 1;
+    padding-top: 12px;
+}
+
+/* ===== AKTIVITAS TITLE (judul kategori) ===== */
+.aktivitas-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--cyber-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    gap: 8px;
+    background: linear-gradient(135deg, #0c1e33, #071321);
+    border: 1px solid var(--cyber-border);
+    box-shadow: 0 0 15px -5px rgba(56, 189, 248, 0.2);
+}
+
+.aktivitas-title .count {
+    font-size: 10px;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--cyber-cyan);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+}
+
+.aktivitas-title .judul-kategori {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    color: var(--cyber-cyan);
+}
+
+.aktivitas-icon {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.aktivitas-icon svg {
+    width: 13px;
+    height: 13px;
+    stroke: var(--cyber-cyan);
+    stroke-width: 2.4;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ===== AKTIVITAS LIST ===== */
+.aktivitas-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 6px 0;
+}
+
+.aktivitas-list li {
+    background: var(--cyber-card-soft);
+    border: 1px solid var(--cyber-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    color: var(--cyber-text);
+    box-shadow: 0 0 10px -5px rgba(56, 189, 248, 0.15);
+}
+
+.aktivitas-list li .nama {
+    flex: 1;
+    font-weight: 800;
+    color: var(--cyber-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aktivitas-list li .waktu {
+    font-size: 11px;
+    color: var(--cyber-text-muted);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.aktivitas-empty {
+    text-align: center;
+    font-size: 11px;
+    color: var(--cyber-text-muted);
+    font-weight: 600;
+    padding: 8px;
+    font-style: italic;
+}
+
+/* ===== BADGE OVERRIDE — TETAP WARNA-WARNI ===== */
+
+/* Badge Giliran Utama - MERAH */
+.badge-giliran-anda {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(244, 63, 94, 0.6) !important;
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.5) !important;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Badge Standby - KUNING */
+.badge-standby {
+    background: linear-gradient(135deg, #eab308, #ca8a04) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(250, 204, 21, 0.6) !important;
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.5) !important;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Badge Melayani - HIJAU */
+.badge-melayani {
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(16, 185, 129, 0.6) !important;
+    box-shadow: 0 0 10px rgba(5, 150, 105, 0.5) !important;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Badge Ibadah - UNGU */
+.badge-ibadah {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(168, 85, 247, 0.6) !important;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5) !important;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Badge Dipanggil CS - UNGU */
+.badge-cs {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(168, 85, 247, 0.6) !important;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5) !important;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ===== REKAP TABEL ===== */
+.rekap-tabel {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.rekap-tabel th {
+    background: var(--cyber-surface);
+    color: var(--cyber-cyan);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.3px;
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 2px solid var(--cyber-border);
+}
+
+.rekap-tabel th.kolom-nama {
+    text-align: left;
+    padding-left: 12px;
+}
+
+.rekap-tabel td {
+    padding: 10px 6px;
+    text-align: center;
+    font-weight: 700;
+    border-bottom: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.rekap-tabel td.kolom-nama {
+    text-align: left;
+    padding-left: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+    color: var(--cyber-text);
+}
+
+.rekap-tabel td.angka-deal {
+    color: #27fabe;
+    text-shadow: 0 0 8px rgba(39, 250, 190, 0.4);
+}
+
+.rekap-tabel td.angka-lihat {
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+}
+
+.rekap-tabel td.angka-nosale {
+    color: #f43f5e;
+    text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+}
+
+.rekap-tabel td.angka-hari {
+    color: var(--cyber-text-muted);
+    font-size: 11px;
+}
+
+.rekap-tabel tr.total-row td {
+    background: var(--cyber-surface);
+    border-top: 2px solid var(--cyber-cyan);
+    border-bottom: none;
+    font-weight: 800;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: var(--cyber-cyan);
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 8, 20, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    padding: 16px;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-box {
+    background: var(--cyber-card);
+    border: 1px solid var(--cyber-cyan);
+    width: 100%;
+    max-width: 400px;
+    padding: 28px;
+    border-radius: 16px;
+    text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 
+        0 0 40px -5px rgba(56, 189, 248, 0.4),
+        0 20px 50px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: var(--cyber-cyan);
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+}
+
+.modal-desc {
+    font-size: 13px;
+    color: var(--cyber-text);
+    margin-bottom: 20px;
+    line-height: 1.5;
+    text-align: left;
+    font-weight: 600;
+}
+
+.modal-desc select,
+.modal-desc input {
+    background: var(--cyber-surface);
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    font-size: 13px;
+    padding: 10px 12px;
+    margin-top: 4px;
+    border-radius: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 10px;
+    font-size: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+/* Tombol OK di modal */
+.modal-actions button {
+    background: linear-gradient(135deg, var(--cyber-cyan), #0ea5e9);
+    color: #061424;
+    font-weight: 800;
+    box-shadow: 0 0 15px -5px rgba(56, 189, 248, 0.5);
+}
+
+.modal-actions button:hover {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.8);
+}
+
+/* Tombol Batal */
+.modal-actions button.btn-cancel {
+    background: var(--cyber-surface);
+    color: var(--cyber-text);
+    border: 1px solid var(--cyber-border);
+}
+
+.modal-actions button.btn-cancel:hover {
+    background: var(--cyber-card-soft);
+    border-color: var(--cyber-cyan);
+}
+
+/* ===== LOGIN TOAST ===== */
+.login-toast-card {
+    background: var(--cyber-card);
+    border: 1px solid var(--cyber-cyan);
+    box-shadow: 
+        0 0 40px -5px rgba(56, 189, 248, 0.5),
+        0 25px 60px rgba(0, 0, 0, 0.6);
+}
+
+.login-toast-icon {
+    background: linear-gradient(135deg, #27fabe, #10b981);
+    box-shadow: 0 0 20px rgba(39, 250, 190, 0.5);
+}
+
+.login-toast-title {
+    color: var(--cyber-text);
+}
+
+.login-toast-subtitle {
+    color: var(--cyber-text-muted);
+}
+
+.login-toast-name {
+    color: var(--cyber-cyan);
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* ===== TEXT OVERRIDE — PUTIH SOFT ===== */
+.app-container,
+.admin-container {
+    color: var(--cyber-text) !important;
+}
+
+.text-muted,
+.label-lihat,
+.aktivitas-empty,
+.aktivitas-list li .waktu {
+    color: var(--cyber-text-muted) !important;
+}
+
+.text-cyan,
+.label-melayani,
+.promotor-nama-aktif {
+    color: var(--cyber-cyan) !important;
+}
+
+/* ===== FOOTER ===== */
+.footer-credit {
+    margin-top: 32px;
+    padding: 16px 12px;
+    text-align: center;
+    border-top: 1px dashed var(--cyber-border);
+    color: var(--cyber-text-muted);
+    font-size: 11px;
+    line-height: 1.6;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+.footer-credit .footer-dev {
+    font-weight: 700;
+    color: var(--cyber-cyan);
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.footer-credit .footer-version {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    margin-top: 2px;
+    color: var(--cyber-text-muted);
+}
+
+/* ===== PROMOTOR-NAMA-AKTIF (di timer) ===== */
+body.dark-mode .promotor-nama-aktif {
+    color: var(--cyber-text) !important;
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.3) !important;
+}
 </style>
 </head>
 <body>

@@ -599,6 +599,51 @@ body:not(.dark-mode) #btn-keluar-istirahat.btn-disabled {
     pointer-events: none !important;
     opacity: 1 !important;
 }
+  /* ===== FIX: Tombol modal di LIGHT MODE — mengikuti tema ===== */
+
+/* Modal actions - default tombol */
+body:not(.dark-mode) .modal-actions button {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+}
+
+body:not(.dark-mode) .modal-actions button:hover {
+    background: #1e293b !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Tombol "Batal" — outline style (nyambung tapi sekunder) */
+body:not(.dark-mode) .modal-actions button.btn-cancel,
+body:not(.dark-mode) .modal-actions button[onclick*="tutupModal"]:not(.btn-customer) {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+}
+
+body:not(.dark-mode) .modal-actions button.btn-cancel:hover,
+body:not(.dark-mode) .modal-actions button[onclick*="tutupModal"]:not(.btn-customer):hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+/* Tombol "Ya" / aksi utama — hitam solid */
+body:not(.dark-mode) .modal-actions button#btn-modal-ya,
+body:not(.dark-mode) .modal-actions button.btn-customer {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15) !important;
+}
+
+body:not(.dark-mode) .modal-actions button#btn-modal-ya:hover,
+body:not(.dark-mode) .modal-actions button.btn-customer:hover {
+    background: #1e293b !important;
+}
 </style>
 </head>
 <body>

@@ -210,9 +210,31 @@ body.dark-mode .aktivitas-header-toggle { background: #2b0007; border: 2px solid
 .gps-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
 body.dark-mode .gps-box { background: #2b0007; border: 2px solid #ff1f3d; box-shadow: 0 0 25px rgba(255, 31, 61, 0.6); }
 #map-promotor { width: 100%; height: 160px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; z-index: 1; }
-.info-radius { font-size: 11px; color: var(--text-muted); font-weight: 700; text-align: center; padding: 6px 8px; border-radius: 8px; background: rgba(100, 116, 139, 0.1); }
+.info-radius { font-size: 11px; color: var(--text-muted); font-weight: 700; text-align: center; padding: 6px 8px; border-radius: 8px; background: rgba(100, 116, 139, 0.1); display: flex; align-items: center; justify-content: center; gap: 6px; }
 .info-radius.ok { color: #059669; background: rgba(5, 150, 105, 0.12); font-weight: 800; }
 .info-radius.err { color: #dc2626; background: rgba(220, 38, 38, 0.12); font-weight: 800; }
+
+/* Icon bulat untuk status radius */
+.info-radius .status-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.info-radius .status-icon svg {
+    width: 12px;
+    height: 12px;
+    stroke: #ffffff;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.info-radius.ok .status-icon { background: #059669; box-shadow: 0 0 6px rgba(5, 150, 105, 0.5); }
+.info-radius.err .status-icon { background: #dc2626; box-shadow: 0 0 6px rgba(220, 38, 38, 0.5); }
 body.dark-mode .info-radius { color: #ffffff !important; background: #50000e; border: 1px solid #ff1f3d; font-weight: 800 !important; }
 body.dark-mode .info-radius.ok { color: #34d399 !important; background: #022c22 !important; border: 1px solid #059669 !important; }
 body.dark-mode .info-radius.err { color: #ffb3bc !important; background: #50000e !important; border: 1px solid #ff1f3d !important; }
@@ -1625,14 +1647,17 @@ function updatePetaLokasiSaya() {
     const jarak = hitungJarak(lat, lng, koordinatToko.lat, koordinatToko.lng);
     const infoEl = document.getElementById('info-radius');
     const btnHadir = document.getElementById('btn-hadir');
+      const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+    const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
+    
     if (jarak <= koordinatToko.radius) {
         posisiSaya.ok = true;
-        infoEl.innerText = `✅ Anda dalam radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
+        infoEl.innerHTML = `${ICON_CHECK} Anda dalam radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
         infoEl.className = "info-radius ok";
         if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
     } else {
         posisiSaya.ok = false;
-        infoEl.innerText = `⚠️ Di luar radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
+        infoEl.innerHTML = `${ICON_X} Di luar radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
         infoEl.className = "info-radius err";
         if (btnHadir) { btnHadir.classList.add('btn-disabled'); btnHadir.disabled = true; btnHadir.innerText = `Di Luar Radius (${Math.round(jarak)}m)`; }
     }

@@ -2134,7 +2134,7 @@ function bukaModalBranding() {
     
     document.getElementById('modal-desc').innerHTML = `
         <div style="font-size:12px; margin-bottom:12px; color:#64748b;">
-            Ubah branding & lokasi toko. Perubahan akan langsung tampil di semua HP promotor.
+            Ubah branding & lokasi toko. Perubahan langsung tampil di semua HP promotor.
         </div>
         
         <label style="font-size:11px; font-weight:700;">Nama Sistem:</label><br>
@@ -2160,20 +2160,30 @@ function bukaModalBranding() {
         <div style="font-size:11px; font-weight:800; color:var(--accent); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">📍 Koordinat Toko (GPS)</div>
         
         <div style="font-size:10px; color:#94a3b8; padding:8px; background:#f1f5f9; border-radius:8px; line-height:1.5; margin-bottom:10px;">
-            💡 <b>Tips:</b> Buka <b>Google Maps</b> → cari lokasi toko → klik kanan → copy koordinat → paste ke bawah. Atau klik "Aktifkan GPS" di menu utama (butuh ada di lokasi toko).
+            💡 <b>Tips:</b> Buka <b>Google Maps</b> → cari lokasi toko → klik kanan → copy koordinat → paste ke bawah.
         </div>
         
-        <label style="font-size:11px; font-weight:700;">Latitude:</label><br>
-        <input type="text" id="branding-lat" 
-            value="${String(latSekarang).replace(/"/g, '&quot;')}"
-            placeholder="Contoh: -8.0210821"
-            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <div style="flex:1;">
+                <label style="font-size:11px; font-weight:700;">Latitude:</label><br>
+                <input type="text" id="branding-lat" 
+                    value="${String(latSekarang).replace(/"/g, '&quot;')}"
+                    placeholder="-8.0210821"
+                    style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); box-sizing:border-box;">
+            </div>
+            <div style="flex:1;">
+                <label style="font-size:11px; font-weight:700;">Longitude:</label><br>
+                <input type="text" id="branding-lng" 
+                    value="${String(lngSekarang).replace(/"/g, '&quot;')}"
+                    placeholder="112.6189705"
+                    style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); box-sizing:border-box;">
+            </div>
+        </div>
         
-        <label style="font-size:11px; font-weight:700;">Longitude:</label><br>
-        <input type="text" id="branding-lng" 
-            value="${String(lngSekarang).replace(/"/g, '&quot;')}"
-            placeholder="Contoh: 112.6189705"
-            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        <button type="button" onclick="isiKoordinatDariHP()" 
+            style="width:100%; padding:10px; border-radius:8px; border:1px dashed var(--accent); background:transparent; color:var(--accent); font-weight:700; font-size:11px; cursor:pointer; margin-bottom:10px;">
+            📍 Isi Otomatis dari Lokasi HP Sekarang
+        </button>
         
         <label style="font-size:11px; font-weight:700;">Radius Validasi (meter):</label><br>
         <input type="number" id="branding-radius" 
@@ -2193,6 +2203,44 @@ function bukaModalBranding() {
     `;
     
     document.getElementById('custom-modal').classList.add('active');
+}
+
+function isiKoordinatDariHP() {
+    if (!navigator.geolocation) {
+        tampilkanModal("Gagal", "Browser tidak mendukung GPS.");
+        return;
+    }
+    
+    const latEl = document.getElementById('branding-lat');
+    const lngEl = document.getElementById('branding-lng');
+    
+    latEl.placeholder = "Mendeteksi...";
+    lngEl.placeholder = "Mendeteksi...";
+    
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            latEl.value = pos.coords.latitude.toFixed(7);
+            lngEl.value = pos.coords.longitude.toFixed(7);
+            latEl.placeholder = "-8.0210821";
+            lngEl.placeholder = "112.6189705";
+            latEl.style.background = '#dcfce7';
+            lngEl.style.background = '#dcfce7';
+            setTimeout(() => {
+                latEl.style.background = '#ffffff';
+                lngEl.style.background = '#ffffff';
+            }, 800);
+        },
+        function(err) {
+            latEl.placeholder = "-8.0210821";
+            lngEl.placeholder = "112.6189705";
+            let pesan = "Gagal mendeteksi lokasi.";
+            if (err.code === 1) pesan += "\n\n❌ Izin lokasi DITOLAK.\n\nCara fix:\n1. Klik ikon gembok di address bar\n2. Cari 'Location' / 'Lokasi'\n3. Set jadi 'Allow' / 'Izinkan'\n4. Refresh halaman";
+            else if (err.code === 2) pesan += "\n\n❌ Lokasi tidak tersedia.";
+            else if (err.code === 3) pesan += "\n\n❌ Waktu habis. Coba lagi.";
+            tampilkanModal("Gagal Deteksi GPS", pesan);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
 }
 async function eksekusiSimpanBranding() {
     const namaSistem = document.getElementById('branding-nama-sistem').value.trim();

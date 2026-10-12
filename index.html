@@ -308,34 +308,58 @@
         body:not(.dark-mode) .badge-melayani { background: #059669; color: #fff; border-color: #059669; }
         body:not(.dark-mode) .badge-cs, body:not(.dark-mode) .badge-ibadah { background: #7c3aed; color: #fff; border-color: #7c3aed; }
 
-        button {
-            width: 100%; padding: 14px 16px; border-radius: 12px;
-            font-size: 12px; font-weight: 800; cursor: pointer; border: none;
-            text-transform: uppercase; transition: all 0.25s ease;
-            display: inline-flex; justify-content: center; align-items: center;
-            gap: 8px; letter-spacing: 1px;
-            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%);
-            background-size: 200% 200%; color: #ffffff;
-            box-shadow: 0 0 25px rgba(34, 211, 238, 0.3);
-        }
-        button:hover { transform: translateY(-2px); background-position: 100% 0; box-shadow: 0 0 35px rgba(34, 211, 238, 0.5); }
-        button:active { transform: scale(0.98); }
+        button { 
+    width: 100%; 
+    padding: 12px 14px; 
+    border-radius: 12px; 
+    font-size: 12px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    border: none; 
+    text-transform: uppercase; 
+    transition: all 0.2s ease; 
+    display: inline-flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 8px; 
+    letter-spacing: 0.3px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04); 
+}
+button:active { transform: scale(0.98); }
 
-        .btn-success, .btn-customer, .btn-purple, .btn-indigo {
-            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-            color: #ffffff;
-        }
-        .btn-closing, .btn-maroon {
-            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-            color: #ffffff;
-        }
-        .btn-amber { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; }
-        .btn-disabled {
-            background: var(--card-inner) !important; color: var(--text-muted) !important;
-            cursor: not-allowed !important; box-shadow: none !important;
-            transform: none !important; pointer-events: none !important;
-            border: 1px solid var(--border);
-        }
+.btn-success, .btn-customer, .btn-purple, .btn-indigo { 
+    background: #0f172a; 
+    color: white; 
+}
+.btn-success:hover, .btn-customer:hover, .btn-purple:hover, .btn-indigo:hover { 
+    background: #1e293b; 
+}
+
+.btn-closing, .btn-maroon { 
+    background: #dc2626; 
+    color: white; 
+}
+.btn-closing:hover, .btn-maroon:hover { 
+    background: #b91c1c; 
+}
+
+.btn-amber { 
+    background: #d97706; 
+    color: white; 
+}
+.btn-amber:hover { 
+    background: #b45309; 
+}
+
+.btn-disabled { 
+    background: #cbd5e1 !important; 
+    color: #64748b !important; 
+    cursor: not-allowed !important; 
+    box-shadow: none !important; 
+    animation: none !important; 
+    transform: none !important; 
+    pointer-events: none !important; 
+}
         body:not(.dark-mode) .btn-success, body:not(.dark-mode) .btn-customer,
         body:not(.dark-mode) .btn-purple, body:not(.dark-mode) .btn-indigo { background: #0f172a; }
         body:not(.dark-mode) .btn-closing, body:not(.dark-mode) .btn-maroon { background: #dc2626; }

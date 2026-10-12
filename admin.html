@@ -1094,15 +1094,14 @@ body.dark-mode .logout-btn:hover {
     <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutAdmin()" style="display: none;">Logout</button>
 </div>
 
-        <div class="header-admin">
-            <h2>Dashboard Admin</h2>
-            <span class="header-sub-text">Sistem Antrian Promotor</span>
-            <span class="header-sub-text">UFO Kebonsari</span>
-            <div id="badge-status-sistem" class="status-badge status-open">
-                <span class="dot"></span>
-                <span id="badge-status-text">STATUS: OPEN</span>
-            </div>
-        </div>
+       <div class="header-admin">
+    <h2 id="header-nama-sistem">Dashboard Admin</h2>
+    <span class="header-sub-text" id="header-nama-toko">UFO Kebonsari</span>
+    <div id="badge-status-sistem" class="status-badge status-open">
+        <span class="dot"></span>
+        <span id="badge-status-text">STATUS: OPEN</span>
+    </div>
+</div>
 
         <div id="login-admin-box">
             <div class="input-group">
@@ -1333,7 +1332,23 @@ window.settingGlobal = {};
             const d = new Date(ts);
             return `${String(d.getHours()).padStart(2,'0')}.${String(d.getMinutes()).padStart(2,'0')}`;
         }
-
+function applyBrandingAdmin(s) {
+    if (!s) return;
+    
+    const namaToko = s.namaToko || "Nama Toko";
+    const namaSistem = s.namaSistem || "Dashboard Admin";
+    
+    // Update title browser
+    const titleEl = document.querySelector('title');
+    if (titleEl) titleEl.innerText = `${namaSistem} - ${namaToko}`;
+    
+    // Update header
+    const headerSistemEl = document.getElementById('header-nama-sistem');
+    if (headerSistemEl) headerSistemEl.innerText = namaSistem;
+    
+    const headerTokoEl = document.getElementById('header-nama-toko');
+    if (headerTokoEl) headerTokoEl.innerText = namaToko;
+}
         window.addEventListener('firebase-ready', () => {
             initDarkMode();
           savedPinAdmin = localStorage.getItem('ufo_admin_pin') || "";
@@ -1410,17 +1425,17 @@ if (savedPinAdmin) {
                 renderStatistikAdmin();
             });
 
-         unsubSetting = window.dbOnValue(window.dbRef(db, 'setting'), snapshot => {
+        unsubSetting = window.dbOnValue(window.dbRef(db, 'setting'), snapshot => {
     const s = snapshot.val() || {};
     statusSistemGlobal = s.statusAntrian || "BUKA";
     koordinatTokoAdmin.lat = s.latToko || "";
     koordinatTokoAdmin.lng = s.lngToko || "";
     koordinatTokoAdmin.radius = Number(s.radiusToko) || 50;
     window.settingGlobal = s;
+    applyBrandingAdmin(s);
     renderStatusSistem();
     renderStatusGPS();
 });
-
             unsubStatistik = window.dbOnValue(window.dbRef(db, 'statistikAktivitas'), snapshot => {
                 const dataRaw = snapshot.val();
                 statistikGlobal = [];
@@ -3037,6 +3052,7 @@ async function eksekusiSimpanBranding() {
         window.eksekusiToggleSistem = eksekusiToggleSistem;
         window.bukaModalBranding = bukaModalBranding;
 window.eksekusiSimpanBranding = eksekusiSimpanBranding;
+window.isiKoordinatDariHP = isiKoordinatDariHP;
         window.bukaModalTambahMasterSales = bukaModalTambahMasterSales;
         window.eksekusiTambahMasterSales = eksekusiTambahMasterSales;
         window.bukaModalKelolaPIN = bukaModalKelolaPIN;

@@ -1518,7 +1518,8 @@ function initPetaPromotor() {
         if (gpsBox) gpsBox.style.display = 'none';
         const infoEl = document.getElementById('info-radius');
         if (infoEl) {
-            infoEl.innerText = "✅ GPS toko dinonaktifkan — check-in dari mana saja";
+            const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+            infoEl.innerHTML = `${ICON_CHECK} <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`;
             infoEl.className = "info-radius ok";
         }
         const btnHadir = document.getElementById('btn-hadir');
@@ -1547,9 +1548,15 @@ function initPetaPromotor() {
 
 function mulaiDeteksiLokasi() {
     if (geolocationWatchId !== null) navigator.geolocation.clearWatch(geolocationWatchId);
+    
+    const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
+    
     if (!navigator.geolocation) {
-        document.getElementById('info-radius').innerText = "❌ Browser tidak mendukung GPS";
-        document.getElementById('info-radius').className = "info-radius err";
+        const infoEl = document.getElementById('info-radius');
+        if (infoEl) {
+            infoEl.innerHTML = `${ICON_X} <span>Browser tidak mendukung GPS</span>`;
+            infoEl.className = "info-radius err";
+        }
         return;
     }
     geolocationWatchId = navigator.geolocation.watchPosition(
@@ -1559,8 +1566,11 @@ function mulaiDeteksiLokasi() {
             updatePetaLokasiSaya();
         },
         (err) => {
-            document.getElementById('info-radius').innerText = "❌ Izin lokasi ditolak / tidak tersedia";
-            document.getElementById('info-radius').className = "info-radius err";
+            const infoEl = document.getElementById('info-radius');
+            if (infoEl) {
+                infoEl.innerHTML = `${ICON_X} <span>Izin lokasi ditolak / tidak tersedia</span>`;
+                infoEl.className = "info-radius err";
+            }
         },
         { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
@@ -2076,14 +2086,15 @@ function renderUI() {
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif) {
             setTimeout(initPetaPromotor, 150);
-        } else {
+               } else {
             const gpsBox = document.querySelector('.gps-box');
             if (gpsBox) gpsBox.style.display = 'none';
             const infoEl = document.getElementById('info-radius');
             if (infoEl) {
-                infoEl.innerText = "✅ GPS toko dinonaktifkan — check-in dari mana saja";
+                const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+                infoEl.innerHTML = `${ICON_CHECK} <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`;
                 infoEl.className = "info-radius ok";
-                infoEl.style.display = 'block';
+                infoEl.style.display = 'flex';
             }
             const btnHadir = document.getElementById('btn-hadir');
             if (btnHadir) {

@@ -2122,16 +2122,19 @@ if (savedPinAdmin) {
             }
         }
 function bukaModalBranding() {
-    document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding";
+    document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding & Lokasi";
     
     const s = window.settingGlobal || {};
     const namaTokoSekarang = s.namaToko || "";
     const namaSistemSekarang = s.namaSistem || "";
     const logoUrlSekarang = s.logoUrl || "";
+    const latSekarang = s.latToko || "";
+    const lngSekarang = s.lngToko || "";
+    const radiusSekarang = s.radiusToko || 50;
     
     document.getElementById('modal-desc').innerHTML = `
         <div style="font-size:12px; margin-bottom:12px; color:#64748b;">
-            Ubah branding aplikasi. Perubahan akan langsung tampil di semua HP promotor.
+            Ubah branding & lokasi toko. Perubahan akan langsung tampil di semua HP promotor.
         </div>
         
         <label style="font-size:11px; font-weight:700;">Nama Sistem:</label><br>
@@ -2152,8 +2155,35 @@ function bukaModalBranding() {
             placeholder="https://..."
             style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
         
-        <div style="font-size:10px; color:#94a3b8; padding:8px; background:#f1f5f9; border-radius:8px; line-height:1.5;">
-            💡 <b>Tips logo:</b> Upload logo ke Google Drive / Imgur / situs lain, lalu paste link-nya di atas. Kosongkan jika ingin pakai logo default.
+        <hr style="border:none; border-top:1px solid var(--border); margin:14px 0;">
+        
+        <div style="font-size:11px; font-weight:800; color:var(--accent); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">📍 Koordinat Toko (GPS)</div>
+        
+        <div style="font-size:10px; color:#94a3b8; padding:8px; background:#f1f5f9; border-radius:8px; line-height:1.5; margin-bottom:10px;">
+            💡 <b>Tips:</b> Buka <b>Google Maps</b> → cari lokasi toko → klik kanan → copy koordinat → paste ke bawah. Atau klik "Aktifkan GPS" di menu utama (butuh ada di lokasi toko).
+        </div>
+        
+        <label style="font-size:11px; font-weight:700;">Latitude:</label><br>
+        <input type="text" id="branding-lat" 
+            value="${String(latSekarang).replace(/"/g, '&quot;')}"
+            placeholder="Contoh: -8.0210821"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        
+        <label style="font-size:11px; font-weight:700;">Longitude:</label><br>
+        <input type="text" id="branding-lng" 
+            value="${String(lngSekarang).replace(/"/g, '&quot;')}"
+            placeholder="Contoh: 112.6189705"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        
+        <label style="font-size:11px; font-weight:700;">Radius Validasi (meter):</label><br>
+        <input type="number" id="branding-radius" 
+            value="${radiusSekarang}"
+            min="10" max="1000"
+            placeholder="50"
+            style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px; box-sizing:border-box;">
+        
+        <div style="font-size:10px; color:#94a3b8; padding:8px; background:#fef3c7; border-radius:8px; line-height:1.5;">
+            ⚠️ <b>Kosongkan Latitude & Longitude</b> jika ingin <b>mematikan GPS</b> (promotor bisa check-in dari mana saja).
         </div>
     `;
     
@@ -2164,38 +2194,64 @@ function bukaModalBranding() {
     
     document.getElementById('custom-modal').classList.add('active');
 }
-
 async function eksekusiSimpanBranding() {
     const namaSistem = document.getElementById('branding-nama-sistem').value.trim();
     const namaToko = document.getElementById('branding-nama-toko').value.trim();
     const logoUrl = document.getElementById('branding-logo-url').value.trim();
+    const lat = document.getElementById('branding-lat').value.trim();
+    const lng = document.getElementById('branding-lng').value.trim();
+    const radius = parseInt(document.getElementById('branding-radius').value) || 50;
     
     if (!namaSistem) { tampilkanModal("Perhatian", "Nama Sistem tidak boleh kosong!"); return; }
     if (!namaToko) { tampilkanModal("Perhatian", "Nama Toko tidak boleh kosong!"); return; }
+    
+    // Validasi lat/lng: harus diisi berdua, atau dikosongkan berdua
+    const latAda = lat !== "";
+    const lngAda = lng !== "";
+    if (latAda !== lngAda) {
+        tampilkanModal("Perhatian", "Latitude & Longitude harus diisi bersamaan, atau dikosongkan bersamaan!");
+        return;
+    }
+    
+    // Validasi format angka
+    if (latAda && (isNaN(parseFloat(lat)) || isNaN(parseFloat(lng)))) {
+        tampilkanModal("Perhatian", "Latitude & Longitude harus berupa angka!");
+        return;
+    }
     
     const btn = document.getElementById('btn-modal-action-ok');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
     
     try {
-        await window.dbUpdate(window.dbRef(window.db, 'setting'), {
+        const updateData = {
             namaSistem: namaSistem,
             namaToko: namaToko,
-            logoUrl: logoUrl
-        });
+            logoUrl: logoUrl,
+            latToko: latAda ? parseFloat(lat) : "",
+            lngToko: lngAda ? parseFloat(lng) : "",
+            radiusToko: radius
+        };
+        
+        await window.dbUpdate(window.dbRef(window.db, 'setting'), updateData);
+        
+        let infoGPS = latAda 
+            ? `<b>📍 Koordinat:</b> ${lat}, ${lng}<br><b>📏 Radius:</b> ${radius}m` 
+            : `<b>📍 GPS:</b> NONAKTIF (check-in dari mana saja)`;
         
         tutupModal();
         tampilkanModal("Berhasil", 
-            `Branding berhasil disimpan!<br><br>` +
+            `Pengaturan berhasil disimpan!<br><br>` +
             `<b>Nama Sistem:</b> ${namaSistem}<br>` +
             `<b>Nama Toko:</b> ${namaToko}<br>` +
-            `<b>Logo:</b> ${logoUrl || "(default)"}<br><br>` +
+            `<b>Logo:</b> ${logoUrl || "(default)"}<br>` +
+            `${infoGPS}<br><br>` +
             `<span style="font-size:11px; color:#64748b;">Perubahan akan langsung tampil di HP promotor.</span>`
         );
     } catch (e) {
-        console.warn("Error simpan branding:", e);
+        console.warn("Error simpan pengaturan:", e);
         tutupModal();
-        tampilkanModal("Gagal", "Tidak bisa menyimpan branding. Cek koneksi internet.");
+        tampilkanModal("Gagal", "Tidak bisa menyimpan pengaturan. Cek koneksi internet.");
     }
 }
         function bukaModalTambahMasterSales() {

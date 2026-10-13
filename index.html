@@ -2712,6 +2712,49 @@ body > .modal-overlay,
 body > .login-toast-overlay {
     position: fixed !important;
 }
+  /* ============================================================ */
+/* ===== SAMAKAN UKURAN CONTAINER (GELAP vs TERANG) =========== */
+/* ============================================================ */
+
+/* Container cyber blue — samakan dengan file lama */
+body.dark-mode .app-container,
+body.dark-mode .admin-container {
+    max-width: 500px !important;
+    padding: 24px !important;
+    border-radius: 20px !important;
+}
+
+/* Responsive — sama dengan file lama */
+@media (min-width: 768px) {
+    body.dark-mode .app-container,
+    body.dark-mode .admin-container {
+        max-width: 720px !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    body.dark-mode .app-container,
+    body.dark-mode .admin-container {
+        max-width: 900px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body.dark-mode {
+        padding: 12px !important;
+    }
+    body.dark-mode .app-container,
+    body.dark-mode .admin-container {
+        padding: 20px !important;
+        border-radius: 20px !important;
+    }
+    body.dark-mode .gradient-header h2 {
+        font-size: 18px !important;
+    }
+    body.dark-mode .promotor-nama-aktif {
+        font-size: 17px !important;
+    }
+}
 </style>
 </head>
 <body>

@@ -2554,6 +2554,118 @@ body::after {
 .aktivitas-list li {
     box-shadow: 0 0 10px -3px rgba(56, 189, 248, 0.4) !important;
 }
+  /* ============================================================ */
+/* ===== OPTIMASI TOTAL — SCROLL SUPER LANCAR ================= */
+/* ============================================================ */
+
+/* ===== 1. BACKGROUND SOLID (hapus grid + orb) ===== */
+html body {
+    background: #071321 !important;
+    background-image: none !important;
+    background-attachment: scroll !important;
+}
+
+/* Hapus pseudo-element background kalau ada */
+body::before,
+body::after {
+    display: none !important;
+}
+
+/* ===== 2. MATIKAN SEMUA ANIMASI ===== */
+*,
+*::before,
+*::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* ===== 3. HAPUS GLOW/SHADOW BERAT ===== */
+.app-container,
+.admin-container {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid #38bdf8 !important;
+}
+
+.timer-card-admin,
+.user-badge,
+.list-antrian li,
+.aktivitas-title,
+.aktivitas-list li,
+.gps-box,
+.aktivitas-header-toggle {
+    box-shadow: none !important;
+    border: 1px solid #38bdf8 !important;
+}
+
+/* ===== 4. HAPUS TEXT SHADOW ===== */
+.gradient-header h2,
+.promotor-nama-aktif,
+.user-badge strong,
+#label-user-aktif,
+.live-urutan-title,
+.aktivitas-title,
+.aktivitas-header-toggle .judul {
+    text-shadow: none !important;
+}
+
+/* ===== 5. SIMPLIFY BUTTONS ===== */
+.app-container button {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border: 1px solid #38bdf8 !important;
+}
+
+/* ===== 6. LOGIN SCREEN — SIMPLIFY ===== */
+.fut-grid,
+.fut-orb,
+.fut-particles,
+.fut-particle {
+    display: none !important;
+}
+
+#login-screen {
+    background: #071321 !important;
+}
+
+.fut-card {
+    background: #0a192f !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+.fut-card::before {
+    display: none !important;
+}
+
+.fut-logo {
+    box-shadow: none !important;
+}
+
+.fut-characters .team-3d-img {
+    filter: none !important;
+    animation: none !important;
+}
+
+/* ===== 7. HAPUS BACKDROP-FILTER (berat di GPU) ===== */
+.modal-overlay,
+.login-toast-overlay,
+.fut-menu {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ===== 8. HARDWARE ACCELERATION ===== */
+html {
+    scroll-behavior: auto;
+}
+
+html body {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+}
 </style>
 </head>
 <body>

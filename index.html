@@ -2913,6 +2913,294 @@ html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-nosale {
 html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-hari {
     color: #64748b !important;
 }
+  /* ============================================================ */
+/* ===== REFRESH TAMPILAN — KONTRAS TINGGI & JELAS ============ */
+/* ============================================================ */
+
+/* ===== 1. AKTIVITAS HEADER UTAMA — Bold & Jelas ===== */
+body.dark-mode .aktivitas-header-toggle {
+    background: linear-gradient(135deg, #0c1e33, #071321) !important;
+    border: 2px solid #38bdf8 !important;
+    border-radius: 10px !important;
+    padding: 14px 16px !important;
+    box-shadow: 0 0 15px -3px rgba(56, 189, 248, 0.5) !important;
+}
+
+body.dark-mode .aktivitas-header-toggle .judul {
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+}
+
+body.dark-mode .aktivitas-header-toggle .judul svg {
+    stroke: #38bdf8 !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+body.dark-mode .aktivitas-header-toggle .arrow {
+    background: rgba(56, 189, 248, 0.2) !important;
+    border: 1px solid #38bdf8 !important;
+    width: 26px !important;
+    height: 26px !important;
+}
+
+/* ===== 2. SUB-HEADER (Bawa Customer, Ibadah, dll) — Soft ===== */
+body.dark-mode .aktivitas-title {
+    background: rgba(56, 189, 248, 0.08) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 9px 12px !important;
+    margin-top: 10px !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .aktivitas-title .judul-kategori {
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+}
+
+body.dark-mode .aktivitas-title .judul-kategori svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Icon berwarna per kategori */
+body.dark-mode .aktivitas-title .aktivitas-icon {
+    background: rgba(56, 189, 248, 0.2) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+}
+
+body.dark-mode .aktivitas-title.t-ibadah .aktivitas-icon {
+    background: rgba(168, 85, 247, 0.2) !important;
+    border: 1px solid rgba(168, 85, 247, 0.4) !important;
+}
+
+body.dark-mode .aktivitas-title.t-ibadah .aktivitas-icon svg {
+    stroke: #c084fc !important;
+}
+
+body.dark-mode .aktivitas-title.t-keluar .aktivitas-icon {
+    background: rgba(245, 158, 11, 0.2) !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+}
+
+body.dark-mode .aktivitas-title.t-keluar .aktivitas-icon svg {
+    stroke: #fbbf24 !important;
+}
+
+body.dark-mode .aktivitas-title.t-autokick .aktivitas-icon {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+}
+
+body.dark-mode .aktivitas-title.t-autokick .aktivitas-icon svg {
+    stroke: #f87171 !important;
+}
+
+body.dark-mode .aktivitas-title.t-rekap .aktivitas-icon {
+    background: rgba(16, 185, 129, 0.2) !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+
+body.dark-mode .aktivitas-title.t-rekap .aktivitas-icon svg {
+    stroke: #34d399 !important;
+}
+
+/* ===== 3. COUNT BADGE — Lebih Jelas ===== */
+body.dark-mode .aktivitas-title .count {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    padding: 3px 10px !important;
+    font-size: 11px !important;
+}
+
+/* ===== 4. LIST ITEM — Kartu dengan Accent ===== */
+body.dark-mode .aktivitas-list {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
+body.dark-mode .aktivitas-list li {
+    background: rgba(56, 189, 248, 0.06) !important;
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-left: 3px solid #38bdf8 !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 6px !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode #list-ibadah li {
+    border-left: 3px solid #a855f7 !important;
+}
+
+body.dark-mode #list-keluar li {
+    border-left: 3px solid #f59e0b !important;
+}
+
+body.dark-mode #list-autokick li {
+    border-left: 3px solid #ef4444 !important;
+}
+
+body.dark-mode .aktivitas-list li .nama {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 12px !important;
+}
+
+body.dark-mode .aktivitas-list li .waktu {
+    color: #cbd5e1 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+}
+
+/* Nomor #1 di Ibadah → putih */
+body.dark-mode #list-ibadah li .nama span {
+    color: #ffffff !important;
+    text-shadow: none !important;
+}
+
+/* ===== 5. TOTAL BOX — Pill Kecil di Tengah ===== */
+body.dark-mode #total-bawa-box {
+    background: rgba(56, 189, 248, 0.1) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 20px !important;
+    padding: 5px 14px !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    display: table !important;
+    margin: 8px auto !important;
+    width: auto !important;
+    text-align: center !important;
+}
+
+body.dark-mode #total-bawa-box .total-lihat {
+    color: #fbbf24 !important;
+    font-weight: 800 !important;
+}
+
+body.dark-mode #total-bawa-box .total-deal {
+    color: #34d399 !important;
+    font-weight: 800 !important;
+}
+
+/* ===== 6. REKAP TABEL — Header Beda, Row Hover ===== */
+body.dark-mode .rekap-wrapper {
+    background: rgba(56, 189, 248, 0.05) !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    border-radius: 10px !important;
+    padding: 10px !important;
+    margin-top: 8px !important;
+}
+
+body.dark-mode .rekap-label {
+    color: #ffffff !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel th {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 10px !important;
+    letter-spacing: 0.5px !important;
+    border-bottom: 2px solid #38bdf8 !important;
+    padding: 10px 6px !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel td {
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.1) !important;
+    padding: 10px 6px !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel td.kolom-nama {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+body.dark-mode .rekap-tabel td.angka-deal {
+    color: #34d399 !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel td.angka-lihat {
+    color: #fbbf24 !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel td.angka-nosale {
+    color: #f87171 !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel td.angka-hari {
+    color: #cbd5e1 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel tr.total-row td {
+    background: rgba(56, 189, 248, 0.1) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    border-top: 2px solid #38bdf8 !important;
+    text-shadow: none !important;
+}
+
+body.dark-mode .rekap-tabel tr.total-row td.angka-deal {
+    color: #34d399 !important;
+}
+body.dark-mode .rekap-tabel tr.total-row td.angka-lihat {
+    color: #fbbf24 !important;
+}
+body.dark-mode .rekap-tabel tr.total-row td.angka-nosale {
+    color: #f87171 !important;
+}
+
+/* ===== 7. EMPTY STATE — Kartu Informatif ===== */
+body.dark-mode .aktivitas-empty {
+    background: rgba(56, 189, 248, 0.05) !important;
+    border: 1px dashed rgba(56, 189, 248, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 16px 12px !important;
+    color: #cbd5e1 !important;
+    font-size: 11px !important;
+    font-style: normal !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    margin-top: 4px !important;
+    text-shadow: none !important;
+}
+
+/* ===== 8. BADGE IBADAH & CS — Ungu Lebih Terang ===== */
+body.dark-mode .badge-ibadah,
+body.dark-mode .badge-cs {
+    background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
+    color: #ffffff !important;
+    border: 2px solid #c084fc !important;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.7) !important;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ===== 9. TEXT GLOBAL — Paksa Putih ===== */
+body.dark-mode .aktivitas-section,
+body.dark-mode .aktivitas-content {
+    color: #ffffff !important;
+}
 </style>
 </head>
 <body>

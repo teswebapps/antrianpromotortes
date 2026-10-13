@@ -2755,6 +2755,60 @@ body.dark-mode .admin-container {
         font-size: 17px !important;
     }
 }
+  /* ============================================================ */
+/* ===== FIX — SAMAKAN MODE TERANG DENGAN MODE GELAP ========== */
+/* ============================================================ */
+
+/* Container mode terang — samakan dengan cyber blue (500px) */
+html body:not(.dark-mode) .app-container,
+html body:not(.dark-mode) .admin-container {
+    width: 100% !important;
+    max-width: 500px !important;
+    padding: 24px !important;
+    border-radius: 20px !important;
+    margin: 0 auto !important;
+}
+
+/* Responsive — samakan dengan mode gelap */
+@media (min-width: 768px) {
+    html body:not(.dark-mode) .app-container,
+    html body:not(.dark-mode) .admin-container {
+        max-width: 720px !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    html body:not(.dark-mode) .app-container,
+    html body:not(.dark-mode) .admin-container {
+        max-width: 900px !important;
+    }
+}
+
+/* Mobile kecil */
+@media (max-width: 480px) {
+    html body:not(.dark-mode) .app-container,
+    html body:not(.dark-mode) .admin-container {
+        padding: 20px !important;
+        border-radius: 20px !important;
+    }
+    html body:not(.dark-mode) .gradient-header h2 {
+        font-size: 18px !important;
+    }
+    html body:not(.dark-mode) .promotor-nama-aktif {
+        font-size: 17px !important;
+    }
+}
+
+/* Body padding — samakan dengan mode gelap */
+html body:not(.dark-mode) {
+    padding: 16px !important;
+}
+
+@media (max-width: 480px) {
+    html body:not(.dark-mode) {
+        padding: 12px !important;
+    }
+}
 </style>
 </head>
 <body>

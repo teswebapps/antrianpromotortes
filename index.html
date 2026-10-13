@@ -4146,7 +4146,7 @@ function renderAktivitas() {
     document.getElementById('count-ibadah').innerText = listIbadah.length;
     document.getElementById('list-ibadah').innerHTML = listIbadah.length === 0
         ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
-        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#a855f7; font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
+       : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#ffffff; font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
     const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
     document.getElementById('count-keluar').innerText = listKeluar.length;
     document.getElementById('list-keluar').innerHTML = listKeluar.length === 0

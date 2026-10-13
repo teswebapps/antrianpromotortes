@@ -3201,6 +3201,297 @@ body.dark-mode .aktivitas-section,
 body.dark-mode .aktivitas-content {
     color: #ffffff !important;
 }
+  
+/* ============================================================ */
+/* ===== AKTIVITAS MENU GRID (BARU) =========================== */
+/* ============================================================ */
+.aktivitas-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.aktivitas-menu-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 10px;
+    background: var(--cyber-card-soft);
+    border: 2px solid var(--cyber-cyan);
+    border-radius: 12px;
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    min-height: 90px;
+}
+
+.aktivitas-menu-btn:active {
+    transform: scale(0.97);
+}
+
+.aktivitas-menu-btn:hover {
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.85);
+}
+
+.aktivitas-menu-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.5);
+}
+
+.aktivitas-menu-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: #38bdf8;
+    stroke-width: 2.2;
+    fill: none;
+}
+
+.aktivitas-menu-icon.t-ibadah {
+    background: rgba(168, 85, 247, 0.2);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+}
+.aktivitas-menu-icon.t-ibadah svg { stroke: #c084fc; }
+
+.aktivitas-menu-icon.t-keluar {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+}
+.aktivitas-menu-icon.t-keluar svg { stroke: #fbbf24; }
+
+.aktivitas-menu-icon.t-autokick {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+}
+.aktivitas-menu-icon.t-autokick svg { stroke: #f87171; }
+
+.aktivitas-menu-icon.t-rekap {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+}
+.aktivitas-menu-icon.t-rekap svg { stroke: #34d399; }
+
+.aktivitas-menu-label {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-align: center;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.aktivitas-menu-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    background: #38bdf8;
+    color: #061424;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+
+/* ============================================================ */
+/* ===== POPUP AKTIVITAS (BARU) ================================ */
+/* ============================================================ */
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(5, 8, 20, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99998;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-box {
+    background: var(--cyber-card);
+    border: 2px solid var(--cyber-cyan);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 50px rgba(56, 189, 248, 0.7), inset 0 0 20px rgba(56, 189, 248, 0.15);
+    overflow: hidden;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #0c1e33, #071321);
+    border-bottom: 2px solid var(--cyber-cyan);
+    flex-shrink: 0;
+}
+
+.popup-title {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+
+.popup-close {
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid #38bdf8;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.popup-close:hover {
+    background: rgba(56, 189, 248, 0.4);
+}
+
+.popup-body {
+    padding: 14px 16px;
+    overflow-y: auto;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
+}
+
+.popup-body::-webkit-scrollbar {
+    width: 6px;
+}
+.popup-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.popup-body::-webkit-scrollbar-thumb {
+    background: #38bdf8;
+    border-radius: 3px;
+}
+
+/* Total box di dalam popup */
+.popup-body #total-bawa-box {
+    display: block !important;
+    margin-bottom: 12px !important;
+}
+
+/* ============================================================ */
+/* ===== LIGHT MODE — AKTIVITAS MENU GRID + POPUP ============= */
+/* ============================================================ */
+html body:not(.dark-mode) .aktivitas-menu-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+html body:not(.dark-mode) .aktivitas-menu-label {
+    color: #0f172a;
+}
+html body:not(.dark-mode) .aktivitas-menu-icon {
+    background: rgba(14, 165, 233, 0.1);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+html body:not(.dark-mode) .aktivitas-menu-icon svg {
+    stroke: #0284c7;
+}
+html body:not(.dark-mode) .aktivitas-menu-count {
+    background: #0f172a;
+    color: #ffffff;
+    box-shadow: none;
+}
+html body:not(.dark-mode) .popup-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+html body:not(.dark-mode) .popup-header {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border-bottom: 1px solid #334155;
+}
+html body:not(.dark-mode) .popup-close {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #ffffff;
+}
+html body:not(.dark-mode) .popup-body #total-bawa-box {
+    background: rgba(100, 116, 139, 0.1) !important;
+    color: #64748b !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* ============================================================ */
+/* ===== RESPONSIVE — POPUP =================================== */
+/* ============================================================ */
+@media (max-width: 480px) {
+    .aktivitas-menu-grid {
+        gap: 8px;
+    }
+    .aktivitas-menu-btn {
+        padding: 12px 8px;
+        min-height: 80px;
+    }
+    .aktivitas-menu-icon {
+        width: 30px;
+        height: 30px;
+    }
+    .aktivitas-menu-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+    .aktivitas-menu-label {
+        font-size: 10px;
+    }
+    .popup-box {
+        max-height: 90vh;
+        border-radius: 14px;
+    }
+    .popup-header {
+        padding: 12px 14px;
+    }
+    .popup-title {
+        font-size: 12px;
+    }
+    .popup-body {
+        padding: 12px;
+    }
+}
 </style>
 </head>
 <body>
@@ -3444,6 +3735,16 @@ body.dark-mode .aktivitas-content {
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<!-- Popup Aktivitas -->
+<div id="popup-aktivitas" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-header">
+            <div class="popup-title" id="popup-aktivitas-title">Aktivitas</div>
+            <button type="button" class="popup-close" onclick="tutupPopupAktivitas()">✕</button>
+        </div>
+        <div class="popup-body" id="popup-aktivitas-body"></div>
     </div>
 </div>
 
@@ -4718,6 +5019,65 @@ function tampilkanModalKonfirmasi(j, d, cb) {
 }
 
 function tutupModal() { document.getElementById('custom-modal').classList.remove('active'); }
+/* ============================================================ */
+/* ===== POPUP AKTIVITAS ====================================== */
+/* ============================================================ */
+function bukaPopupAktivitas(jenis) {
+    const popup = document.getElementById('popup-aktivitas');
+    const title = document.getElementById('popup-aktivitas-title');
+    const body = document.getElementById('popup-aktivitas-body');
+    if (!popup || !title || !body) return;
+
+    let kontenAsli = '';
+    if (jenis === 'bawa') {
+        title.innerText = 'Bawa Customer';
+        const totalBox = document.getElementById('total-bawa-box');
+        const listBawa = document.getElementById('list-bawa');
+        kontenAsli = (totalBox ? totalBox.outerHTML : '') + (listBawa ? listBawa.outerHTML : '');
+    } else if (jenis === 'ibadah') {
+        title.innerText = 'Aktivitas Ibadah';
+        const el = document.getElementById('list-ibadah');
+        kontenAsli = el ? el.outerHTML : '';
+    } else if (jenis === 'keluar') {
+        title.innerText = 'Keluar Antrian';
+        const el = document.getElementById('list-keluar');
+        kontenAsli = el ? el.outerHTML : '';
+    } else if (jenis === 'autokick') {
+        title.innerText = 'Autokick (Pelanggaran)';
+        const el = document.getElementById('list-autokick');
+        kontenAsli = el ? el.outerHTML : '';
+    } else if (jenis === 'rekap') {
+        title.innerText = 'Rekap Bawa Customer per Promotor';
+        const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
+        kontenAsli = wrappers[0] ? wrappers[0].outerHTML : '';
+    } else if (jenis === 'bulanan') {
+        title.innerText = 'Total Customer Walk-In per Bulan';
+        const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
+        kontenAsli = wrappers[1] ? wrappers[1].outerHTML : '';
+    }
+
+    body.innerHTML = kontenAsli;
+    popup.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function tutupPopupAktivitas() {
+    const popup = document.getElementById('popup-aktivitas');
+    if (!popup) return;
+    popup.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('click', (e) => {
+    const popup = document.getElementById('popup-aktivitas');
+    if (popup && e.target === popup) {
+        tutupPopupAktivitas();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') tutupPopupAktivitas();
+});
 
 window.simpanAkunHP = simpanAkunHP;
 window.aksiHadirKerja = aksiHadirKerja;
@@ -4732,6 +5092,8 @@ window.tutupModal = tutupModal;
 window.toggleAktivitasSection = toggleAktivitasSection;
 window.prosesLoginPromotor = prosesLoginPromotor;
 window.logoutPromotor = logoutPromotor;
+  window.bukaPopupAktivitas = bukaPopupAktivitas;
+window.tutupPopupAktivitas = tutupPopupAktivitas;
 </script>
 </body>
 </html>

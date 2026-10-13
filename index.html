@@ -2149,7 +2149,38 @@ html body:not(.dark-mode) .rekap-tabel tr.total-row td {
     color: #0f172a !important;
     text-shadow: none !important;
 }
+/* ===== REKAP WRAPPER (Default = Dark Mode) ===== */
+.rekap-wrapper {
+    background: var(--cyber-card-soft);
+    border: 2px solid var(--cyber-cyan);
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+}
 
+.rekap-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: #38bdf8;
+    text-align: center;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+}
+
+/* ===== REKAP WRAPPER — LIGHT MODE ===== */
+html body:not(.dark-mode) .rekap-wrapper {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05) !important;
+}
+
+html body:not(.dark-mode) .rekap-label {
+    color: #64748b !important;
+    text-shadow: none !important;
+}
 /* ===== MODAL ===== */
 html body:not(.dark-mode) .modal-overlay {
     background: rgba(15, 23, 42, 0.6) !important;
@@ -2564,11 +2595,11 @@ html body:not(.dark-mode) .aktivitas-content > div[style*="background: var(--car
             <div class="aktivitas-title t-rekap">
                 <span class="judul-kategori"><span class="aktivitas-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>List Bawa Customer per Promotor</span>
             </div>
-            <div style="background: var(--cyber-card-soft); border: 2px solid var(--cyber-cyan); border-radius: 10px; padding: 8px; margin-bottom: 10px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);">
-                <div style="font-size: 10px; font-weight: 800; color: #38bdf8; text-align: center; margin-bottom: 6px; text-transform: uppercase; text-shadow: 0 0 6px rgba(56, 189, 248, 0.6);">
-                    Periode: <span id="rekap-periode-label">-</span>
-                </div>
-                <table class="rekap-tabel">
+           <div class="rekap-wrapper">
+    <div class="rekap-label">
+        Periode: <span id="rekap-periode-label">-</span>
+    </div>
+    <table class="rekap-tabel">
                     <thead>
                         <tr>
                             <th class="kolom-nama">Nama Promotor</th>
@@ -2592,11 +2623,11 @@ html body:not(.dark-mode) .aktivitas-content > div[style*="background: var(--car
                     Total Customer Walk-In per Bulan
                 </span>
             </div>
-            <div style="background: var(--cyber-card-soft); border: 2px solid var(--cyber-cyan); border-radius: 10px; padding: 8px; margin-bottom: 10px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);">
-                <div style="font-size: 10px; font-weight: 800; color: #38bdf8; text-align: center; margin-bottom: 6px; text-transform: uppercase; text-shadow: 0 0 6px rgba(56, 189, 248, 0.6);">
-                    Tahun: <span id="total-bulanan-tahun-label">-</span>
-                </div>
-                <table class="rekap-tabel">
+           <div class="rekap-wrapper">
+    <div class="rekap-label">
+        Tahun: <span id="total-bulanan-tahun-label">-</span>
+    </div>
+    <table class="rekap-tabel">
                     <thead>
                         <tr>
                             <th class="kolom-nama">Bulan</th>

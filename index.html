@@ -1571,8 +1571,27 @@ html body:not(.dark-mode) .rekap-tabel td {
 html body:not(.dark-mode) .rekap-tabel tr.total-row td {
     background: #f8fafc !important;
     border-top: 2px solid #e2e8f0 !important;
+    border-bottom: none !important;
+    font-weight: 800 !important;
     color: #0f172a !important;
     text-shadow: none !important;
+}
+
+/* Warnai kolom di baris total */
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-deal {
+    color: #059669 !important;
+}
+
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-lihat {
+    color: #d97706 !important;
+}
+
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-nosale {
+    color: #dc2626 !important;
+}
+
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-hari {
+    color: #64748b !important;
 }
 
 html body:not(.dark-mode) .rekap-tabel td.angka-deal { color: #059669 !important; text-shadow: none !important; }

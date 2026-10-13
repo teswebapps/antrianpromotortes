@@ -143,7 +143,7 @@ body {
 /* ===== TOP CONTROLS ===== */
 .top-controls {
     display: flex;
-    justify-content: space-between;
+    justify-content: stretch;   ← UBAH
     align-items: center;
     gap: 10px;
     margin-bottom: 16px;
@@ -3502,6 +3502,19 @@ html body:not(.dark-mode) .popup-body #total-bawa-box {
     flex: 1 1 0 !important;
     width: auto !important;
     min-width: 0 !important;
+}
+  /* ===== FORCE TOP-CONTROLS 50:50 ===== */
+.top-controls {
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+}
+
+.top-controls > button {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
 }
 </style>
 </head>

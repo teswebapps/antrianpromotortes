@@ -3201,6 +3201,61 @@ body.dark-mode .aktivitas-section,
 body.dark-mode .aktivitas-content {
     color: #ffffff !important;
 }
+  /* ============================================================ */
+/* ===== JARAK ANTAR SUB-MENU ================================= */
+/* ============================================================ */
+
+/* 1. Sub-menu header (Bawa Customer, Ibadah, dll) — kasih jarak atas */
+body.dark-mode .aktivitas-title {
+    margin-top: 18px !important;
+    margin-bottom: 8px !important;
+    padding: 10px 14px !important;
+}
+
+/* Sub-menu pertama (setelah header "Aktivitas Hari Ini") — jarak lebih kecil */
+body.dark-mode .aktivitas-content > .aktivitas-title:first-child {
+    margin-top: 0 !important;
+}
+
+/* 2. List item — kasih jarak dari judul & dari item lain */
+body.dark-mode .aktivitas-list {
+    margin-top: 4px !important;
+    margin-bottom: 16px !important;  /* jarak ke sub-menu berikutnya */
+}
+
+body.dark-mode .aktivitas-list li {
+    margin-bottom: 6px !important;
+}
+
+/* 3. Jarak antar sub-menu di list antrian juga */
+body.dark-mode .list-section-wrapper > div {
+    margin-top: 20px !important;
+    margin-bottom: 10px !important;
+}
+
+/* 4. TOTAL box — jarak dari item di atas & sub-menu berikutnya */
+body.dark-mode #total-bawa-box {
+    margin-top: 8px !important;
+    margin-bottom: 16px !important;
+}
+
+/* 5. Rekap wrapper (tabel) — jarak dari sub-menu header */
+body.dark-mode .rekap-wrapper {
+    margin-top: 8px !important;
+    margin-bottom: 16px !important;
+}
+
+/* 6. Separator visual antar sub-menu (opsional) */
+body.dark-mode .aktivitas-title + .aktivitas-list + .aktivitas-title,
+body.dark-mode .aktivitas-title + .aktivitas-list + #total-bawa-box + .aktivitas-title,
+body.dark-mode .aktivitas-list + .aktivitas-title {
+    /* Tidak perlu — margin-top sudah cukup */
+}
+
+/* 7. Empty state — kasih jarak bawah */
+body.dark-mode .aktivitas-empty {
+    margin-bottom: 16px !important;
+}
 </style>
 </head>
 <body>

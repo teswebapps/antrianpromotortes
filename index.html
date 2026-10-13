@@ -3892,8 +3892,14 @@ function applyBranding(setting) {
             };
         }
     }
+    
+    // Tampilkan headline & subheadline setelah branding diterapkan
+    const headline = document.getElementById('fut-headline');
+    if (headline) headline.style.opacity = '1';
+    
+    const subheadline = document.getElementById('fut-subheadline');
+    if (subheadline) subheadline.style.opacity = '1';
 }
-
 (function() {
     const container = document.getElementById('fut-particles');
     if (!container) return;

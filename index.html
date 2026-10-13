@@ -2809,6 +2809,43 @@ html body:not(.dark-mode) {
         padding: 12px !important;
     }
 }
+  /* ============================================================ */
+/* ===== FIX BADGE — TEXT PUTIH SEMUA MODE ==================== */
+/* ============================================================ */
+
+/* Badge — text putih di semua mode */
+.badge-status-item,
+.badge-giliran-anda,
+.badge-standby,
+.badge-melayani,
+.badge-cs,
+.badge-ibadah {
+    color: #ffffff !important;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.5) !important;
+    font-weight: 800 !important;
+}
+
+/* Dark mode — paksa putih juga */
+body.dark-mode .badge-status-item,
+body.dark-mode .badge-giliran-anda,
+body.dark-mode .badge-standby,
+body.dark-mode .badge-melayani,
+body.dark-mode .badge-cs,
+body.dark-mode .badge-ibadah {
+    color: #ffffff !important;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.6), 0 0 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Light mode — paksa putih juga */
+html body:not(.dark-mode) .badge-status-item,
+html body:not(.dark-mode) .badge-giliran-anda,
+html body:not(.dark-mode) .badge-standby,
+html body:not(.dark-mode) .badge-melayani,
+html body:not(.dark-mode) .badge-cs,
+html body:not(.dark-mode) .badge-ibadah {
+    color: #ffffff !important;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.4) !important;
+}
 </style>
 </head>
 <body>

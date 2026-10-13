@@ -2888,12 +2888,19 @@ function toggleDarkMode() {
 }
 
 function initDarkMode() {
-    if (localStorage.getItem('ufo_dark_mode') === 'true') {
+    // DEFAULT = DARK MODE (biru cyber)
+    // Hanya jadi light mode kalau user klik eksplisit "Terang"
+    const saved = localStorage.getItem('ufo_dark_mode');
+    if (saved === 'false') {
+        // User pilih Terang → biarkan light (tanpa class dark-mode)
+        document.body.classList.remove('dark-mode');
+        document.getElementById('btn-toggle-dark').innerHTML = '🌙 Gelap';
+    } else {
+        // Default / user pilih Gelap → aktifkan dark mode
         document.body.classList.add('dark-mode');
         document.getElementById('btn-toggle-dark').innerHTML = '☀️ Terang';
     }
 }
-
 function tampilkanModal(j, d) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;

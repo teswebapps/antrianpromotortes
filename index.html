@@ -2878,6 +2878,41 @@ body.dark-mode .aktivitas-content > div[style*="background: var(--card-bg)"] > d
 body.dark-mode .aktivitas-content > div[style*="background: var(--cyber-card-soft)"] > div {
     color: #ffffff !important;
 }
+  /* ============================================================ */
+/* ===== TOTAL ROW — TEXT PUTIH =============================== */
+/* ============================================================ */
+
+/* Baris TOTAL di tabel rekap — semua text putih */
+body.dark-mode .rekap-tabel tr.total-row td,
+body.dark-mode .rekap-tabel tr.total-row td.kolom-nama,
+body.dark-mode .rekap-tabel tr.total-row td.angka-deal,
+body.dark-mode .rekap-tabel tr.total-row td.angka-lihat,
+body.dark-mode .rekap-tabel tr.total-row td.angka-nosale,
+body.dark-mode .rekap-tabel tr.total-row td.angka-hari {
+    color: #ffffff !important;
+    text-shadow: 0 0 6px rgba(56, 189, 248, 0.6) !important;
+}
+
+/* Light mode — TOTAL tetap sesuai style lama (hitam/gelap) */
+html body:not(.dark-mode) .rekap-tabel tr.total-row td,
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.kolom-nama {
+    color: #0f172a !important;
+    text-shadow: none !important;
+}
+
+/* Light mode — angka di total row tetap berwarna */
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-deal {
+    color: #059669 !important;
+}
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-lihat {
+    color: #d97706 !important;
+}
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-nosale {
+    color: #dc2626 !important;
+}
+html body:not(.dark-mode) .rekap-tabel tr.total-row td.angka-hari {
+    color: #64748b !important;
+}
 </style>
 </head>
 <body>

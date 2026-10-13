@@ -2521,6 +2521,39 @@ body.dark-mode .aktivitas-title .count {
     top: 50%;
     transform: translateY(-50%);
 }
+  /* ============================================================ */
+/* ===== OPTIMASI PERFORMA ==================================== */
+/* ============================================================ */
+
+/* Matikan semua animasi */
+.fut-grid,
+.fut-orb,
+.fut-orb-1,
+.fut-orb-2,
+.fut-orb-3,
+.fut-particle,
+.team-3d-img,
+body::before,
+body::after {
+    animation: none !important;
+}
+
+/* Kurangi intensitas glow di container (blur 40px → 15px) */
+.app-container,
+.admin-container {
+    box-shadow: 
+        0 10px 20px -5px rgba(0, 0, 0, 0.4),
+        0 0 15px -5px rgba(56, 189, 248, 0.3) !important;
+}
+
+/* Kurangi glow di kartu (35px → 15px) */
+.timer-card-admin,
+.list-antrian li,
+.user-badge,
+.aktivitas-title,
+.aktivitas-list li {
+    box-shadow: 0 0 10px -3px rgba(56, 189, 248, 0.4) !important;
+}
 </style>
 </head>
 <body>

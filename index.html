@@ -2472,6 +2472,55 @@ body.dark-mode .aktivitas-title .aktivitas-icon svg {
 body.dark-mode .aktivitas-title .count {
     color: #ffffff !important;
 }
+  /* ============================================================ */
+/* ===== CENTER TEXT — AKTIVITAS SECTION ======================= */
+/* ============================================================ */
+
+/* Header "Aktivitas Hari Ini" */
+.aktivitas-header-toggle {
+    justify-content: center !important;
+    text-align: center !important;
+    position: relative;
+}
+
+.aktivitas-header-toggle .judul {
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100%;
+}
+
+/* Panah (arrow) — pindah ke absolute kanan biar tetap keliatan */
+.aktivitas-header-toggle .arrow {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.aktivitas-header-toggle.open .arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Sub-judul (Bawa Customer, Ibadah, dll) */
+.aktivitas-title {
+    justify-content: center !important;
+    text-align: center !important;
+    position: relative;
+}
+
+.aktivitas-title .judul-kategori {
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100%;
+}
+
+/* Count (angka di kanan) — pindah ke absolute kanan */
+.aktivitas-title .count {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
 </style>
 </head>
 <body>

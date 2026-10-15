@@ -3825,6 +3825,101 @@ html body:not(.dark-mode) #form-admin .fut-field label {
 html body:not(.dark-mode) .fut-field label {
     color: #0284c7 !important;
 }
+  /* ============================================================ */
+/* ===== BACKGROUND CANTIK TANPA ANIMASI (RINGAN) ============ */
+/* ===== Grid + Orb + Partikel TETAP MUNCUL, tapi diam ======== */
+/* ============================================================ */
+
+/* 1. BACKGROUND BODY — grid + orb muncul kembali */
+html body {
+    background-color: #071321 !important;
+    background-image: 
+        radial-gradient(circle 400px at 10% 10%, rgba(14, 165, 233, 0.35), transparent 70%),
+        radial-gradient(circle 300px at 90% 90%, rgba(168, 85, 247, 0.3), transparent 70%),
+        radial-gradient(circle 350px at 45% 45%, rgba(6, 182, 212, 0.2), transparent 70%),
+        linear-gradient(rgba(14,165,233,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.15) 1px, transparent 1px) !important;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+    background-attachment: fixed !important;
+}
+
+/* Mode terang — background grid + orb juga muncul */
+html body:not(.dark-mode) {
+    background-color: #f8fafc !important;
+    background-image: 
+        radial-gradient(circle 400px at 10% 10%, rgba(14, 165, 233, 0.15), transparent 70%),
+        radial-gradient(circle 300px at 90% 90%, rgba(168, 85, 247, 0.12), transparent 70%),
+        linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important;
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+    background-attachment: fixed !important;
+}
+
+/* 2. MATIKAN ANIMASI — grid, orb, particle, tim 3D, kartu */
+.fut-grid,
+.fut-orb,
+.fut-orb-1,
+.fut-orb-2,
+.fut-orb-3,
+.fut-particle,
+.team-3d-img,
+.fut-pulse-dot,
+.fut-dot,
+.status-open .dot {
+    animation: none !important;
+}
+
+/* 3. PASTIKAN ORB & GRID & PARTICLES TETAP TAMPIL */
+#login-screen .fut-grid,
+#login-screen .fut-orb,
+#login-screen .fut-orb-1,
+#login-screen .fut-orb-2,
+#login-screen .fut-orb-3,
+#login-screen .fut-particles,
+#login-screen .fut-particle {
+    display: block !important;
+}
+
+/* 4. TOMBOL TOGGLE TEMA — tetap ada rotasi (feedback user) */
+.login-theme-toggle {
+    transition: all 0.2s ease !important;
+}
+.login-theme-toggle:hover {
+    transform: rotate(15deg) !important;
+}
+
+/* 5. HAPUS TRANSISI BERAT — kecuali yang penting */
+.fut-card,
+.modal-box,
+.popup-box,
+.login-toast-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* 6. GLOW LEBIH RINGAN — tetap terang tapi tidak dobel */
+.app-container,
+.admin-container {
+    box-shadow: 
+        0 0 20px rgba(56, 189, 248, 0.4),
+        inset 0 0 10px rgba(56, 189, 248, 0.15),
+        0 15px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.timer-card-admin,
+.list-antrian li,
+.user-badge,
+.aktivitas-title,
+.aktivitas-list li,
+.gps-box,
+.aktivitas-header-toggle {
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+}
+
+/* 7. FIX BODY MUNCULKAN GRID (karena blok OPTIMASI lama) */
+html body {
+    background-attachment: fixed !important;
+    background-repeat: repeat !important;
+}
 </style>
 </head>
 <body>

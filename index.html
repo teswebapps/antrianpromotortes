@@ -1587,6 +1587,85 @@ html body:not(.dark-mode) .login-theme-toggle {
     .gradient-header h2 { font-size: 18px; }
     .promotor-nama-aktif { font-size: 17px; }
 }
+  /* ============================================================ */
+/* ===== SVG ICON STYLING ===================================== */
+/* ============================================================ */
+.login-theme-toggle svg {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+}
+.login-theme-toggle:hover svg {
+    transform: rotate(15deg);
+}
+#btn-toggle-dark {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+#btn-toggle-dark svg {
+    flex-shrink: 0;
+}
+
+/* ============================================================ */
+/* ===== LIGHT MODE — TOMBOL GELAP & LOGOUT (SOFT/KALEM) ====== */
+/* ============================================================ */
+
+/* Tombol GELAP di light mode → soft abu-abu netral */
+html body:not(.dark-mode) .dark-mode-btn,
+html body:not(.dark-mode) #btn-toggle-dark {
+    background: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+    text-shadow: none !important;
+}
+html body:not(.dark-mode) .dark-mode-btn:hover,
+html body:not(.dark-mode) #btn-toggle-dark:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1) !important;
+}
+html body:not(.dark-mode) .dark-mode-btn svg,
+html body:not(.dark-mode) #btn-toggle-dark svg {
+    stroke: currentColor !important;
+}
+
+/* Tombol LOGOUT di light mode → soft merah kalem */
+html body:not(.dark-mode) .logout-btn,
+html body:not(.dark-mode) #btn-logout-top {
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    border: 1px solid #fca5a5 !important;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.06) !important;
+    text-shadow: none !important;
+}
+html body:not(.dark-mode) .logout-btn:hover,
+html body:not(.dark-mode) #btn-logout-top:hover {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    border-color: #f87171 !important;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15) !important;
+}
+
+/* Tombol toggle tema di login (light mode) → soft */
+html body:not(.dark-mode) .login-theme-toggle {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+}
+html body:not(.dark-mode) .login-theme-toggle:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12) !important;
+    border-color: #94a3b8 !important;
+    transform: rotate(15deg) !important;
+}
+html body:not(.dark-mode) .login-theme-toggle svg {
+    stroke: currentColor !important;
+}
 </style>
 </head>
 <body>
@@ -1620,9 +1699,11 @@ html body:not(.dark-mode) .login-theme-toggle {
 
         <div class="fut-right">
             <div class="fut-card">
-                <button type="button" class="login-theme-toggle" id="btn-login-theme" onclick="toggleDarkMode()" title="Ganti tema">
-                    <span id="login-theme-icon">🌙</span>
-                </button>
+               <button type="button" class="login-theme-toggle" id="btn-login-theme" onclick="toggleDarkMode()" title="Ganti tema">
+    <svg id="login-theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+</button>
 
                 <div class="fut-logo">
                     <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='🛸';">
@@ -1678,7 +1759,12 @@ html body:not(.dark-mode) .login-theme-toggle {
 <!-- ========== APLIKASI UTAMA ========== -->
 <div class="app-container" id="app-container" style="display: none;">
     <div class="top-controls">
-        <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">🌙 Gelap</button>
+       <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">
+    <svg id="btn-toggle-dark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <span id="btn-toggle-dark-text">Gelap</span>
+</button>
         <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutPromotor()" style="display: none;">Logout</button>
     </div>
 
@@ -3027,37 +3113,51 @@ function renderUI() {
     else { btnIbadah.className = "btn-indigo"; btnIbadah.innerText = "SEDANG IBADAH"; }
 }
 
+/* ===== SVG ICONS UNTUK TEMA ===== */
+const SVG_ICON_MOON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+const SVG_ICON_SUN = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+function updateThemeIcons(isDark) {
+    // Tombol toggle di login card
+    const loginIcon = document.getElementById('login-theme-icon');
+    if (loginIcon) {
+        loginIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
+    }
+    
+    // Tombol toggle di top-controls dashboard
+    const btnIcon = document.getElementById('btn-toggle-dark-icon');
+    const btnText = document.getElementById('btn-toggle-dark-text');
+    if (btnIcon) {
+        btnIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
+    }
+    if (btnText) {
+        btnText.innerText = isDark ? 'Terang' : 'Gelap';
+    }
+}
+
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
     localStorage.setItem('ufo_theme', isDark ? 'dark' : 'light');
-    const btn = document.getElementById('btn-toggle-dark');
-    if (btn) btn.innerHTML = isDark ? '☀️ Terang' : '🌙 Gelap';
-    const icon = document.getElementById('login-theme-icon');
-    if (icon) icon.innerText = isDark ? '☀️' : '🌙';
+    updateThemeIcons(isDark);
 }
+
 function initDarkMode() {
     const saved = localStorage.getItem('ufo_theme');
     const isDark = (saved === 'dark');
     if (isDark) document.body.classList.add('dark-mode');
     else document.body.classList.remove('dark-mode');
-    const btn = document.getElementById('btn-toggle-dark');
-    if (btn) btn.innerHTML = isDark ? '☀️ Terang' : '🌙 Gelap';
-    const icon = document.getElementById('login-theme-icon');
-    if (icon) icon.innerText = isDark ? '☀️' : '🌙';
+    updateThemeIcons(isDark);
 }
+
 window.addEventListener('storage', (e) => {
     if (e.key === 'ufo_theme') {
         const isDark = e.newValue === 'dark';
         if (isDark) document.body.classList.add('dark-mode');
         else document.body.classList.remove('dark-mode');
-        const btn = document.getElementById('btn-toggle-dark');
-        if (btn) btn.innerHTML = isDark ? '☀️ Terang' : '🌙 Gelap';
-        const icon = document.getElementById('login-theme-icon');
-        if (icon) icon.innerText = isDark ? '☀️' : '🌙';
+        updateThemeIcons(isDark);
     }
 });
-
 function tampilkanModal(j, d) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;

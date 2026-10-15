@@ -3516,6 +3516,171 @@ html body:not(.dark-mode) .popup-body #total-bawa-box {
     min-width: 0 !important;
     max-width: none !important;
 }
+  /* ===== LOGIN TABS (PROMOTOR / ADMIN) ===== */
+.login-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+    background: rgba(2, 6, 23, 0.6);
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+.login-tab {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: inherit;
+}
+.login-tab:hover {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+}
+.login-tab.active {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%);
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* ===== INPUT ADMIN USERNAME ===== */
+.fut-input-admin {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    transition: all 0.25s ease;
+    letter-spacing: 1px;
+    text-align: left;
+}
+.fut-input-admin:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+}
+.fut-input-admin::placeholder {
+    color: rgba(148, 163, 184, 0.5);
+    font-weight: 500;
+}
+
+/* ===== TOMBOL TOGGLE TEMA DI LOGIN CARD ===== */
+.login-theme-toggle {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    background: rgba(2, 6, 23, 0.6);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    z-index: 10;
+    padding: 0;
+}
+.login-theme-toggle:hover {
+    background: rgba(56, 189, 248, 0.2);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    transform: rotate(15deg);
+}
+.login-theme-toggle:active { transform: scale(0.92) rotate(15deg); }
+
+/* Mode terang */
+html body:not(.dark-mode) .login-theme-toggle {
+    background: #ffffff;
+    border-color: rgba(37, 99, 235, 0.3);
+}
+html body:not(.dark-mode) .login-theme-toggle:hover {
+    background: #eff6ff;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+/* ===== TABS MODE TERANG ===== */
+html body:not(.dark-mode) .login-tabs {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+html body:not(.dark-mode) .login-tab {
+    color: #94a3b8;
+}
+html body:not(.dark-mode) .login-tab.active {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+html body:not(.dark-mode) .login-tab:hover:not(.active) {
+    color: #2563eb;
+    background: #e0e7ff;
+}
+
+/* ===== FORM ADMIN DI LOGIN (FIX SUPaya SELARAS) ===== */
+#form-admin .fut-field { margin-bottom: 18px; }
+#form-admin .fut-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+/* Mode terang — label admin */
+html body:not(.dark-mode) #form-admin .fut-field label {
+    color: #0284c7;
+}
+html body:not(.dark-mode) .fut-field label {
+    color: #0284c7;
+}
+
+/* ===== HEADER ADMIN DI HALAMAN ANTRIAN ===== */
+.admin-mode-header {
+    display: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #0c1e33, #071321);
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.6), inset 0 0 12px rgba(56, 189, 248, 0.15);
+    text-align: center;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+body.admin-mode .admin-mode-header { display: block; }
+
+/* Sembunyikan tombol promotor saat admin login */
+body.admin-mode #section-checkin-awal,
+body.admin-mode #section-normal,
+body.admin-mode #panel-login,
+body.admin-mode .user-badge { display: none !important; }
+
+/* Menu admin grid — aktif hanya di mode admin */
+.admin-panel-wrapper {
+    display: none;
+    margin-top: 20px;
+}
+body.admin-mode .admin-panel-wrapper { display: block; }
 </style>
 </head>
 <body>
@@ -3690,10 +3855,69 @@ html body:not(.dark-mode) .popup-body #total-bawa-box {
             <button type="button" id="btn-selesai-closing" class="btn-closing" onclick="aksiSelesaiClosing()" style="display: none; margin-top: 10px;">SELESAI MELAYANI</button>
             <button type="button" id="btn-utama-cs" class="btn-purple" onclick="aksiToggleCS()" style="display: none; margin-top: 10px;">DIPANGGIL CS/GUDANG</button>
             <button type="button" id="btn-utama-ibadah" class="btn-indigo" onclick="aksiToggleIbadah()" style="display: none; margin-top: 10px;">SEDANG IBADAH</button>
-            <button type="button" id="btn-keluar-istirahat" class="btn-maroon" onclick="bukaModalKeluarIstirahat()" style="display: none; margin-top: 10px;">KELUAR ANTRIAN</button>
+                        <button type="button" id="btn-keluar-istirahat" class="btn-maroon" onclick="bukaModalKeluarIstirahat()" style="display: none; margin-top: 10px;">KELUAR ANTRIAN</button>
+        </div>
+
+        <!-- ===== PANEL ADMIN (muncul saat login admin) ===== -->
+        <div class="admin-panel-wrapper" id="admin-panel-wrapper">
+            
+            <div class="admin-menu-header">
+                <span class="judul">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
+                        <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+                        <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+                        <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
+                        <line x1="17" y1="16" x2="23" y2="16"/>
+                    </svg>
+                    Menu Admin
+                </span>
+            </div>
+
+            <div class="admin-menu-grid">
+                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('operasional')">
+                    <span class="admin-menu-card-icon t-operasional">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </span>
+                    <span class="admin-menu-card-label">Operasional<br>Sistem</span>
+                </button>
+
+                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('urutan')">
+                    <span class="admin-menu-card-icon t-urutan">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                    </span>
+                    <span class="admin-menu-card-label">Manajemen<br>Urutan</span>
+                </button>
+
+                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('darurat')">
+                    <span class="admin-menu-card-icon t-darurat">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </span>
+                    <span class="admin-menu-card-label">Tindakan<br>Darurat</span>
+                </button>
+
+                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('gps')">
+                    <span class="admin-menu-card-icon t-gps">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </span>
+                    <span class="admin-menu-card-label">Konfigurasi<br>GPS Toko</span>
+                </button>
+            </div>
         </div>
     </div>
-
     <div style="margin-top: 20px; text-align: left;">
         <div class="live-urutan-title">LIVE URUTAN KATEGORI HA</div>
         <ul id="list-HA" class="list-antrian"><li><span>Memuat...</span></li></ul>
@@ -3948,6 +4172,14 @@ window.addEventListener('firebase-ready', () => {
     initDarkMode();
     resetCheckinHarianJikaPerlu();
     restoreAktivitasState();
+    
+    // Cek session admin tersimpan — prioritas tertinggi
+    if (cekAdminSessionTersimpan()) {
+        inisialisasiRealtimeFirebase();
+        cekPINVerification();
+        return;
+    }
+    
     const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
     const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
     const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
@@ -4408,7 +4640,7 @@ function logoutPromotor() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const btnLogin = document.getElementById('btn-login-promotor');
-    if (btnLogin) btnLogin.onclick = prosesLoginPromotor;
+      if (btnLogin) btnLogin.onclick = window.prosesLoginPromotor;
     const inputPin = document.getElementById('login-pin-input');
     if (inputPin) {
         inputPin.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
@@ -5151,6 +5383,232 @@ window.prosesLoginPromotor = prosesLoginPromotor;
 window.logoutPromotor = logoutPromotor;
   window.bukaPopupAktivitas = bukaPopupAktivitas;
 window.tutupPopupAktivitas = tutupPopupAktivitas;
+  /* ============================================================ */
+/* ===== LOGIN TAB PROMOTOR / ADMIN =========================== */
+/* ============================================================ */
+let loginModeGlobal = 'promotor';
+let adminSessionGlobal = null;
+
+function switchLoginTab(mode) {
+    loginModeGlobal = mode;
+    const tabPromotor = document.getElementById('tab-promotor');
+    const tabAdmin = document.getElementById('tab-admin');
+    const formPromotor = document.getElementById('form-promotor');
+    const formAdmin = document.getElementById('form-admin');
+    const btnText = document.getElementById('btn-login-text');
+    
+    if (mode === 'promotor') {
+        tabPromotor.classList.add('active');
+        tabAdmin.classList.remove('active');
+        formPromotor.style.display = 'block';
+        formAdmin.style.display = 'none';
+        if (btnText) btnText.innerText = 'MASUK';
+    } else {
+        tabAdmin.classList.add('active');
+        tabPromotor.classList.remove('active');
+        formPromotor.style.display = 'none';
+        formAdmin.style.display = 'block';
+        if (btnText) btnText.innerText = 'MASUK ADMIN';
+    }
+    const errEl = document.getElementById('login-error');
+    if (errEl) errEl.innerText = '';
+}
+window.switchLoginTab = switchLoginTab;
+
+/* ============================================================ */
+/* ===== TAMPILKAN APP — MODE ADMIN =========================== */
+/* ============================================================ */
+function tampilkanAplikasiUtamaAdmin(namaAdmin) {
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'block';
+    
+    document.getElementById('panel-login').style.display = 'none';
+    document.getElementById('panel-menu-utama').style.display = 'block';
+    
+    document.getElementById('label-user-aktif').innerHTML = 
+        `<span style="color:#38bdf8;">● ADMIN</span> — ${namaAdmin}`;
+    
+    const btnLogoutTop = document.getElementById('btn-logout-top');
+    if (btnLogoutTop) btnLogoutTop.style.display = 'block';
+    
+    document.body.classList.add('admin-mode');
+    
+    renderUI();
+    renderAktivitas();
+    renderRekapBawaCustomer();
+}
+
+/* ============================================================ */
+/* ===== CEK SESSION ADMIN TERSIMPAN ========================= */
+/* ============================================================ */
+function cekAdminSessionTersimpan() {
+    const saved = localStorage.getItem('ufo_antrian_admin_session');
+    if (!saved) return false;
+    try {
+        const data = JSON.parse(saved);
+        if (data && data.role === 'ADMIN') {
+            adminSessionGlobal = data;
+            tampilkanAplikasiUtamaAdmin(data.nama || data.username);
+            return true;
+        }
+    } catch (e) {}
+    return false;
+}
+window.cekAdminSessionTersimpan = cekAdminSessionTersimpan;
+
+/* ============================================================ */
+/* ===== LOGIN ADMIN (dipanggil dari prosesLoginPromotor) ===== */
+/* ============================================================ */
+async function loginAdminInternal() {
+    const errEl = document.getElementById('login-error');
+    const btn = document.getElementById('btn-login-promotor');
+    const pin = document.getElementById('login-pin-input').value.trim();
+    const username = document.getElementById('login-admin-username').value.trim().toUpperCase();
+    
+    errEl.style.color = '#f87171';
+    errEl.innerText = '';
+    
+    if (!username) { errEl.innerText = 'Masukkan username admin!'; return; }
+    if (!/^\d{6}$/.test(pin)) { errEl.innerText = 'PIN harus 6 digit angka'; return; }
+    
+    const asli = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
+    
+    try {
+        const snap = await window.dbGet(window.dbRef(window.db, 'users/admin'));
+        if (!snap.exists()) {
+            errEl.innerText = 'Belum ada admin terdaftar.';
+            btn.disabled = false; btn.innerHTML = asli; return;
+        }
+        const admins = snap.val();
+        let foundKey = null, foundData = null;
+        Object.keys(admins).forEach(k => {
+            const a = admins[k];
+            if (a && String(a.username || '').toUpperCase() === username) {
+                foundKey = k;
+                foundData = a;
+            }
+        });
+        if (!foundKey) {
+            errEl.innerText = 'Username admin tidak ditemukan.';
+            btn.disabled = false; btn.innerHTML = asli; return;
+        }
+        if (String(foundData.pin) !== pin) {
+            errEl.innerText = 'PIN admin salah!';
+            document.getElementById('login-pin-input').value = '';
+            document.getElementById('login-pin-input').focus();
+            btn.disabled = false; btn.innerHTML = asli; return;
+        }
+        if (foundData.aktif === false) {
+            errEl.innerText = 'Akun admin ini tidak aktif.';
+            btn.disabled = false; btn.innerHTML = asli; return;
+        }
+        
+        const adminSession = {
+            key: foundKey,
+            username: foundData.username,
+            nama: foundData.nama || foundData.username,
+            role: 'ADMIN'
+        };
+        localStorage.setItem('ufo_antrian_admin_session', JSON.stringify(adminSession));
+        adminSessionGlobal = adminSession;
+        
+        document.getElementById('login-toast-name').innerText = foundData.nama || foundData.username;
+        const toast = document.getElementById('login-toast');
+        toast.classList.add('active');
+        setTimeout(() => {
+            tampilkanAplikasiUtamaAdmin(foundData.nama || foundData.username);
+            document.getElementById('login-pin-input').value = '';
+            document.getElementById('login-admin-username').value = '';
+            errEl.innerText = '';
+            btn.disabled = false;
+            btn.innerHTML = asli;
+            setTimeout(() => { toast.classList.remove('active'); }, 800);
+        }, 1400);
+    } catch (e) {
+        console.error('Error login admin:', e);
+        errEl.innerText = 'Gagal koneksi. Coba lagi.';
+        btn.disabled = false;
+        btn.innerHTML = asli;
+    }
+}
+
+/* ============================================================ */
+/* ===== WRAPPER prosesLoginPromotor (deteksi mode) ========== */
+/* ============================================================ */
+const _origProsesLogin = prosesLoginPromotor;
+window.prosesLoginPromotor = async function() {
+    if (loginModeGlobal === 'admin') {
+        return loginAdminInternal();
+    }
+    return _origProsesLogin();
+};
+
+/* ============================================================ */
+/* ===== WRAPPER logoutPromotor (bersihkan session admin) ===== */
+/* ============================================================ */
+const _origLogout = logoutPromotor;
+window.logoutPromotor = function() {
+    const isAdmin = document.body.classList.contains('admin-mode');
+    const pesan = isAdmin
+        ? 'Yakin logout dari akun ADMIN?'
+        : 'Yakin ingin logout dari akun ini?\n\nAnda harus memasukkan PIN lagi untuk masuk.';
+    
+    tampilkanModalKonfirmasi("Logout", pesan, () => {
+        localStorage.removeItem('ufo_antrian_admin_session');
+        adminSessionGlobal = null;
+        document.body.classList.remove('admin-mode');
+        
+        localStorage.removeItem('ufo_nama_sales_aktif');
+        localStorage.removeItem('ufo_pin_verified');
+        localStorage.removeItem('ufo_pin_verified_at');
+        localStorage.removeItem('ufo_checkin_hari_ini');
+        localStorage.removeItem('ufo_checkin_tanggal');
+        namaSalesAktifGlobal = '';
+        
+        document.getElementById('login-pin-input').value = '';
+        document.getElementById('login-pilih-sales').value = '';
+        const admU = document.getElementById('login-admin-username');
+        if (admU) admU.value = '';
+        const labelEl = document.getElementById('custom-select-label');
+        if (labelEl) labelEl.innerText = '-- Pilih Nama Anda --';
+        const menuEl = document.getElementById('custom-select-menu');
+        if (menuEl) menuEl.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        document.getElementById('login-error').innerText = '';
+        
+        if (typeof switchLoginTab === 'function') switchLoginTab('promotor');
+        tampilkanLayarLogin();
+    });
+};
+
+/* ============================================================ */
+/* ===== POPUP MENU ADMIN ==================================== */
+/* ============================================================ */
+function bukaPopupAdminAdmin(jenis) {
+    tampilkanModal("Info", "Menu " + jenis + " akan segera tersedia.\n\nFungsi admin lengkap belum disambungkan ke file ini.");
+}
+window.bukaPopupAdminAdmin = bukaPopupAdminAdmin;
+
+/* ============================================================ */
+/* ===== UPDATE ICON TEMA DI LOGIN ========================== */
+/* ============================================================ */
+const _origToggleDarkMode2 = window.toggleDarkMode;
+window.toggleDarkMode = function() {
+    if (_origToggleDarkMode2) _origToggleDarkMode2();
+    const isDark = document.body.classList.contains('dark-mode');
+    const icon = document.getElementById('login-theme-icon');
+    if (icon) icon.innerText = isDark ? '☀️' : '🌙';
+};
+function _syncLoginThemeIcon() {
+    const isDark = document.body.classList.contains('dark-mode');
+    const icon = document.getElementById('login-theme-icon');
+    if (icon) icon.innerText = isDark ? '☀️' : '🌙';
+}
+document.addEventListener('DOMContentLoaded', _syncLoginThemeIcon);
+setTimeout(_syncLoginThemeIcon, 500);
 </script>
 </body>
 </html>

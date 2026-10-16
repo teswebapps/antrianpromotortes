@@ -983,8 +983,8 @@ async function prosesLoginAdmin() {
     btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
     
     try {
-        // Mengambil data dari node admin1 (sesuai database Anda)
-        const snap = await window.dbGet(window.dbRef(window.db, 'users/admin/admin1')); // Sesuaikan path jika letaknya berbeda, misal langsung di root 'admin1'
+        // Mengambil data langsung dari root 'admin1' sesuai gambar database Anda
+        const snap = await window.dbGet(window.dbRef(window.db, 'admin1'));
         
         let cocok = false;
         if (snap.exists()) {
@@ -993,10 +993,10 @@ async function prosesLoginAdmin() {
                 errEl.innerText = 'Akun admin dinonaktifkan.';
                 btn.disabled = false; btn.innerHTML = asli; return;
             }
-            // Verifikasi menggunakan fungsi hashPin yang sudah ada di skrip Anda
+            // Verifikasi menggunakan fungsi verifikasiPin SHA-256 yang sudah ada di skrip Anda
             cocok = await verifikasiPin(pin, dataAdmin.pinHash, dataAdmin.pinSalt);
         } else {
-            // Fallback jika node admin1 belum ada, cek ke default PIN_ADMIN_DEFAULT ("866145")
+            // Fallback jika node admin1 tidak ada, cek ke default PIN ("866145")
             cocok = (pin === PIN_ADMIN_DEFAULT);
         }
 

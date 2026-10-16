@@ -972,32 +972,53 @@ async function prosesLoginAdmin() {
     const btn = document.getElementById('btn-login-promotor');
     const pin = document.getElementById('login-pin-admin').value.trim();
     errEl.innerText = '';
-    if (!pin) { errEl.innerText = 'Masukkan PIN Admin!'; return; }
+    
+    if (!pin) { 
+        errEl.innerText = 'Masukkan PIN Admin!'; 
+        return; 
+    }
     
     const asli = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
     
     try {
-        const snap = await window.dbGet(window.dbRef(window.db, 'setting/pinAdmin'));
-        let pinBenar = snap.exists() ? String(snap.val()).trim() : PIN_ADMIN_DEFAULT;
-        if (!snap.exists()) {
-            await window.dbSet(window.dbRef(window.db, 'setting/pinAdmin'), PIN_ADMIN_DEFAULT);
+        // Mengambil data dari node admin1 (sesuai database Anda)
+        const snap = await window.dbGet(window.dbRef(window.db, 'users/admin/admin1')); // Sesuaikan path jika letaknya berbeda, misal langsung di root 'admin1'
+        
+        let cocok = false;
+        if (snap.exists()) {
+            const dataAdmin = snap.val();
+            if (dataAdmin.aktif === false) {
+                errEl.innerText = 'Akun admin dinonaktifkan.';
+                btn.disabled = false; btn.innerHTML = asli; return;
+            }
+            // Verifikasi menggunakan fungsi hashPin yang sudah ada di skrip Anda
+            cocok = await verifikasiPin(pin, dataAdmin.pinHash, dataAdmin.pinSalt);
+        } else {
+            // Fallback jika node admin1 belum ada, cek ke default PIN_ADMIN_DEFAULT ("866145")
+            cocok = (pin === PIN_ADMIN_DEFAULT);
         }
-        if (pin !== pinBenar) {
+
+        if (!cocok) {
             errEl.innerText = '❌ PIN Admin salah!';
             document.getElementById('login-pin-admin').value = '';
-            btn.disabled = false; btn.innerHTML = asli; return;
+            btn.disabled = false; 
+            btn.innerHTML = asli; 
+            return;
         }
+
         adminSessionGlobal = { pin: pin, loginAt: waktuServer() };
         localStorage.setItem('ufo_admin_session', JSON.stringify(adminSessionGlobal));
         document.body.classList.add('admin-mode');
         masukKeDashboardAdmin();
-        btn.disabled = false; btn.innerHTML = asli;
+        btn.disabled = false; 
+        btn.innerHTML = asli;
     } catch (e) {
         console.error('Login admin error:', e);
         errEl.innerText = 'Gagal: ' + e.message;
-        btn.disabled = false; btn.innerHTML = asli;
+        btn.disabled = false; 
+        btn.innerHTML = asli;
     }
 }
 window.prosesLoginAdmin = prosesLoginAdmin;

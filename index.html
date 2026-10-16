@@ -682,7 +682,7 @@ body.admin-mode #section-checkin-awal, body.admin-mode #section-normal, body.adm
         </div>
     </div>
 </div>
-<script>
+  <script>
 /* ============================================================ */
 /* ========== GLOBAL VARIABLES ================================= */
 /* ============================================================ */
@@ -713,14 +713,14 @@ let loginModeGlobal = 'promotor';
 
 const PIN_AWAL = "123456";
 const PIN_TERLARANG = ["123456", "111111", "222222", "333333", "444444", "555555", "666666", "777777", "888888", "999999", "000000", "654321"];
-const DURASI_PIN_VALID = 12 * 60 * 60 * 1000;
 
-const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_ICON_LIHAT = `👀`;
 const SVG_ICON_MOON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
 const SVG_ICON_SUN = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
 
 /* ============================================================ */
-/* ========== HELPER =========================================== */
+/* ========== HELPER FUNCTIONS ================================= */
 /* ============================================================ */
 function waktuServer() { return Date.now() + (window.serverTimeOffset || 0); }
 function getTanggalIndo(d) {
@@ -783,6 +783,8 @@ function updateThemeIcons(isDark) {
     if (loginIcon) loginIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
     const btnText = document.getElementById('btn-toggle-dark-text');
     if (btnText) btnText.innerText = isDark ? 'Terang' : 'Gelap';
+    const btnIcon = document.querySelector('#btn-toggle-dark svg');
+    if (btnIcon) btnIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
 }
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
@@ -798,6 +800,14 @@ function initDarkMode() {
     updateThemeIcons(isDark);
 }
 window.toggleDarkMode = toggleDarkMode;
+window.addEventListener('storage', (e) => {
+    if (e.key === 'ufo_theme') {
+        const isDark = e.newValue !== 'light';
+        if (isDark) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+        updateThemeIcons(isDark);
+    }
+});
 
 /* ============================================================ */
 /* ========== LOGIN TAB ======================================== */
@@ -828,7 +838,7 @@ function switchLoginTab(mode) {
 window.switchLoginTab = switchLoginTab;
 
 /* ============================================================ */
-/* ========== PROSES LOGIN ===================================== */
+/* ========== LOGIN PROSES ===================================== */
 /* ============================================================ */
 async function prosesLogin() {
     const errEl = document.getElementById('login-error');
@@ -836,7 +846,7 @@ async function prosesLogin() {
     const pin = document.getElementById('login-pin-input').value.trim();
     errEl.innerText = '';
     
-    if (!pin || pin.length !== 6) {
+    if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
         errEl.innerText = 'PIN harus 6 digit angka!';
         return;
     }
@@ -850,99 +860,76 @@ async function prosesLogin() {
             const nama = document.getElementById('login-nama-promotor').value;
             if (!nama) {
                 errEl.innerText = 'Pilih nama Anda dulu!';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
             const clean = sanitizeNama(nama);
             const snap = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
             if (!snap.exists()) {
-                errEl.innerText = 'Promotor tidak terdaftar di sistem.';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                errEl.innerText = 'Promotor tidak terdaftar. Hubungi admin.';
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
             const data = snap.val();
             if (data.aktif === false) {
-                errEl.innerText = 'Akun Anda dinonaktifkan. Hubungi admin.';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                errEl.innerText = 'Akun dinonaktifkan. Hubungi admin.';
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
-            // Kalau belum ada pinHash, anggap pakai PIN_AWAL (migrasi otomatis)
+            // Auto-migrasi: kalau belum ada pinHash, set dari PIN lama atau PIN_AWAL
             let pinHash = data.pinHash;
             let pinSalt = data.pinSalt;
             if (!pinHash || !pinSalt) {
+                const oldPin = data.pin ? String(data.pin) : PIN_AWAL;
                 const newSalt = generateSalt();
-                pinHash = await hashPin(PIN_AWAL, newSalt);
+                pinHash = await hashPin(oldPin, newSalt);
                 pinSalt = newSalt;
                 await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
-                    pinHash: pinHash,
-                    pinSalt: pinSalt,
-                    wajibGantiPin: true
+                    pinHash: pinHash, pinSalt: pinSalt, pin: null, wajibGantiPin: true
                 });
             }
             const cocok = await verifikasiPin(pin, pinHash, pinSalt);
             if (!cocok) {
                 errEl.innerText = '❌ PIN salah. Coba lagi.';
                 document.getElementById('login-pin-input').value = '';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
-            // Login berhasil
             namaSalesAktifGlobal = nama;
             localStorage.setItem('ufo_nama_sales_aktif', nama);
+            localStorage.setItem('ufo_is_admin', 'false');
             adminSessionGlobal = null;
             document.body.classList.remove('admin-mode');
-            
-            // Cek wajib ganti PIN
+            masukKeDashboard(nama, 'promotor');
             if (data.wajibGantiPin === true) {
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                tampilkanLayarLoginKeDashboard(nama, 'promotor');
-                bukaModalGantiPIN(true);
+                btn.disabled = false; btn.innerHTML = asli;
+                setTimeout(() => bukaModalGantiPIN(true), 500);
                 return;
             }
-            tampilkanLayarLoginKeDashboard(nama, 'promotor');
         } else {
-            // ADMIN LOGIN
+            // ADMIN
             const username = document.getElementById('login-admin-username').value.trim().toUpperCase();
             if (!username) {
                 errEl.innerText = 'Masukkan username admin!';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
             const snap = await window.dbGet(window.dbRef(window.db, 'users/admin'));
             if (!snap.exists()) {
                 errEl.innerText = 'Belum ada admin terdaftar.';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
             const admins = snap.val();
             let foundKey = null, foundData = null;
             Object.keys(admins).forEach(k => {
                 const a = admins[k];
                 if (a && String(a.username || '').toUpperCase() === username) {
-                    foundKey = k;
-                    foundData = a;
+                    foundKey = k; foundData = a;
                 }
             });
             if (!foundKey) {
                 errEl.innerText = 'Username admin tidak ditemukan.';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
             if (foundData.aktif === false) {
-                errEl.innerText = 'Akun admin ini dinonaktifkan.';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                errEl.innerText = 'Akun admin dinonaktifkan.';
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
-            // Migrasi PIN admin kalau belum ada hash
             let pinHash = foundData.pinHash;
             let pinSalt = foundData.pinSalt;
             if (!pinHash || !pinSalt) {
@@ -951,50 +938,42 @@ async function prosesLogin() {
                 pinHash = await hashPin(oldPin, newSalt);
                 pinSalt = newSalt;
                 await window.dbUpdate(window.dbRef(window.db, 'users/admin/' + foundKey), {
-                    pinHash: pinHash,
-                    pinSalt: pinSalt,
-                    pin: null,
-                    wajibGantiPin: true
+                    pinHash: pinHash, pinSalt: pinSalt, pin: null, wajibGantiPin: true
                 });
             }
             const cocok = await verifikasiPin(pin, pinHash, pinSalt);
             if (!cocok) {
                 errEl.innerText = '❌ PIN admin salah.';
                 document.getElementById('login-pin-input').value = '';
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                return;
+                btn.disabled = false; btn.innerHTML = asli; return;
             }
-            const adminSession = {
+            adminSessionGlobal = {
                 key: foundKey,
                 username: foundData.username,
                 nama: foundData.nama || foundData.username,
                 role: 'ADMIN'
             };
-            adminSessionGlobal = adminSession;
             namaSalesAktifGlobal = '';
+            localStorage.setItem('ufo_is_admin', 'true');
+            localStorage.setItem('ufo_admin_session', JSON.stringify(adminSessionGlobal));
             document.body.classList.add('admin-mode');
-            
-            // Cek wajib ganti PIN admin
+            masukKeDashboard(adminSessionGlobal.nama, 'admin');
             if (foundData.wajibGantiPin === true) {
-                btn.disabled = false;
-                btn.innerHTML = asli;
-                tampilkanLayarLoginKeDashboard(adminSession.nama, 'admin');
-                bukaModalGantiPIN(true);
+                btn.disabled = false; btn.innerHTML = asli;
+                setTimeout(() => bukaModalGantiPIN(true), 500);
                 return;
             }
-            tampilkanLayarLoginKeDashboard(adminSession.nama, 'admin');
         }
+        btn.disabled = false; btn.innerHTML = asli;
     } catch (e) {
         console.error('Login error:', e);
-        errEl.innerText = 'Gagal koneksi: ' + e.message;
-        btn.disabled = false;
-        btn.innerHTML = asli;
+        errEl.innerText = 'Gagal: ' + e.message;
+        btn.disabled = false; btn.innerHTML = asli;
     }
 }
 window.prosesLogin = prosesLogin;
 
-function tampilkanLayarLoginKeDashboard(nama, role) {
+function masukKeDashboard(nama, role) {
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
     if (loginScreen) loginScreen.style.display = 'none';
@@ -1006,15 +985,18 @@ function tampilkanLayarLoginKeDashboard(nama, role) {
     if (role === 'admin') {
         document.getElementById('label-user-aktif').innerHTML = `<span style="color:#38bdf8;">● ADMIN</span> — ${nama}`;
         document.body.classList.add('admin-mode');
-        if (typeof mulaiListenerFirebaseAdmin === 'function') mulaiListenerFirebaseAdmin();
+        mulaiListenerFirebaseAdmin();
     } else {
         document.getElementById('label-user-aktif').innerText = nama;
         document.body.classList.remove('admin-mode');
     }
+    
+    // Muat ulang data
+    if (!sudahInisialisasi) inisialisasiRealtimeFirebase();
     renderUI();
-    if (typeof renderAktivitas === 'function') renderAktivitas();
-    if (typeof renderRekapBawaCustomer === 'function') renderRekapBawaCustomer();
-    inisialisasiRealtimeFirebase();
+    renderAktivitas();
+    renderRekapBawaCustomer();
+    restoreAktivitasState();
 }
 
 function logoutPromotor() {
@@ -1022,15 +1004,12 @@ function logoutPromotor() {
     const pesan = isAdmin ? 'Yakin logout dari akun ADMIN?' : 'Yakin ingin logout dari akun ini?';
     tampilkanModalKonfirmasi("Logout", pesan, () => {
         localStorage.removeItem('ufo_nama_sales_aktif');
+        localStorage.removeItem('ufo_admin_session');
+        localStorage.removeItem('ufo_is_admin');
         namaSalesAktifGlobal = '';
         adminSessionGlobal = null;
-        sudahInisialisasi = false;
         document.body.classList.remove('admin-mode');
-        document.getElementById('login-pin-input').value = '';
-        document.getElementById('login-admin-username').value = '';
-        document.getElementById('login-error').innerText = '';
-        switchLoginTab('promotor');
-        location.reload();
+        setTimeout(() => location.reload(), 300);
     });
 }
 window.logoutPromotor = logoutPromotor;
@@ -1046,7 +1025,7 @@ function bukaModalGantiPIN(wajib) {
     
     if (wajib) {
         document.getElementById('ganti-pin-title').innerText = '⚠️ WAJIB GANTI PIN';
-        document.getElementById('ganti-pin-desc').innerHTML = '<b>Ini login pertama Anda.</b> Untuk keamanan, silakan ganti PIN Anda. PIN baru tidak boleh 123456 atau angka berulang.';
+        document.getElementById('ganti-pin-desc').innerHTML = '<b>Ini login pertama Anda.</b> Demi keamanan, silakan ganti PIN. PIN baru tidak boleh 123456 atau angka berulang.';
         document.getElementById('btn-ganti-pin-simpan').innerText = 'GANTI PIN SEKARANG';
     } else {
         document.getElementById('ganti-pin-title').innerText = 'Ganti PIN';
@@ -1061,144 +1040,101 @@ async function simpanPinBaru() {
     const pinKonfirm = document.getElementById('input-pin-konfirmasi').value.trim();
     const errEl = document.getElementById('ganti-pin-error');
     errEl.innerText = '';
-    
-    if (!pinBaru || pinBaru.length !== 6 || !/^\d{6}$/.test(pinBaru)) {
-        errEl.innerText = 'PIN harus 6 digit angka!';
-        return;
-    }
-    if (PIN_TERLARANG.includes(pinBaru)) {
-        errEl.innerText = 'PIN terlalu mudah ditebak. Pilih PIN lain.';
-        return;
-    }
-    if (pinBaru !== pinKonfirm) {
-        errEl.innerText = 'Konfirmasi PIN tidak sama!';
-        return;
-    }
+    if (!/^\d{6}$/.test(pinBaru)) { errEl.innerText = 'PIN harus 6 digit angka!'; return; }
+    if (PIN_TERLARANG.includes(pinBaru)) { errEl.innerText = 'PIN terlalu mudah. Pilih lain.'; return; }
+    if (pinBaru !== pinKonfirm) { errEl.innerText = 'Konfirmasi PIN tidak sama!'; return; }
     
     try {
         const salt = generateSalt();
         const hash = await hashPin(pinBaru, salt);
-        
         if (adminSessionGlobal && adminSessionGlobal.role === 'ADMIN') {
             await window.dbUpdate(window.dbRef(window.db, 'users/admin/' + adminSessionGlobal.key), {
-                pinHash: hash,
-                pinSalt: salt,
-                wajibGantiPin: false
+                pinHash: hash, pinSalt: salt, wajibGantiPin: false
             });
         } else {
-            const nama = getAkunAktif();
-            const clean = sanitizeNama(nama);
+            const clean = sanitizeNama(getAkunAktif());
             await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
-                pinHash: hash,
-                pinSalt: salt,
-                wajibGantiPin: false
+                pinHash: hash, pinSalt: salt, wajibGantiPin: false
             });
         }
-        
         document.getElementById('modal-ganti-pin').classList.remove('active');
-        tampilkanModal("✅ Berhasil", "PIN Anda sudah diganti. Simpan PIN baru Anda dengan aman.");
-    } catch (e) {
-        errEl.innerText = 'Gagal simpan: ' + e.message;
-    }
+        tampilkanModal("✅ Berhasil", "PIN sudah diganti. Simpan dengan aman.");
+    } catch (e) { errEl.innerText = 'Gagal: ' + e.message; }
 }
 window.simpanPinBaru = simpanPinBaru;
 
 /* ============================================================ */
-/* ========== BRANDING ========================================= */
+/* ========== AKTIVITAS TOGGLE ================================= */
 /* ============================================================ */
-function applyBranding(setting) {
-    if (!setting) return;
-    const namaToko = setting.namaToko || "Nama Toko";
-    const namaSistem = setting.namaSistem || "Antrian Walk-In Promotor";
-    const alamat = setting.alamat || "";
-    const logoUrl = setting.logoUrl || "";
-    const titleEl = document.getElementById('page-title');
-    if (titleEl) titleEl.innerText = `${namaSistem} - ${namaToko}`;
-    const headlineEl = document.getElementById('fut-headline-text');
-    if (headlineEl) headlineEl.innerText = namaSistem;
-    const subheadlineEl = document.getElementById('fut-subheadline');
-    if (subheadlineEl) subheadlineEl.innerText = alamat ? `${namaToko} · ${alamat}` : namaToko;
-    if (logoUrl) {
-        const logoEl = document.getElementById('logo-app');
-        if (logoEl) {
-            logoEl.src = logoUrl;
-            logoEl.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = '🛸'; };
-        }
+function toggleAktivitasSection() {
+    const header = document.getElementById('toggle-aktivitas');
+    const content = document.getElementById('content-aktivitas');
+    if (!header || !content) return;
+    const isOpen = content.classList.contains('open');
+    if (isOpen) {
+        content.classList.remove('open'); header.classList.remove('open');
+        localStorage.setItem('ufo_aktivitas_open', 'false');
+    } else {
+        content.classList.add('open'); header.classList.add('open');
+        localStorage.setItem('ufo_aktivitas_open', 'true');
     }
 }
+window.toggleAktivitasSection = toggleAktivitasSection;
 
-/* ============================================================ */
-/* ========== MASTER SALES ===================================== */
-/* ============================================================ */
-function prosesMasterSales(dataRaw) {
-    let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw);
-    let names = [];
-    listSales.forEach(item => {
-        let salesObj = item;
-        if (item && item.record) salesObj = item.record;
-        let nama = salesObj && (salesObj.NAMA_PROMOTOR || salesObj.nama_promotor || salesObj.nama || salesObj.Nama_Sales || salesObj.nama_sales || salesObj.name || salesObj.promotor || salesObj.NAMA || salesObj.Nama);
-        if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim());
-    });
-    names = [...new Set(names)].sort();
-    masterSalesGlobal = names.map(n => ({ nama: n }));
-    isiDaftarPromotorKeDropdown(names);
-}
-
-function isiDaftarPromotorKeDropdown(names) {
-    const sel = document.getElementById('login-nama-promotor');
-    if (!sel) return;
-    let html = '<option value="">-- Pilih Nama Anda --</option>';
-    names.forEach(n => {
-        const safe = String(n).replace(/"/g, '&quot;');
-        html += `<option value="${safe}">${n}</option>`;
-    });
-    sel.innerHTML = html;
-    const liveEl = document.getElementById('live-status-text');
-    if (liveEl) liveEl.innerText = names.length ? `${names.length} promotor terdaftar` : 'Belum ada promotor';
+function restoreAktivitasState() {
+    setTimeout(() => {
+        const saved = localStorage.getItem('ufo_aktivitas_open');
+        if (saved === 'true') {
+            const header = document.getElementById('toggle-aktivitas');
+            const content = document.getElementById('content-aktivitas');
+            if (header && content) { header.classList.add('open'); content.classList.add('open'); }
+        }
+    }, 150);
 }
 
 /* ============================================================ */
-/* ========== FIREBASE INIT (REALTIME) ========================= */
+/* ========== FIREBASE READY =================================== */
 /* ============================================================ */
 window.addEventListener('firebase-ready', () => {
     initDarkMode();
-    // Cek session tersimpan
-    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
-    const isAdmin = localStorage.getItem('ufo_admin_session');
+    restoreAktivitasState();
+    resetCheckinHarianJikaPerlu();
     
-    if (isAdmin) {
+    // Cek session tersimpan
+    const isAdminSession = localStorage.getItem('ufo_is_admin') === 'true';
+    const adminSaved = localStorage.getItem('ufo_admin_session');
+    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
+    
+    if (isAdminSession && adminSaved) {
         try {
-            const adm = JSON.parse(isAdmin);
-            adminSessionGlobal = adm;
+            adminSessionGlobal = JSON.parse(adminSaved);
             document.body.classList.add('admin-mode');
-            tampilkanLayarLoginKeDashboard(adm.nama || adm.username, 'admin');
+            masukKeDashboard(adminSessionGlobal.nama || adminSessionGlobal.username, 'admin');
             return;
         } catch(e) {}
     }
     if (cachedNama) {
         namaSalesAktifGlobal = cachedNama;
-        tampilkanLayarLoginKeDashboard(cachedNama, 'promotor');
+        masukKeDashboard(cachedNama, 'promotor');
         return;
     }
-    // Belum login — muat listener dasar
+    // Belum login — muat data untuk dropdown & status
     inisialisasiRealtimeFirebase();
 });
+
+function resetCheckinHarianJikaPerlu() {
+    const tglTersimpan = localStorage.getItem('ufo_checkin_tanggal');
+    const hariIni = getTanggalKey();
+    if (tglTersimpan !== hariIni) {
+        localStorage.removeItem('ufo_checkin_hari_ini');
+        localStorage.removeItem('ufo_checkin_tanggal');
+    }
+}
 
 function inisialisasiRealtimeFirebase() {
     if (sudahInisialisasi) return;
     sudahInisialisasi = true;
     const db = window.db;
-
-    window.dbOnValue(window.dbRef(db, 'mastersales'), (snapshot) => {
-        const dataRaw = snapshot.val();
-        if (dataRaw) { prosesMasterSales(dataRaw); masterSalesLoaded = true; }
-        else if (!masterSalesLoaded) {
-            window.dbOnValue(window.dbRef(db, 'data'), (snap2) => {
-                const d2 = snap2.val();
-                if (d2 && !masterSalesLoaded) { prosesMasterSales(d2); masterSalesLoaded = true; }
-            });
-        }
-    });
 
     window.dbOnValue(window.dbRef(db, 'antrian'), (snapshot) => {
         const dataRaw = snapshot.val();
@@ -1209,12 +1145,20 @@ function inisialisasiRealtimeFirebase() {
                 if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); }
             });
         }
-        const liveEl = document.getElementById('live-status-text');
-        if (liveEl && masterSalesGlobal.length === 0) {
-            liveEl.innerText = daftarAntrianGlobal.length ? `${daftarAntrianGlobal.length} orang antri` : 'Memuat...';
-        }
+        updateLiveStatus();
         renderUI();
-        if (typeof renderAktivitas === 'function') renderAktivitas();
+        renderAktivitas();
+    });
+
+    window.dbOnValue(window.dbRef(db, 'mastersales'), (snapshot) => {
+        const dataRaw = snapshot.val();
+        if (dataRaw) { prosesMasterSales(dataRaw); masterSalesLoaded = true; }
+        else if (!masterSalesLoaded) {
+            window.dbOnValue(window.dbRef(db, 'data'), (snap2) => {
+                const d2 = snap2.val();
+                if (d2 && !masterSalesLoaded) { prosesMasterSales(d2); masterSalesLoaded = true; }
+            });
+        }
     });
 
     window.dbOnValue(window.dbRef(db, 'setting'), (snapshot) => {
@@ -1239,19 +1183,34 @@ function inisialisasiRealtimeFirebase() {
                 if (item && item.nama) { item._key = k; aktivitasGlobal.push(item); }
             });
         }
-        if (typeof renderAktivitas === 'function') renderAktivitas();
-        if (typeof renderRekapBawaCustomer === 'function') renderRekapBawaCustomer();
+        renderAktivitas();
+        renderRekapBawaCustomer();
     });
 
     window.dbOnValue(window.dbRef(db, 'checkinHarian'), (snapshot) => {
-        checkinHarianGlobal = snapshot.val() || {};
+        const dataCheckin = snapshot.val() || {};
+        checkinHarianGlobal = dataCheckin;
+        const akunSaya = sanitizeNama(getAkunAktif());
+        if (akunSaya) {
+            const dataSaya = dataCheckin[akunSaya];
+            const hariIni = getTanggalKey();
+            let sudahHariIni = false;
+            if (dataSaya && dataSaya[hariIni]) sudahHariIni = true;
+            if (sudahHariIni) {
+                localStorage.setItem('ufo_checkin_hari_ini', 'true');
+                localStorage.setItem('ufo_checkin_tanggal', hariIni);
+            } else {
+                localStorage.removeItem('ufo_checkin_hari_ini');
+                localStorage.removeItem('ufo_checkin_tanggal');
+            }
+        }
         renderUI();
-        if (typeof renderRekapBawaCustomer === 'function') renderRekapBawaCustomer();
+        renderRekapBawaCustomer();
     });
 
     window.dbOnValue(window.dbRef(db, 'riwayatBulanan'), (snapshot) => {
         riwayatBulananGlobal = snapshot.val() || {};
-        if (typeof renderTotalBulanan === 'function') renderTotalBulanan();
+        renderTotalBulanan();
     });
 
     window.dbOnValue(window.dbRef(db, 'lockPromotor'), (snapshot) => {
@@ -1268,9 +1227,13 @@ function inisialisasiRealtimeFirebase() {
             if (sudahMulai && belumExpired) {
                 lockDataGlobal = { waktuExpired, alasan: lockSaya.alasan || "-" };
                 mulaiLockTimer(waktuExpired, lockSaya.alasan || "-");
+                if (daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya)) {
+                    window.dbRemove(window.dbRef(window.db, 'antrian/' + akunSaya));
+                }
             } else {
                 lockDataGlobal = null;
                 sembunyikanLockTimer();
+                autoUnlockSendiri(akunSaya, lockSaya);
             }
         } else {
             lockDataGlobal = null;
@@ -1281,6 +1244,7 @@ function inisialisasiRealtimeFirebase() {
 
     if (autoCleanupInterval) clearInterval(autoCleanupInterval);
     autoCleanupInterval = setInterval(() => { cekLockExpired(); }, 15000);
+    setTimeout(() => { cekLockExpired(); }, 2000);
 }
 
 /* ============================================================ */
@@ -1307,13 +1271,14 @@ function mulaiLockTimer(waktuExpired, alasan) {
     if (!box || !display) return;
     box.style.display = 'block';
     if (reasonEl) reasonEl.innerText = `Alasan: ${alasan}`;
-    if (waktuExpired === 0) { display.innerText = "∞"; return; }
+    if (waktuExpired === 0) { display.innerText = "∞"; if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } return; }
     if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
     const tick = () => {
         const sisa = waktuExpired - waktuServer();
         if (sisa <= 0) {
             display.innerText = "00:00";
             sembunyikanLockTimer();
+            if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
             const akunSaya = sanitizeNama(getAkunAktif());
             if (akunSaya) autoUnlockSendiri(akunSaya, lockGlobal[akunSaya]);
             return;
@@ -1364,12 +1329,17 @@ function initPetaPromotor() {
 }
 function mulaiDeteksiLokasi() {
     if (geolocationWatchId !== null) navigator.geolocation.clearWatch(geolocationWatchId);
-    if (!navigator.geolocation) return;
+    const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
+    if (!navigator.geolocation) {
+        const infoEl = document.getElementById('info-radius');
+        if (infoEl) { infoEl.innerHTML = `${ICON_X} <span>Browser tidak mendukung GPS</span>`; infoEl.className = "info-radius err"; }
+        return;
+    }
     geolocationWatchId = navigator.geolocation.watchPosition(
         (pos) => { posisiSaya.lat = pos.coords.latitude; posisiSaya.lng = pos.coords.longitude; updatePetaLokasiSaya(); },
         (err) => {
             const infoEl = document.getElementById('info-radius');
-            if (infoEl) { infoEl.innerHTML = `<span>Izin lokasi ditolak</span>`; infoEl.className = "info-radius err"; }
+            if (infoEl) { infoEl.innerHTML = `${ICON_X} <span>Izin lokasi ditolak / tidak tersedia</span>`; infoEl.className = "info-radius err"; }
         },
         { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
@@ -1378,7 +1348,7 @@ function updatePetaLokasiSaya() {
     if (!mapPromotor || !koordinatToko.lat) return;
     const lat = posisiSaya.lat, lng = posisiSaya.lng;
     if (markerSayaPeta) mapPromotor.removeLayer(markerSayaPeta);
-    markerSayaPeta = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="background:#38bdf8;width:16px;height:16px;border-radius:50%;border:3px solid white;"></div>', iconSize: [16,16] }) }).addTo(mapPromotor);
+    markerSayaPeta = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="background:#38bdf8;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px #38bdf8;"></div>', iconSize: [16,16] }) }).addTo(mapPromotor).bindPopup("Posisi Anda");
     const jarak = hitungJarak(lat, lng, koordinatToko.lat, koordinatToko.lng);
     const infoEl = document.getElementById('info-radius');
     const btnHadir = document.getElementById('btn-hadir');
@@ -1386,7 +1356,7 @@ function updatePetaLokasiSaya() {
     const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
     if (jarak <= koordinatToko.radius) {
         posisiSaya.ok = true;
-        infoEl.innerHTML = `${ICON_CHECK} Anda dalam radius (${Math.round(jarak)}m)`;
+        infoEl.innerHTML = `${ICON_CHECK} Anda dalam radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
         infoEl.className = "info-radius ok";
         if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
     } else {
@@ -1410,15 +1380,19 @@ function aksiHadirKerja() {
             const lockData = snap.val();
             if (lockData && lockData.locked) {
                 const sekarang = waktuServer();
+                const waktuMulai = Number(lockData.waktuMulaiLock) || 0;
                 const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
-                if (sekarang < waktuExpired) {
+                const sudahMulai = waktuMulai === 0 || sekarang >= waktuMulai;
+                const belumExpired = waktuExpired === 0 || sekarang < waktuExpired;
+                if (sudahMulai && belumExpired) {
+                    window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: getAkunAktif(), aksi: "Autokick", waktu: sekarang, tanggal: getTanggalIndo(), hasil: "Coba Check-in Saat Lock", kategori: "Lock Hukuman", sumber: "Promotor" });
                     tampilkanModal("🔒 Akun Dikunci", `Akun Anda sedang DIKUNCI.\n\nAlasan: ${lockData.alasan || "-"}`);
                     return;
                 }
             }
         }
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
-        if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko."); return; }
+        if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko untuk check-in."); return; }
         const kat = document.getElementById('pilih-kategori-hadir').value;
         const nama = getAkunAktif();
         const clean = sanitizeNama(nama);
@@ -1444,6 +1418,8 @@ function aksiDaftarAntrianNormal() {
     const waktuSekarang = waktuServer();
     window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 }).then(() => {
         window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang });
+        localStorage.setItem('ufo_checkin_hari_ini', 'true');
+        localStorage.setItem('ufo_checkin_tanggal', tglKey);
         catatAktivitas(nama, "DaftarAntrian", kat);
     });
 }
@@ -1466,7 +1442,7 @@ function aksiToggleIbadah() {
         const kat = String(itemSaya.kategori || "HA").toUpperCase();
         const listStandby = daftarAntrianGlobal.filter(i => i.status === "Standby" && String(i.kategori).toUpperCase() === kat).sort((a,b) => (a.waktuStandby||0) - (b.waktuStandby||0));
         const posisi = listStandby.findIndex(i => sanitizeNama(i.nama) === clean) + 1;
-        tampilkanModalKonfirmasi("Sedang Ibadah", `Posisi antrian Anda (#${posisi}) akan DIKUNCI sampai Anda menekan "Selesai Ibadah". Lanjutkan?`, () => {
+        tampilkanModalKonfirmasi("Sedang Ibadah", `Posisi antrian Anda (#${posisi}) akan DIKUNCI sampai Anda menekan tombol "Selesai Ibadah". Lanjutkan?`, () => {
             const now = waktuServer();
             window.dbUpdate(window.dbRef(window.db, 'antrian/' + clean), { status: "Ibadah", timerMulai: 0, timerAksi: "Ibadah", posisiTerkunci: posisi }).then(() => catatAktivitasIbadah(nama, "MulaiIbadah", now, posisi));
         });
@@ -1507,7 +1483,7 @@ function selesaiMelayaniAction(hasil) {
     if (target && target._key) {
         window.dbUpdate(window.dbRef(window.db, 'statistikAktivitas/' + target._key), { waktuSelesai: now, hasil: hasil, durasiDetik: Math.floor((now - waktuMulaiMelayani) / 1000) });
     } else {
-        window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: nama, aksi: "BawaCustomer", waktu: waktuMulaiMelayani, waktuMulai: waktuMulaiMelayani, waktuSelesai: now, tanggal: hariIni, hasil: hasil });
+        window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: nama, aksi: "BawaCustomer", waktu: waktuMulaiMelayani, waktuMulai: waktuMulaiMelayani, waktuSelesai: now, tanggal: hariIni, hasil: hasil, durasiDetik: Math.floor((now - waktuMulaiMelayani) / 1000) });
     }
     updateRiwayatBulanan(nama, hasil);
     window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
@@ -1520,9 +1496,11 @@ function updateRiwayatBulanan(nama, hasil) {
     const pathRiwayat = `riwayatBulanan/${bulanKey}/${clean}`;
     window.dbGet(window.dbRef(window.db, pathRiwayat)).then(snap => {
         const existing = snap.exists() ? snap.val() : { nama: nama, lihat: 0, deal: 0, noSale: 0 };
+        if (typeof existing.noSale !== 'number') existing.noSale = 0;
         if (hasil === "Deal") existing.deal = (existing.deal || 0) + 1;
         else if (hasil === "Lihat") existing.lihat = (existing.lihat || 0) + 1;
         existing.nama = nama;
+        existing.lastUpdate = waktuServer();
         existing.bulanKey = bulanKey;
         window.dbUpdate(window.dbRef(window.db, pathRiwayat), existing);
     });
@@ -1566,6 +1544,7 @@ function catatAktivitasIbadah(nama, aksi, waktuSekarang, posisi, waktuMulaiSebel
     if (aksi === "SelesaiIbadah") {
         payload.waktuMulai = waktuMulaiSebelumnya || waktuSekarang;
         payload.waktuSelesai = waktuSekarang;
+        payload.durasiDetik = Math.floor((waktuSekarang - (waktuMulaiSebelumnya||waktuSekarang)) / 1000);
     }
     window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), payload);
 }
@@ -1573,6 +1552,14 @@ function catatAktivitasIbadah(nama, aksi, waktuSekarang, posisi, waktuMulaiSebel
 /* ============================================================ */
 /* ========== RENDER UI ======================================== */
 /* ============================================================ */
+function updateLiveStatus() {
+    const el = document.getElementById('live-status-text');
+    if (!el) return;
+    const total = daftarAntrianGlobal.length;
+    if (total === 0 && masterSalesGlobal.length === 0) { el.innerText = 'Memuat...'; return; }
+    el.innerText = total === 0 ? `${masterSalesGlobal.length} promotor terdaftar` : `${total} Orang Sedang Antri`;
+}
+
 function renderUI() {
     const badge = document.getElementById('badge-status-sistem');
     const badgeText = document.getElementById('badge-status-text');
@@ -1632,6 +1619,19 @@ function renderUI() {
         secNormal.style.display = 'none';
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif) setTimeout(initPetaPromotor, 150);
+        else {
+            const gpsBox = document.querySelector('.gps-box');
+            if (gpsBox) gpsBox.style.display = 'none';
+            const infoEl = document.getElementById('info-radius');
+            if (infoEl) {
+                const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+                infoEl.innerHTML = `${ICON_CHECK} <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`;
+                infoEl.className = "info-radius ok";
+                infoEl.style.display = 'flex';
+            }
+            const btnHadir = document.getElementById('btn-hadir');
+            if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
+        }
     } else { secCheckin.style.display = 'none'; secNormal.style.display = 'block'; }
     const gKategori = document.getElementById('group-pilih-kategori-normal');
     if (gKategori) gKategori.style.display = statusSaya === "belum_ada" ? "block" : "none";
@@ -1666,35 +1666,64 @@ function renderAktivitas() {
     const listBawaStatistik = list.filter(a => a.aksi === "BawaCustomer");
     const statistikSelesai = listBawaStatistik.filter(a => a.waktuSelesai);
     const statistikMasihProses = listBawaStatistik.filter(a => !a.waktuSelesai);
+    const namaSudahSelesai = new Set(statistikSelesai.map(a => sanitizeNama(a.nama)));
+    const listSedangMelayani = daftarAntrianGlobal.filter(item => item.status === "Melayani").map(item => ({ nama: item.nama, waktuMulai: item.waktuMulaiMelayani || item.waktuStandby || waktuServer(), waktuSelesai: null, hasil: null, _sedangMelayani: true }));
+    const namaSedangMelayani = new Set(listSedangMelayani.map(i => sanitizeNama(i.nama)));
     let semuaBawa = [];
-    statistikMasihProses.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: null, hasil: null }));
-    statistikSelesai.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: a.waktuSelesai, hasil: a.hasil }));
+    listSedangMelayani.forEach(item => semuaBawa.push(item));
+    statistikMasihProses.forEach(a => {
+        const clean = sanitizeNama(a.nama);
+        if (!namaSedangMelayani.has(clean) && !namaSudahSelesai.has(clean)) semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: null, hasil: null, _sedangMelayani: false });
+    });
+    statistikSelesai.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: a.waktuSelesai, hasil: a.hasil, _sedangMelayani: false }));
     semuaBawa.sort((a, b) => (b.waktuMulai || 0) - (a.waktuMulai || 0));
     const cBawa = document.getElementById('count-bawa');
     if (cBawa) cBawa.innerText = semuaBawa.length;
+    let totalLihat = 0, totalDeal = 0;
+    semuaBawa.forEach(a => { if (a.hasil === "Lihat") totalLihat++; else if (a.hasil === "Deal") totalDeal++; });
+    const totalBox = document.getElementById('total-bawa-box');
+    if (totalBox) {
+        if (semuaBawa.length === 0) { totalBox.innerHTML = ''; totalBox.style.display = 'none'; }
+        else {
+            totalBox.style.display = 'block';
+            totalBox.innerHTML = `TOTAL: <span class="total-lihat">👀 ${totalLihat} Lihat</span> &nbsp;│&nbsp; <span class="total-deal">✓ ${totalDeal} Deal</span>`;
+        }
+    }
+    const lBawa = document.getElementById('list-bawa');
+    if (lBawa) lBawa.innerHTML = semuaBawa.length === 0 ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
+        : semuaBawa.map(a => {
+            const mulai = a.waktuMulai, selesai = a.waktuSelesai;
+            let rangeLabel, namaLabel;
+            if (a._sedangMelayani) { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-melayani">(MELAYANI)</span>`; }
+            else if (selesai) {
+                rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
+                if (a.hasil === "Deal") namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
+                else if (a.hasil === "Lihat") namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
+                else namaLabel = `${a.nama} <span class="label-lihat">(selesai)</span>`;
+            } else { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-lihat">(proses)</span>`; }
+            return `<li><span class="nama">${namaLabel}</span><span class="waktu">${rangeLabel}</span></li>`;
+        }).join('');
     const listIbadah = gabungRentang(list, "MulaiIbadah", "SelesaiIbadah");
     const cIbadah = document.getElementById('count-ibadah');
     if (cIbadah) cIbadah.innerText = listIbadah.length;
-    const listKeluar = list.filter(a => a.aksi === "KeluarAntrian");
+    const lIbadah = document.getElementById('list-ibadah');
+    if (lIbadah) lIbadah.innerHTML = listIbadah.length === 0 ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
+        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#ffffff; font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
+    const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
     const cKeluar = document.getElementById('count-keluar');
     if (cKeluar) cKeluar.innerText = listKeluar.length;
-    const listAutokick = list.filter(a => a.aksi === "Autokick");
+    const lKeluar = document.getElementById('list-keluar');
+    if (lKeluar) lKeluar.innerHTML = listKeluar.length === 0 ? '<div class="aktivitas-empty">Belum ada yang keluar antrian</div>'
+        : listKeluar.map(a => `<li><span class="nama">${a.nama}</span><span class="waktu">${formatJam(a.waktu)}</span></li>`).join('');
+    const listAutokick = list.filter(a => a.aksi === "Autokick").sort((a,b) => (b.waktu||0) - (a.waktu||0));
     const cAuto = document.getElementById('count-autokick');
     if (cAuto) cAuto.innerText = listAutokick.length;
-}
-function gabungRentang(list, aksiMulai, aksiSelesai) {
-    const perNama = {};
-    list.forEach(a => {
-        if (a.aksi === aksiMulai) {
-            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null };
-        } else if (a.aksi === aksiSelesai) {
-            if (perNama[a.nama]) perNama[a.nama].selesai = a.waktuSelesai || a.waktu;
-        }
-    });
-    return Object.values(perNama).map(a => {
-        const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`;
-        return { ...a, label };
-    });
+    const lAuto = document.getElementById('list-autokick');
+    if (lAuto) lAuto.innerHTML = listAutokick.length === 0 ? '<div class="aktivitas-empty">Tidak ada pelanggaran hari ini 👍</div>'
+        : listAutokick.map(a => {
+            const teksAlasan = a.alasan ? a.alasan : (a.kategori || "");
+            return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#f43f5e; font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`;
+        }).join('');
 }
 
 function renderRekapBawaCustomer() {
@@ -1703,9 +1732,10 @@ function renderRekapBawaCustomer() {
     if (!tbody) return;
     const bulanIni = getBulanKey();
     const tglHariIni = new Date(waktuServer()).getDate();
-    if (labelPeriode) labelPeriode.innerText = `1 - ${tglHariIni} ${getBulanLabelIndo()}`;
+    const labelBulan = getBulanLabelIndo();
+    if (labelPeriode) labelPeriode.innerText = `1 - ${tglHariIni} ${labelBulan}`;
     const promotorMap = {};
-    masterSalesGlobal.forEach(item => { const clean = sanitizeNama(item.nama); if (clean) promotorMap[clean] = { nama: item.nama }; });
+    masterSalesGlobal.forEach(item => { const clean = sanitizeNama(item.nama); if (clean) promotorMap[clean] = { nama: item.nama, clean: clean }; });
     const perPromotor = {};
     Object.keys(promotorMap).forEach(clean => { perPromotor[clean] = { nama: promotorMap[clean].nama, deal: 0, lihat: 0, noSale: 0, hari: 0 }; });
     aktivitasGlobal.forEach(a => {
@@ -1725,17 +1755,73 @@ function renderRekapBawaCustomer() {
         if (!dataCheckinPromotor) return;
         const hariSet = new Set();
         Object.keys(dataCheckinPromotor).forEach(k => { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && k.startsWith(bulanIni)) hariSet.add(k); });
+        if (dataCheckinPromotor.tanggalKey && /^\d{4}-\d{2}-\d{2}$/.test(dataCheckinPromotor.tanggalKey) && dataCheckinPromotor.tanggalKey.startsWith(bulanIni)) hariSet.add(dataCheckinPromotor.tanggalKey);
         perPromotor[clean].hari = hariSet.size;
+        let noSaleCount = 0;
+        hariSet.forEach(tglKeyHari => {
+            const p = tglKeyHari.split('-');
+            const tglIndoHari = `${p[2]}-${p[1]}-${p[0]}`;
+            const adaDeal = aktivitasGlobal.some(a => sanitizeNama(a.nama) === clean && a.tanggal === tglIndoHari && a.aksi === "BawaCustomer" && a.hasil === "Deal");
+            if (!adaDeal) noSaleCount++;
+        });
+        perPromotor[clean].noSale = noSaleCount;
     });
-    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => b.deal - a.deal);
+    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => {
+        if (b.deal !== a.deal) return b.deal - a.deal;
+        if (b.lihat !== a.lihat) return b.lihat - a.lihat;
+        return a.nama.localeCompare(b.nama);
+    });
     if (arr.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="aktivitas-empty">Belum ada data bulan ini</td></tr>'; return; }
-    tbody.innerHTML = arr.map(p => `<tr><td class="kolom-nama">${p.nama}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td><td class="angka-nosale">${p.noSale}</td><td class="angka-hari">${p.hari}</td></tr>`).join('');
+    let totalDeal = 0, totalLihat = 0, totalNoSale = 0;
+    arr.forEach(p => { totalDeal += p.deal; totalLihat += p.lihat; totalNoSale += p.noSale; });
+    let html = arr.map(p => `<tr><td class="kolom-nama">${p.nama}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td><td class="angka-nosale">${p.noSale}</td><td class="angka-hari">${p.hari}</td></tr>`).join('');
+    html += `<tr class="total-row"><td class="kolom-nama">TOTAL</td><td class="angka-deal">${totalDeal}</td><td class="angka-lihat">${totalLihat}</td><td class="angka-nosale">${totalNoSale}</td><td></td></tr>`;
+    tbody.innerHTML = html;
 }
 
 function renderTotalBulanan() {
     const tbody = document.getElementById('total-bulanan-tbody');
+    const labelTahun = document.getElementById('total-bulanan-tahun-label');
     if (!tbody) return;
-    tbody.innerHTML = '';
+    const tahunIni = String(new Date(waktuServer()).getFullYear());
+    if (labelTahun) labelTahun.innerText = tahunIni;
+    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const perBulan = {};
+    aktivitasGlobal.forEach(a => {
+        if (a.aksi !== "BawaCustomer" || !a.waktuSelesai || !a.tanggal) return;
+        const parts = String(a.tanggal).split('-'); if (parts.length !== 3) return;
+        const tglKey = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        if (!tglKey.startsWith(tahunIni)) return;
+        const bulanKey = tglKey.substring(0, 7);
+        if (!perBulan[bulanKey]) perBulan[bulanKey] = { deal: 0, lihat: 0 };
+        if (a.hasil === "Deal") perBulan[bulanKey].deal++;
+        else if (a.hasil === "Lihat") perBulan[bulanKey].lihat++;
+    });
+    const keysSorted = Object.keys(perBulan).sort().reverse();
+    if (keysSorted.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="aktivitas-empty">Belum ada data tahun ini</td></tr>'; return; }
+    tbody.innerHTML = keysSorted.map(bulanKey => {
+        const p = perBulan[bulanKey];
+        const parts = bulanKey.split('-');
+        const namaBln = namaBulan[parseInt(parts[1]) - 1];
+        return `<tr><td class="kolom-nama">${namaBln} ${parts[0]}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td></tr>`;
+    }).join('');
+}
+
+function gabungRentang(list, aksiMulai, aksiSelesai) {
+    const perNama = {};
+    list.forEach(a => {
+        if (a.aksi === aksiMulai) {
+            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null };
+            else perNama[a.nama].mulai = a.waktuMulai || a.waktu;
+        } else if (a.aksi === aksiSelesai) {
+            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: a.waktuSelesai || a.waktu };
+            else perNama[a.nama].selesai = a.waktuSelesai || a.waktu;
+        }
+    });
+    return Object.values(perNama).sort((a,b) => (b.mulai||0) - (a.mulai||0)).map(a => {
+        const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`;
+        return { ...a, label };
+    });
 }
 
 /* ============================================================ */
@@ -1744,13 +1830,13 @@ function renderTotalBulanan() {
 function tampilkanModal(j, d) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" onclick="tutupModal()">OK</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()">OK</button>`;
     document.getElementById('custom-modal').classList.add('active');
 }
 function tampilkanModalKonfirmasi(j, d, cb) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" id="btn-modal-ya">Ya</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya">Ya</button>`;
     document.getElementById('custom-modal').classList.add('active');
     document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); };
 }
@@ -1762,21 +1848,43 @@ function bukaPopupAktivitas(jenis) {
     const title = document.getElementById('popup-aktivitas-title');
     const body = document.getElementById('popup-aktivitas-body');
     if (!popup || !title || !body) return;
-    title.innerText = 'Aktivitas';
-    body.innerHTML = '<div class="aktivitas-empty">Data aktivitas hari ini</div>';
+    let kontenAsli = '';
+    if (jenis === 'bawa') {
+        title.innerText = 'Bawa Customer';
+        const totalBox = document.getElementById('total-bawa-box');
+        const listBawa = document.getElementById('list-bawa');
+        kontenAsli = (totalBox ? totalBox.outerHTML : '') + (listBawa ? listBawa.outerHTML : '');
+    } else if (jenis === 'ibadah') { title.innerText = 'Aktivitas Ibadah'; const el = document.getElementById('list-ibadah'); kontenAsli = el ? el.outerHTML : ''; }
+    else if (jenis === 'keluar') { title.innerText = 'Keluar Antrian'; const el = document.getElementById('list-keluar'); kontenAsli = el ? el.outerHTML : ''; }
+    else if (jenis === 'autokick') { title.innerText = 'Autokick (Pelanggaran)'; const el = document.getElementById('list-autokick'); kontenAsli = el ? el.outerHTML : ''; }
+    else if (jenis === 'rekap') {
+        title.innerText = 'Rekap Bawa Customer per Promotor';
+        const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
+        kontenAsli = wrappers[0] ? wrappers[0].outerHTML : '';
+    } else if (jenis === 'bulanan') {
+        title.innerText = 'Total Customer Walk-In per Bulan';
+        const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
+        kontenAsli = wrappers[1] ? wrappers[1].outerHTML : '';
+    }
+    body.innerHTML = kontenAsli;
     popup.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 window.bukaPopupAktivitas = bukaPopupAktivitas;
+
 function tutupPopupAktivitas() {
     const popup = document.getElementById('popup-aktivitas');
     if (!popup) return;
     popup.classList.remove('active');
+    document.body.style.overflow = '';
 }
 window.tutupPopupAktivitas = tutupPopupAktivitas;
+
 document.addEventListener('click', (e) => {
     const popup = document.getElementById('popup-aktivitas');
     if (popup && e.target === popup) tutupPopupAktivitas();
 });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupPopupAktivitas(); });
 
 /* ============================================================ */
 /* ========== ADMIN MENU ======================================= */
@@ -1791,44 +1899,238 @@ function bukaPopupAdminAdmin(jenis) {
     const title = document.getElementById('popup-aktivitas-title');
     const body = document.getElementById('popup-aktivitas-body');
     if (!popup || !title || !body) return;
+    const ICONS = {
+        buka: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`,
+        tutup: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
+        tambahAntri: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+        tambahSales: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
+        hapus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+        keluarkan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+        paksa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+        lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+        reset: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
+        gpsOn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+        gpsOff: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`
+    };
+    const headers = { operasional: 'Operasional Sistem', urutan: 'Manajemen Urutan', darurat: 'Tindakan Darurat', gps: 'Konfigurasi GPS Toko', user: 'Kelola Promotor' };
     let html = '';
-    
     if (jenis === 'operasional') {
-        title.innerText = 'Operasional Sistem';
+        title.innerText = headers.operasional;
         const sedangBuka = statusSistemGlobal === "BUKA";
-        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${sedangBuka ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${sedangBuka ? '✅ Sistem BUKA' : '❌ Sistem TUTUP'}</div>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('${sedangBuka ? 'TUTUP' : 'BUKA'}')"><span class="popup-btn-icon">⚙</span><span class="popup-btn-text">${sedangBuka ? 'Tutup Sistem' : 'Buka Sistem'}<small>${sedangBuka ? 'Hentikan antrian' : 'Aktifkan antrian'}</small></span></button>`;
+        let tombolUtama = sedangBuka
+            ? `<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('TUTUP')"><span class="popup-btn-icon">${ICONS.tutup}</span><span class="popup-btn-text">Tutup Sistem Antrian<small>Hentikan sementara antrian</small></span></button>`
+            : `<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('BUKA')"><span class="popup-btn-icon">${ICONS.buka}</span><span class="popup-btn-text">Buka Sistem Antrian<small>Aktifkan kembali antrian</small></span></button>`;
+        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${sedangBuka ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${sedangBuka ? '✅ Sistem Sedang BUKA' : '❌ Sistem Sedang TUTUP'}</div>${tombolUtama}<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalBranding()"><span class="popup-btn-icon">🎨</span><span class="popup-btn-text">Pengaturan Branding<small>Nama, logo & lokasi toko</small></span></button>`;
     } else if (jenis === 'urutan') {
-        title.innerText = 'Manajemen Urutan';
+        title.innerText = headers.urutan;
         html = `
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAntriAdmin()"><span class="popup-btn-icon">➕</span><span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKeluarkanAntrian()"><span class="popup-btn-icon">➖</span><span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan</small></span></button>`;
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAntriAdmin()"><span class="popup-btn-icon">${ICONS.tambahAntri}</span><span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKeluarkanAntrian()"><span class="popup-btn-icon">${ICONS.keluarkan}</span><span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan aktif</small></span></button>
+        `;
     } else if (jenis === 'darurat') {
-        title.innerText = 'Tindakan Darurat';
+        title.innerText = headers.darurat;
         html = `
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalPaksaBawaCustomer()"><span class="popup-btn-icon">⚡</span><span class="popup-btn-text">Paksa Bawa Customer<small>Set langsung melayani</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalLockPromotorAdmin()"><span class="popup-btn-icon">🔒</span><span class="popup-btn-text">Kunci Akun Promotor<small>Hukuman/lock</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetTotal()"><span class="popup-btn-icon">🔄</span><span class="popup-btn-text">Reset Semua Antrian<small>Hapus antrian hari ini</small></span></button>`;
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalPaksaBawaCustomer()"><span class="popup-btn-icon">${ICONS.paksa}</span><span class="popup-btn-text">Paksa Bawa Customer<small>Set promotor langsung melayani</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalLockPromotorAdmin()"><span class="popup-btn-icon">${ICONS.lock}</span><span class="popup-btn-text">Kontrol Hukuman / Lock Akun<small>Kunci/buka akun promotor</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetTotal()"><span class="popup-btn-icon">${ICONS.reset}</span><span class="popup-btn-text">Reset Seluruh Antrian Aktif<small>Hapus semua antrian hari ini</small></span></button>
+        `;
     } else if (jenis === 'gps') {
-        title.innerText = 'Konfigurasi GPS Toko';
+        title.innerText = headers.gps;
         const aktif = koordinatToko.lat && koordinatToko.lng;
-        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${aktif ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${aktif ? '📍 GPS Aktif - Radius ' + koordinatToko.radius + 'm' : '❌ GPS Nonaktif'}</div>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(true)"><span class="popup-btn-icon">📍</span><span class="popup-btn-text">Aktifkan GPS Toko<small>Ambil koordinat HP</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(false)"><span class="popup-btn-icon">🚫</span><span class="popup-btn-text">Matikan GPS Toko<small>Check-in bebas</small></span></button>`;
+        const statusHtml = aktif
+            ? `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; background:rgba(5,150,105,0.15); color:#34d399;">📍 GPS Aktif — Radius ${koordinatToko.radius}m</div>`
+            : `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; background:rgba(220,38,38,0.15); color:#f87171;">❌ GPS Nonaktif — Check-in bebas</div>`;
+        html = `${statusHtml}
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(true)"><span class="popup-btn-icon">${ICONS.gpsOn}</span><span class="popup-btn-text">Aktifkan GPS Toko<small>Ambil koordinat HP sekarang</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(false)"><span class="popup-btn-icon">${ICONS.gpsOff}</span><span class="popup-btn-text">Matikan GPS Toko<small>Promotor bebas check-in</small></span></button>`;
     } else if (jenis === 'user') {
-        title.innerText = '👥 Kelola Promotor';
+        title.innerText = headers.user;
         html = `
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahPromotor()"><span class="popup-btn-icon">➕</span><span class="popup-btn-text">Tambah Promotor Baru<small>Daftarkan promotor</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetPin()"><span class="popup-btn-icon">🔑</span><span class="popup-btn-text">Reset PIN ke Default<small>Kembalikan ke 123456</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalAktifNonaktif()"><span class="popup-btn-icon">👤</span><span class="popup-btn-text">Aktif / Nonaktifkan Promotor<small>Blokir atau buka akun</small></span></button>
-        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalHapusPromotor()"><span class="popup-btn-icon">🗑</span><span class="popup-btn-text">Hapus Promotor Permanen<small>Hapus dari sistem</small></span></button>`;
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahPromotor()"><span class="popup-btn-icon">➕</span><span class="popup-btn-text">Tambah Promotor Baru<small>PIN awal: 123456</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetPin()"><span class="popup-btn-icon">🔑</span><span class="popup-btn-text">Reset PIN ke 123456<small>Untuk promotor lupa PIN</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalAktifNonaktif()"><span class="popup-btn-icon">👤</span><span class="popup-btn-text">Aktif / Nonaktifkan<small>Blokir atau buka akun</small></span></button>
+            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalHapusPromotor()"><span class="popup-btn-icon">${ICONS.hapus}</span><span class="popup-btn-text">Hapus Promotor Permanen<small>Tidak bisa dibatalkan</small></span></button>
+        `;
     }
     body.innerHTML = html;
     popup.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 window.bukaPopupAdminAdmin = bukaPopupAdminAdmin;
 
-/* ========== KELOLA PROMOTOR (ADMIN) ========== */
+/* ========== OPERASIONAL ========== */
+function bukaModalToggleSistem(target) {
+    tampilkanModalKonfirmasi(target === 'BUKA' ? 'Mulai Antrian' : 'Hentikan Antrian', `Ubah status sistem menjadi: ${target}?`, () => {
+        window.dbUpdate(window.dbRef(window.db, 'setting'), { statusAntrian: target }).then(() => tampilkanModal("Berhasil", `Sistem antrian: ${target}`));
+    });
+}
+window.bukaModalToggleSistem = bukaModalToggleSistem;
+
+function bukaModalBranding() {
+    const s = window.settingGlobal || {};
+    document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding";
+    document.getElementById('modal-desc').innerHTML = `
+        <label style="font-size:11px; font-weight:700;">Nama Sistem:</label><br>
+        <input type="text" id="branding-nama-sistem" value="${(s.namaSistem||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
+        <label style="font-size:11px; font-weight:700;">Nama Toko:</label><br>
+        <input type="text" id="branding-nama-toko" value="${(s.namaToko||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
+        <label style="font-size:11px; font-weight:700;">URL Logo:</label><br>
+        <input type="url" id="branding-logo-url" value="${(s.logoUrl||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
+    `;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="simpanBranding()">Simpan</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalBranding = bukaModalBranding;
+
+async function simpanBranding() {
+    const namaSistem = document.getElementById('branding-nama-sistem').value.trim();
+    const namaToko = document.getElementById('branding-nama-toko').value.trim();
+    const logoUrl = document.getElementById('branding-logo-url').value.trim();
+    if (!namaSistem || !namaToko) { tampilkanModal("Perhatian", "Nama tidak boleh kosong!"); return; }
+    try { await window.dbUpdate(window.dbRef(window.db, 'setting'), { namaSistem, namaToko, logoUrl }); tutupModal(); tampilkanModal("Berhasil", "Branding tersimpan."); }
+    catch (e) { tampilkanModal("Gagal", "Error: " + e.message); }
+}
+window.simpanBranding = simpanBranding;
+
+/* ========== URUTAN ========== */
+function bukaModalTambahAntriAdmin() {
+    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih --</option>';
+    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
+    document.getElementById('modal-title').innerText = "Masukkan Promotor ke Antrian";
+    document.getElementById('modal-desc').innerHTML = `Kategori:<br><select id="admin-select-kategori" style="margin-bottom:10px;"><option value="HA">HA</option><option value="AV">AV</option></select><br>Promotor:<br><select id="admin-select-sales" style="margin-bottom:10px;">${options}</select>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahAntri()">Proses</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalTambahAntriAdmin = bukaModalTambahAntriAdmin;
+
+async function eksekusiTambahAntri() {
+    const kat = document.getElementById('admin-select-kategori').value;
+    const nama = document.getElementById('admin-select-sales').value;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    const now = waktuServer();
+    try {
+        await window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama, status: "Standby", waktuStandby: now, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 });
+        tutupModal(); tampilkanModal("Berhasil", `${nama} masuk antrian ${kat}.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiTambahAntri = eksekusiTambahAntri;
+
+function bukaModalKeluarkanAntrian() {
+    if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
+    let options = '<option value="">-- Pilih --</option>';
+    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama} (${n.status})</option>`);
+    document.getElementById('modal-title').innerText = "Keluarkan dari Antrian";
+    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-keluar-sales">${options}</select>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiKeluarAntrian()">Keluarkan</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalKeluarkanAntrian = bukaModalKeluarkanAntrian;
+
+async function eksekusiKeluarAntrian() {
+    const nama = document.getElementById('select-keluar-sales').value;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    try {
+        await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
+        await window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama, aksi: "KeluarAntrian", waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: "Admin" });
+        tutupModal(); tampilkanModal("Berhasil", `${nama} dikeluarkan.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiKeluarAntrian = eksekusiKeluarAntrian;
+
+/* ========== DARURAT ========== */
+function bukaModalPaksaBawaCustomer() {
+    if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
+    let options = '<option value="">-- Pilih --</option>';
+    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama} (${n.status})</option>`);
+    document.getElementById('modal-title').innerText = "Paksa Bawa Customer";
+    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-paksa-sales">${options}</select>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiPaksa()">Proses</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalPaksaBawaCustomer = bukaModalPaksaBawaCustomer;
+
+async function eksekusiPaksa() {
+    const nama = document.getElementById('select-paksa-sales').value;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    const now = waktuServer();
+    try {
+        await window.dbUpdate(window.dbRef(window.db, 'antrian/' + clean), { status: "Melayani", waktuMulaiMelayani: now, timerMulai: 0 });
+        await window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama, aksi: "BawaCustomer", waktu: now, tanggal: getTanggalIndo(), hasil: "", waktuMulai: now, keterangan: "Dipaksa Admin" });
+        tutupModal(); tampilkanModal("Berhasil", `${nama} diset melayani.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiPaksa = eksekusiPaksa;
+
+function bukaModalLockPromotorAdmin() {
+    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih --</option>';
+    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
+    document.getElementById('modal-title').innerText = "Kontrol Hukuman / Lock Akun";
+    document.getElementById('modal-desc').innerHTML = `
+        Promotor:<br><select id="admin-select-sales-lock" style="margin-bottom:10px;">${options}</select>
+        Aksi:<br><select id="admin-select-status-lock" style="margin-bottom:10px;"><option value="LOCK">🔒 Kunci Akun</option><option value="UNLOCK">🔓 Buka Akun</option></select>
+        Alasan:<br><select id="admin-select-alasan" style="margin-bottom:10px;"><option>Pulang tanpa keluar antrian</option><option>Istirahat tanpa keluar antrian</option><option>Pelanggaran lain</option></select>
+        Durasi (menit):<br><input type="number" id="admin-input-durasi-menit" value="60" min="1" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
+    `;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiLock()">Proses</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalLockPromotorAdmin = bukaModalLockPromotorAdmin;
+
+async function eksekusiLock() {
+    const nama = document.getElementById('admin-select-sales-lock').value;
+    const aksi = document.getElementById('admin-select-status-lock').value;
+    const alasan = document.getElementById('admin-select-alasan').value;
+    const durasi = parseInt(document.getElementById('admin-input-durasi-menit').value) || 60;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    try {
+        if (aksi === "LOCK") {
+            const now = waktuServer();
+            const selesai = now + (durasi * 60 * 1000);
+            await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { nama, locked: true, alasan, waktuMulaiLock: now, waktuSelesaiLock: selesai, waktuDibuat: now });
+            await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
+            tutupModal(); tampilkanModal("Berhasil", `${nama} dikunci ${durasi} menit.`);
+        } else {
+            await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0 });
+            tutupModal(); tampilkanModal("Berhasil", `${nama} dibuka.`);
+        }
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiLock = eksekusiLock;
+
+function bukaModalResetTotal() {
+    tampilkanModalKonfirmasi("Reset Semua Antrian", "⚠️ Semua antrian aktif akan dihapus. Lanjutkan?", async () => {
+        try { await window.dbRemove(window.dbRef(window.db, 'antrian')); tampilkanModal("Berhasil", "Semua antrian direset."); }
+        catch (e) { tampilkanModal("Gagal", e.message); }
+    });
+}
+window.bukaModalResetTotal = bukaModalResetTotal;
+
+/* ========== GPS ========== */
+function toggleGPSAdmin(aktif) {
+    if (!aktif) {
+        tampilkanModalKonfirmasi("Matikan GPS", "Promotor bebas check-in?", () => {
+            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: "", lngToko: "", radiusToko: 50 }).then(() => tampilkanModal("Berhasil", "GPS dimatikan."));
+        });
+        return;
+    }
+    if (!navigator.geolocation) { tampilkanModal("Gagal", "GPS tidak didukung."); return; }
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: pos.coords.latitude, lngToko: pos.coords.longitude, radiusToko: 50 }).then(() => tampilkanModal("Berhasil", `GPS aktif:\n${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}\nRadius: 50m`));
+        },
+        (err) => tampilkanModal("Gagal", "Lokasi ditolak: " + err.message),
+        { enableHighAccuracy: true, timeout: 15000 }
+    );
+}
+window.toggleGPSAdmin = toggleGPSAdmin;
+
+/* ========== KELOLA PROMOTOR ========== */
 function bukaModalTambahPromotor() {
     document.getElementById('modal-title').innerText = '➕ Tambah Promotor Baru';
     document.getElementById('modal-desc').innerHTML = `
@@ -1854,7 +2156,6 @@ async function eksekusiTambahPromotor() {
     const salt = generateSalt();
     const hash = await hashPin(PIN_AWAL, salt);
     try {
-        // Cek duplikat
         const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
         if (cek.exists()) { tampilkanModal("Perhatian", "Promotor dengan nama ini sudah terdaftar!"); return; }
         await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
@@ -1955,7 +2256,6 @@ async function eksekusiHapusPromotor() {
     const clean = sanitizeNama(nama);
     try {
         await window.dbRemove(window.dbRef(window.db, 'users/promotor/' + clean));
-        // Hapus dari data (mastersales)
         const snap = await window.dbGet(window.dbRef(window.db, 'data'));
         if (snap.exists()) {
             const all = snap.val();
@@ -1974,141 +2274,62 @@ async function eksekusiHapusPromotor() {
 }
 window.eksekusiHapusPromotor = eksekusiHapusPromotor;
 
-/* ========== OPERASIONAL ADMIN ========== */
-function bukaModalToggleSistem(target) {
-    tampilkanModalKonfirmasi(target === 'BUKA' ? 'Mulai Antrian' : 'Hentikan Antrian', `Ubah status menjadi: ${target}?`, () => {
-        window.dbUpdate(window.dbRef(window.db, 'setting'), { statusAntrian: target }).then(() => tampilkanModal("Berhasil", `Status: ${target}`));
-    });
-}
-window.bukaModalToggleSistem = bukaModalToggleSistem;
-
-function bukaModalTambahAntriAdmin() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Masukkan ke Antrian";
-    document.getElementById('modal-desc').innerHTML = `Kategori:<br><select id="admin-select-kategori" style="margin-bottom:10px;"><option value="HA">HA</option><option value="AV">AV</option></select><br>Promotor:<br><select id="admin-select-sales" style="margin-bottom:10px;">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahAntri()">Proses</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalTambahAntriAdmin = bukaModalTambahAntriAdmin;
-
-async function eksekusiTambahAntri() {
-    const kat = document.getElementById('admin-select-kategori').value;
-    const nama = document.getElementById('admin-select-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    const now = waktuServer();
-    try {
-        await window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama, status: "Standby", waktuStandby: now, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 });
-        tutupModal(); tampilkanModal("Berhasil", `${nama} masuk antrian ${kat}.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiTambahAntri = eksekusiTambahAntri;
-
-function bukaModalKeluarkanAntrian() {
-    if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Keluarkan dari Antrian";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-keluar-sales">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiKeluarAntrian()">Keluarkan</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalKeluarkanAntrian = bukaModalKeluarkanAntrian;
-
-async function eksekusiKeluarAntrian() {
-    const nama = document.getElementById('select-keluar-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
-        await window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama, aksi: "KeluarAntrian", waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: "Admin" });
-        tutupModal(); tampilkanModal("Berhasil", `${nama} dikeluarkan.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiKeluarAntrian = eksekusiKeluarAntrian;
-
-function bukaModalPaksaBawaCustomer() {
-    if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama} (${n.status})</option>`);
-    document.getElementById('modal-title').innerText = "Paksa Bawa Customer";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-paksa-sales">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiPaksa()">Proses</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalPaksaBawaCustomer = bukaModalPaksaBawaCustomer;
-
-async function eksekusiPaksa() {
-    const nama = document.getElementById('select-paksa-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    const now = waktuServer();
-    try {
-        await window.dbUpdate(window.dbRef(window.db, 'antrian/' + clean), { status: "Melayani", waktuMulaiMelayani: now, timerMulai: 0 });
-        await window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama, aksi: "BawaCustomer", waktu: now, tanggal: getTanggalIndo(), hasil: "", waktuMulai: now, keterangan: "Dipaksa Admin" });
-        tutupModal(); tampilkanModal("Berhasil", `${nama} diset melayani.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiPaksa = eksekusiPaksa;
-
-function bukaModalLockPromotorAdmin() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Kunci Akun Promotor";
-    document.getElementById('modal-desc').innerHTML = `
-        Promotor:<br><select id="admin-select-sales-lock" style="margin-bottom:10px;">${options}</select>
-        Alasan:<br><select id="admin-select-alasan" style="margin-bottom:10px;"><option>Pulang tanpa keluar antrian</option><option>Istirahat tanpa keluar antrian</option><option>Pelanggaran lain</option></select>
-        Durasi (menit):<br><input type="number" id="admin-input-durasi-menit" value="60" min="1" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-    `;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiLock()">Kunci</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalLockPromotorAdmin = bukaModalLockPromotorAdmin;
-
-async function eksekusiLock() {
-    const nama = document.getElementById('admin-select-sales-lock').value;
-    const alasan = document.getElementById('admin-select-alasan').value;
-    const durasi = parseInt(document.getElementById('admin-input-durasi-menit').value) || 60;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        const now = waktuServer();
-        const selesai = now + (durasi * 60 * 1000);
-        await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { nama, locked: true, alasan, waktuMulaiLock: now, waktuSelesaiLock: selesai });
-        await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
-        tutupModal(); tampilkanModal("Berhasil", `${nama} dikunci ${durasi} menit.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiLock = eksekusiLock;
-
-function bukaModalResetTotal() {
-    tampilkanModalKonfirmasi("Reset Semua Antrian", "⚠️ Semua antrian aktif akan dihapus. Lanjutkan?", async () => {
-        try { await window.dbRemove(window.dbRef(window.db, 'antrian')); tampilkanModal("Berhasil", "Antrian direset."); }
-        catch (e) { tampilkanModal("Gagal", e.message); }
-    });
-}
-window.bukaModalResetTotal = bukaModalResetTotal;
-
-function toggleGPSAdmin(aktif) {
-    if (!aktif) {
-        tampilkanModalKonfirmasi("Matikan GPS", "Promotor bebas check-in?", () => {
-            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: "", lngToko: "", radiusToko: 50 }).then(() => tampilkanModal("Berhasil", "GPS dimatikan."));
-        });
-        return;
+/* ============================================================ */
+/* ========== BRANDING ========================================= */
+/* ============================================================ */
+function applyBranding(setting) {
+    if (!setting) return;
+    const namaToko = setting.namaToko || "Nama Toko";
+    const namaSistem = setting.namaSistem || "Antrian Walk-In Promotor";
+    const alamat = setting.alamat || "";
+    const logoUrl = setting.logoUrl || "";
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) titleEl.innerText = `${namaSistem} - ${namaToko}`;
+    const headlineEl = document.getElementById('fut-headline-text');
+    if (headlineEl) headlineEl.innerText = namaSistem;
+    const subheadlineEl = document.getElementById('fut-subheadline');
+    if (subheadlineEl) subheadlineEl.innerText = alamat ? `${namaToko} · ${alamat}` : namaToko;
+    if (logoUrl) {
+        const logoEl = document.getElementById('logo-app');
+        if (logoEl) {
+            logoEl.src = logoUrl;
+            logoEl.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = '🛸'; };
+        }
     }
-    if (!navigator.geolocation) { tampilkanModal("Gagal", "GPS tidak didukung."); return; }
-    navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: pos.coords.latitude, lngToko: pos.coords.longitude, radiusToko: 50 }).then(() => tampilkanModal("Berhasil", `GPS aktif:\n${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`));
-        },
-        (err) => tampilkanModal("Gagal", "Lokasi ditolak: " + err.message),
-        { enableHighAccuracy: true, timeout: 15000 }
-    );
 }
-window.toggleGPSAdmin = toggleGPSAdmin;
+
+/* ============================================================ */
+/* ========== MASTER SALES ===================================== */
+/* ============================================================ */
+function prosesMasterSales(dataRaw) {
+    let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw);
+    let names = [];
+    listSales.forEach(item => {
+        let salesObj = item;
+        if (item && item.record) salesObj = item.record;
+        let nama = salesObj && (salesObj.NAMA_PROMOTOR || salesObj.nama_promotor || salesObj.nama || salesObj.Nama_Sales || salesObj.nama_sales || salesObj.name || salesObj.promotor || salesObj.NAMA || salesObj.Nama);
+        if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim());
+    });
+    names = [...new Set(names)].sort();
+    masterSalesGlobal = names.map(n => ({ nama: n }));
+    isiDaftarPromotorKeDropdown(names);
+}
+
+function isiDaftarPromotorKeDropdown(names) {
+    const sel = document.getElementById('login-nama-promotor');
+    if (!sel) return;
+    let html = '<option value="">-- Pilih Nama Anda --</option>';
+    names.forEach(n => {
+        const safe = String(n).replace(/"/g, '&quot;');
+        html += `<option value="${safe}">${n}</option>`;
+    });
+    sel.innerHTML = html;
+    const liveEl = document.getElementById('live-status-text');
+    if (liveEl) {
+        if (daftarAntrianGlobal.length > 0) liveEl.innerText = `${daftarAntrianGlobal.length} Orang Sedang Antri`;
+        else liveEl.innerText = names.length ? `${names.length} promotor terdaftar` : 'Belum ada promotor';
+    }
+}
 
 /* ============================================================ */
 /* ========== INIT EVENT ======================================= */

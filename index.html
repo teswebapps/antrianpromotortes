@@ -2858,11 +2858,11 @@ body.dark-mode .dark-mode-btn {
 body.dark-mode .dark-mode-btn:hover {
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.6) !important;
 }
-  /* ============================================================ */
-/* ===== FIX DROPDOWN — PAKSA SCROLL ========================== */
+/* ============================================================ */
+/* ===== FIX DROPDOWN — SCROLL BISA, TAPI TIDAK MELEBAR ====== */
 /* ============================================================ */
 
-/* 1. Parent wrapper harus overflow visible */
+/* RESET dulu — matikan fix yang salah */
 #login-screen,
 #login-screen .fut-container,
 #login-screen .fut-right,
@@ -2873,33 +2873,50 @@ body.dark-mode .dark-mode-btn:hover {
     max-height: none !important;
 }
 
-/* 2. Dropdown menu — scroll-able */
+/* Kembalikan card login biar tidak tembus keluar */
+#login-screen .fut-card {
+    overflow: hidden !important;   /* ← penting: konten di dalam card */
+    max-height: 92vh !important;
+}
+
+#login-screen .fut-container {
+    overflow: visible !important;   /* container tetap visible */
+}
+
+/* Field dropdown - jangan dibatasi */
+#login-screen .fut-field {
+    position: relative !important;
+}
+
+/* Dropdown menu — scroll di dalam card */
 #custom-select-menu {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 100% !important;
+    margin-top: 6px !important;
     max-height: 50vh !important;
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
     overscroll-behavior: contain !important;
-    position: absolute !important;
-    z-index: 999999 !important;
-    pointer-events: auto !important;
+    z-index: 99999 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* 3. Menu item — bisa diklik */
+/* Item dropdown */
 #custom-select-menu .option {
-    pointer-events: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    font-size: 14px !important;
     cursor: pointer !important;
-    touch-action: manipulation !important;
-    padding: 14px 16px !important;
-    min-height: 48px !important;
-    font-size: 15px !important;
-}
-
-/* 4. Trigger */
-#custom-select-trigger {
-    position: relative !important;
-    z-index: 100000 !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
 }
 </style>
 </head>

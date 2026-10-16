@@ -12,7 +12,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDrrS4E_6e3G1DBfqkFbWoYLhdq6ZIzapg",
@@ -28,30 +28,56 @@
   const db = getDatabase(app);
   const auth = getAuth(app);
 
-  signInAnonymously(auth)
-    .then(() => {
-      window.db = db;
-      window.dbRef = ref;
-      window.dbSet = set;
-      window.dbGet = get;
-      window.dbUpdate = update;
-      window.dbRemove = remove;
-      window.dbOnValue = onValue;
-      window.dbPush = push;
-      window.authUid = auth.currentUser.uid;
-      window.serverTimeOffset = 0;
-      window.dbOnValue(window.dbRef(db, '.info/serverTimeOffset'), (snap) => {
-        window.serverTimeOffset = snap.val() || 0;
-      });
-      window.dispatchEvent(new Event('firebase-ready'));
-    })
-    .catch((error) => {
-      console.error("Anonymous login gagal:", error);
-      alert("Gagal koneksi ke server. Cek koneksi internet dan refresh halaman.");
-    });
+  window.db = db;
+  window.dbRef = ref;
+  window.dbSet = set;
+  window.dbGet = get;
+  window.dbUpdate = update;
+  window.dbRemove = remove;
+  window.dbOnValue = onValue;
+  window.dbPush = push;
+  window.firebaseAuth = auth;
+  window.firebaseSignOut = signOut;
+  window.firebaseGoogleAuthProvider = GoogleAuthProvider;
+  window.firebaseSignInWithPopup = signInWithPopup;
+  window.serverTimeOffset = 0;
+  window.dbOnValue(window.dbRef(db, '.info/serverTimeOffset'), (snap) => {
+    window.serverTimeOffset = snap.val() || 0;
+  });
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) setTimeout(() => location.reload(), 1000);
+  // Verifikasi login Google
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.firebaseUser = null;
+      window.dispatchEvent(new Event('firebase-ready'));
+      return;
+    }
+    if (!user.email) {
+      alert('Akun Google Anda tidak mengirimkan email.');
+      await signOut(auth);
+      return;
+    }
+    try {
+      const emailKey = user.email.replace(/\./g, ',');
+      const snap = await get(ref(db, 'users/whitelist/' + emailKey));
+      if (!snap.exists()) {
+        alert('Akun Google Anda (' + user.email + ') tidak terdaftar. Hubungi admin.');
+        await signOut(auth);
+        return;
+      }
+      const wl = snap.val();
+      window.firebaseUser = {
+        email: user.email,
+        uid: user.uid,
+        role: wl.role || 'PROMOTOR',
+        nama: wl.nama || user.displayName || user.email
+      };
+      window.dispatchEvent(new Event('firebase-ready'));
+    } catch (err) {
+      console.error('Gagal verifikasi whitelist:', err);
+      alert('Gagal verifikasi akun: ' + err.message);
+      await signOut(auth);
+    }
   });
 </script>
 
@@ -718,48 +744,28 @@ body {
                     <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='🛸';">
                 </div>
 
-                <div class="login-tabs">
-                    <button type="button" class="login-tab active" id="tab-promotor" onclick="switchLoginTab('promotor')">PROMOTOR</button>
-                    <button type="button" class="login-tab" id="tab-admin" onclick="switchLoginTab('admin')">ADMIN</button>
+                <div class="login-hero">
+                    <h1 class="login-hero-title">Selamat Datang</h1>
+                    <p class="login-hero-sub">Masuk dengan akun Google Anda untuk melanjutkan</p>
                 </div>
 
-                <div id="form-promotor">
-                    <div class="fut-field">
-                        <label>Pilih Nama</label>
-                        <input type="hidden" id="login-pilih-sales" value="">
-                        <div id="custom-select-trigger" onclick="toggleCustomSelect()" class="fut-select">
-                            <span id="custom-select-label">-- Memuat daftar promotor --</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </div>
-                        <div id="custom-select-menu" class="fut-menu"></div>
-                    </div>
-                </div>
-
-                <div id="form-admin" style="display:none;">
-                    <div class="fut-field">
-                        <label>Username Admin</label>
-                        <input type="text" id="login-admin-username" class="fut-input-admin" placeholder="Masukkan username admin" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="fut-field">
-                    <label>Masukkan PIN</label>
-                    <input type="password" id="login-pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="off" class="fut-input">
-                </div>
-
-                <div id="login-error" class="fut-error"></div>
-
-                <button type="button" id="btn-login-promotor" class="fut-btn">
-                    <span id="btn-login-text">MASUK</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
+                <button type="button" id="btn-login-google" class="btn-google" onclick="loginDenganGoogle()">
+                    <span class="btn-google-icon">
+                        <svg viewBox="0 0 48 48" width="22" height="22">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                    </span>
+                    <span id="btn-login-text" class="btn-google-text">Lanjutkan dengan Google</span>
+                    <span class="btn-google-arrow">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
                 </button>
-
-                <p class="fut-footer">Belum punya PIN? <span>Hubungi admin</span></p>
             </div>
         </div>
     </div>
@@ -782,1378 +788,7 @@ body {
         <span id="badge-status-text">STATUS ANTRIAN: OPEN</span>
     </div>
 
-    <div id="panel-login" style="display: none;">
-        <div class="input-group">
-            <label>Pilih Nama Anda (Kunci Perangkat)</label>
-            <select id="pilih-sales"><option value="">-- Pilih Nama Anda --</option></select>
-        </div>
-        <button type="button" class="btn-customer" onclick="simpanAkunHP()">Simpan & Kunci di HP Ini</button>
-    </div>
-
-    <div id="panel-menu-utama" style="display: none;">
-        <div class="user-badge">
-            <div>
-                <span style="color: var(--cyber-text-muted);">Promotor:</span>
-                <strong id="label-user-aktif" style="font-size: 14px;">-</strong>
-            </div>
-        </div>
-
-        <div id="box-lock-timer" style="display:none; margin-bottom: 16px;">
-            <div class="timer-card-admin">
-                <span class="timer-badge-title">🔒 AKUN DIKUNCI</span>
-                <div class="timer-display" id="lock-timer-display" style="font-size:26px; font-weight:800; color:#fbbf24; margin-top:6px; letter-spacing:1.5px;">--:--</div>
-                <div id="lock-reason-display" style="font-size:11px; color:#ffb3bc; margin-top:6px; font-weight:600;">Alasan: -</div>
-                <div style="font-size:10px; color:#ff8585; margin-top:4px;">Akun akan terbuka otomatis setelah timer habis</div>
-            </div>
-        </div>
-
-        <div class="timer-box-wrapper">
-            <div class="timer-card-admin ha">
-                <div><span class="timer-badge-title">GILIRAN HA SAAT INI</span><div id="promotor-nama-ha" class="promotor-nama-aktif">Memuat...</div></div>
-            </div>
-            <div class="timer-card-admin av">
-                <div><span class="timer-badge-title">GILIRAN AV SAAT INI</span><div id="promotor-nama-av" class="promotor-nama-aktif">Memuat...</div></div>
-            </div>
-        </div>
-
-        <div id="section-checkin-awal" style="display: none;">
-            <div class="gps-box">
-                <div style="font-size:11px; font-weight:800; color:var(--cyber-cyan); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.3px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
-                <div id="map-promotor"></div>
-                <div id="info-radius" class="info-radius">📡 Mendeteksi lokasi Anda...</div>
-            </div>
-            <div class="input-group">
-                <label>Check-in Kehadiran</label>
-                <select id="pilih-kategori-hadir">
-                    <option value="HA">HA (Home Appliance)</option>
-                    <option value="AV">AV (Audio Video)</option>
-                </select>
-            </div>
-            <button type="button" id="btn-hadir" class="btn-success btn-disabled" onclick="aksiHadirKerja()" disabled>Menunggu Lokasi...</button>
-        </div>
-
-        <div id="section-normal" style="display: none;">
-            <div class="input-group" id="group-pilih-kategori-normal">
-                <label>Pilih Kategori Antrian</label>
-                <select id="pilih-kategori-normal">
-                    <option value="HA">HA (Home Appliance)</option>
-                    <option value="AV">AV (Audio Video)</option>
-                </select>
-            </div>
-            <button type="button" id="btn-daftar-antrian" class="btn-success" onclick="aksiDaftarAntrianNormal()" style="display: none;">Daftar Antrian</button>
-            <button type="button" id="btn-utama-customer" class="btn-customer" onclick="aksiUtamaCustomer()" style="display: none; margin-top: 10px;">Sudah Membawa Customer</button>
-            <button type="button" id="btn-selesai-closing" class="btn-closing" onclick="aksiSelesaiClosing()" style="display: none; margin-top: 10px;">SELESAI MELAYANI</button>
-            <button type="button" id="btn-utama-cs" class="btn-purple" onclick="aksiToggleCS()" style="display: none; margin-top: 10px;">DIPANGGIL CS/GUDANG</button>
-            <button type="button" id="btn-utama-ibadah" class="btn-indigo" onclick="aksiToggleIbadah()" style="display: none; margin-top: 10px;">SEDANG IBADAH</button>
-            <button type="button" id="btn-keluar-istirahat" class="btn-maroon" onclick="bukaModalKeluarIstirahat()" style="display: none; margin-top: 10px;">KELUAR ANTRIAN</button>
-        </div>
-
-        <div class="admin-panel-wrapper" id="admin-panel-wrapper" style="display: none;">
-            <div class="admin-menu-header">
-                <span class="judul">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
-                        <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-                        <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-                        <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
-                        <line x1="17" y1="16" x2="23" y2="16"/>
-                    </svg>
-                    Menu Admin
-                </span>
-            </div>
-            <div class="admin-menu-grid">
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('operasional')">
-                    <span class="admin-menu-card-icon t-operasional">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Operasional<br>Sistem</span>
-                </button>
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('urutan')">
-                    <span class="admin-menu-card-icon t-urutan">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-                            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
-                            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Manajemen<br>Urutan</span>
-                </button>
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('darurat')">
-                    <span class="admin-menu-card-icon t-darurat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Tindakan<br>Darurat</span>
-                </button>
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('gps')">
-                    <span class="admin-menu-card-icon t-gps">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Konfigurasi<br>GPS Toko</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div style="margin-top: 20px; text-align: left;">
-        <div class="live-urutan-title">LIVE URUTAN KATEGORI HA</div>
-        <ul id="list-HA" class="list-antrian"><li><span>Memuat...</span></li></ul>
-        <div class="live-urutan-title" style="margin-top: 20px;">LIVE URUTAN KATEGORI AV</div>
-        <ul id="list-AV" class="list-antrian"><li><span>Memuat...</span></li></ul>
-    </div>
-
-    <div class="aktivitas-section">
-        <div class="aktivitas-header-toggle" id="toggle-aktivitas" onclick="toggleAktivitasSection()">
-            <span class="judul">
-                <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-                Aktivitas Hari Ini
-            </span>
-            <span class="arrow" id="arrow-aktivitas">
-                <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </span>
-        </div>
-        <div class="aktivitas-content" id="content-aktivitas">
-            <div class="aktivitas-menu-grid">
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bawa')">
-                    <span class="aktivitas-menu-icon t-bawa-customer"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
-                    <span class="aktivitas-menu-label">Bawa Customer</span>
-                    <span class="aktivitas-menu-count" id="count-bawa">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('ibadah')">
-                    <span class="aktivitas-menu-icon t-ibadah"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-4 7 4"/><path d="M5 16l7-4 7 4"/></svg></span>
-                    <span class="aktivitas-menu-label">Ibadah</span>
-                    <span class="aktivitas-menu-count" id="count-ibadah">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('keluar')">
-                    <span class="aktivitas-menu-icon t-keluar"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-                    <span class="aktivitas-menu-label">Keluar Antrian</span>
-                    <span class="aktivitas-menu-count" id="count-keluar">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('autokick')">
-                    <span class="aktivitas-menu-icon t-autokick"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg></span>
-                    <span class="aktivitas-menu-label">Autokick</span>
-                    <span class="aktivitas-menu-count" id="count-autokick">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('rekap')">
-                    <span class="aktivitas-menu-icon t-rekap"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
-                    <span class="aktivitas-menu-label">Rekap Promotor</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bulanan')">
-                    <span class="aktivitas-menu-icon t-rekap"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-                    <span class="aktivitas-menu-label">Total Bulanan</span>
-                </button>
-            </div>
-            <div style="display:none;">
-                <ul id="list-bawa" class="aktivitas-list"></ul>
-                <ul id="list-ibadah" class="aktivitas-list"></ul>
-                <ul id="list-keluar" class="aktivitas-list"></ul>
-                <ul id="list-autokick" class="aktivitas-list"></ul>
-                <div id="total-bawa-box"></div>
-                <div class="rekap-wrapper">
-                    <div class="rekap-label">Periode: <span id="rekap-periode-label">-</span></div>
-                    <table class="rekap-tabel">
-                        <thead><tr><th class="kolom-nama">Nama Promotor</th><th>Deal</th><th>Lihat</th><th>No Sale</th><th>Hari</th></tr></thead>
-                        <tbody id="rekap-tbody"><tr><td colspan="5" class="aktivitas-empty">Memuat...</td></tr></tbody>
-                    </table>
-                </div>
-                <div class="rekap-wrapper">
-                    <div class="rekap-label">Tahun: <span id="total-bulanan-tahun-label">-</span></div>
-                    <table class="rekap-tabel">
-                        <thead><tr><th class="kolom-nama">Bulan</th><th>Deal</th><th>Lihat</th></tr></thead>
-                        <tbody id="total-bulanan-tbody"><tr><td colspan="3" class="aktivitas-empty">Memuat...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="popup-aktivitas" class="popup-overlay">
-    <div class="popup-box">
-        <div class="popup-header">
-            <div class="popup-title" id="popup-aktivitas-title">Aktivitas</div>
-            <button type="button" class="popup-close" onclick="tutupPopupAktivitas()">✕</button>
-        </div>
-        <div class="popup-body" id="popup-aktivitas-body"></div>
-    </div>
-</div>
-
-<div id="custom-modal" class="modal-overlay">
-    <div class="modal-box">
-        <div id="modal-title" class="modal-title">Pemberitahuan</div>
-        <div id="modal-desc" class="modal-desc">Isi pesan...</div>
-        <div class="modal-actions" id="modal-actions"><button type="button" onclick="tutupModal()">OK</button></div>
-    </div>
-</div>
-
-<div class="login-toast-overlay" id="login-toast">
-    <div class="login-toast-card">
-        <div class="login-toast-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg></div>
-        <div class="login-toast-title">Login Berhasil!</div>
-        <div class="login-toast-subtitle">Selamat datang, <span class="login-toast-name" id="login-toast-name">-</span></div>
-    </div>
-</div>
-
-<style>
-/* ============================================================ */
-/* ===== CSS LOGIN FINAL (SAMA DENGAN DASHBOARD) ============= */
-/* ============================================================ */
-
-.fut-grid, .fut-orb, .fut-orb-1, .fut-orb-2, .fut-orb-3,
-.fut-particle, .team-3d-img, .fut-pulse-dot, .fut-dot, .status-open .dot {
-    animation: none !important;
-}
-
-#login-screen {
-    position: fixed !important;
-    top: 0; left: 0;
-    width: 100% !important;
-    height: 100% !important;
-    height: 100dvh !important;
-    background: #050814 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 24px 16px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    z-index: 99999 !important;
-    box-sizing: border-box !important;
-}
-body:not(.dark-mode) #login-screen { background: #f1f5f9 !important; }
-
-.fut-grid {
-    position: fixed !important;
-    inset: 0 !important;
-    background-image: 
-        linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important;
-    background-size: 40px 40px !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-    display: block !important;
-}
-body:not(.dark-mode) .fut-grid {
-    background-image: 
-        linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important;
-}
-
-.fut-orb {
-    position: fixed !important;
-    border-radius: 50% !important;
-    filter: blur(80px) !important;
-    opacity: 0.55 !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-    display: block !important;
-}
-.fut-orb-1 { width: 400px !important; height: 400px !important; background: #0ea5e9 !important; top: -100px !important; left: -100px !important; }
-.fut-orb-2 { width: 300px !important; height: 300px !important; background: #a855f7 !important; bottom: -80px !important; right: -80px !important; }
-.fut-orb-3 { width: 350px !important; height: 350px !important; background: #06b6d4 !important; top: 40% !important; left: 45% !important; opacity: 0.4 !important; }
-body:not(.dark-mode) .fut-orb { opacity: 0.25 !important; }
-
-.fut-particles {
-    position: fixed !important;
-    inset: 0 !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-    display: block !important;
-}
-.fut-particle {
-    position: absolute !important;
-    width: 2px !important;
-    height: 2px !important;
-    border-radius: 50% !important;
-    display: block !important;
-}
-
-.fut-container {
-    position: relative !important;
-    z-index: 10 !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 50px !important;
-    align-items: center !important;
-    max-width: 1100px !important;
-    width: 100% !important;
-    max-height: none !important;
-    overflow: visible !important;
-}
-
-.fut-left {
-    color: #ffffff !important;
-    text-align: center !important;
-    padding: 20px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 0 !important;
-}
-body:not(.dark-mode) .fut-left { color: #0f172a !important; }
-
-.fut-tagline {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    padding: 6px 16px !important;
-    background: rgba(14,165,233,0.1) !important;
-    border: 1px solid rgba(14,165,233,0.3) !important;
-    border-radius: 100px !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    letter-spacing: 2px !important;
-    color: #22d3ee !important;
-    margin-bottom: 20px !important;
-    text-transform: uppercase !important;
-}
-body:not(.dark-mode) .fut-tagline {
-    background: rgba(14, 165, 233, 0.12) !important;
-    border-color: rgba(14, 165, 233, 0.4) !important;
-    color: #0284c7 !important;
-}
-
-.fut-dot {
-    width: 6px !important;
-    height: 6px !important;
-    background: #22d3ee !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 10px #22d3ee !important;
-}
-body:not(.dark-mode) .fut-dot {
-    background: #0284c7 !important;
-    box-shadow: 0 0 10px #0284c7 !important;
-}
-
-.fut-headline {
-    font-size: 42px !important;
-    font-weight: 900 !important;
-    margin: 0 0 8px 0 !important;
-    color: #ffffff !important;
-    text-shadow: 0 0 30px rgba(34,211,238,0.5) !important;
-    line-height: 1.1 !important;
-    max-width: 100% !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-}
-body:not(.dark-mode) .fut-headline {
-    color: #0c4a6e !important;
-    text-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important;
-}
-
-.fut-subheadline {
-    font-size: 14px !important;
-    color: #94a3b8 !important;
-    font-weight: 500 !important;
-    margin: 0 0 30px 0 !important;
-    letter-spacing: 1px !important;
-}
-body:not(.dark-mode) .fut-subheadline { color: #334155 !important; font-weight: 600 !important; }
-
-.fut-characters {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    margin-bottom: 30px !important;
-    width: 100% !important;
-}
-.fut-characters .team-3d-img {
-    display: block !important;
-    max-width: 100% !important;
-    max-height: 260px !important;
-    height: auto !important;
-    width: auto !important;
-    object-fit: contain !important;
-    filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)) !important;
-}
-
-.fut-live-status {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    padding: 10px 20px !important;
-    background: rgba(5,8,20,0.6) !important;
-    border: 1px solid rgba(34,211,238,0.3) !important;
-    border-radius: 100px !important;
-    font-size: 12px !important;
-    color: #e2e8f0 !important;
-    font-weight: 600 !important;
-}
-body:not(.dark-mode) .fut-live-status {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-color: rgba(14, 165, 233, 0.4) !important;
-    color: #075985 !important;
-    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
-}
-
-.fut-pulse-dot {
-    width: 8px !important;
-    height: 8px !important;
-    background: #22d3ee !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 10px #22d3ee !important;
-}
-body:not(.dark-mode) .fut-pulse-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
-
-.fut-right { display: flex !important; justify-content: center !important; align-items: center !important; min-width: 0 !important; }
-
-.fut-card {
-    width: 100% !important;
-    max-width: 400px !important;
-    margin: 0 auto !important;
-    background: rgba(15, 23, 42, 0.7) !important;
-    backdrop-filter: blur(24px) !important;
-    border: 1px solid rgba(34,211,238,0.2) !important;
-    border-radius: 24px !important;
-    padding: 40px 32px !important;
-    box-shadow: 0 0 60px rgba(14,165,233,0.15) !important;
-    position: relative !important;
-    overflow: visible !important;
-    max-height: none !important;
-}
-body:not(.dark-mode) .fut-card {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-color: rgba(14, 165, 233, 0.25) !important;
-    box-shadow: 0 20px 50px rgba(14, 165, 233, 0.15), 0 8px 20px rgba(0, 0, 0, 0.05) !important;
-}
-.fut-card::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 0; left: 0; right: 0 !important;
-    height: 1px !important;
-    background: linear-gradient(90deg, transparent, #22d3ee, transparent) !important;
-}
-
-.login-theme-toggle {
-    position: absolute !important;
-    top: 14px !important;
-    right: 14px !important;
-    width: 38px !important;
-    height: 38px !important;
-    border-radius: 10px !important;
-    border: 1px solid rgba(56, 189, 248, 0.35) !important;
-    background: rgba(2, 6, 23, 0.6) !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 10 !important;
-    padding: 0 !important;
-    color: #38bdf8 !important;
-    transition: all 0.25s ease !important;
-}
-.login-theme-toggle svg {
-    width: 18px !important;
-    height: 18px !important;
-    stroke: currentColor !important;
-    stroke-width: 2 !important;
-    fill: none !important;
-    stroke-linecap: round !important;
-    stroke-linejoin: round !important;
-}
-.login-theme-toggle:hover {
-    background: rgba(56, 189, 248, 0.2) !important;
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6) !important;
-    transform: rotate(15deg) !important;
-}
-body:not(.dark-mode) .login-theme-toggle {
-    background: #ffffff !important;
-    border-color: rgba(37, 99, 235, 0.3) !important;
-    color: #0284c7 !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important;
-}
-body:not(.dark-mode) .login-theme-toggle:hover {
-    background: #eff6ff !important;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
-}
-
-.fut-logo {
-    width: 110px !important;
-    height: 110px !important;
-    margin: 0 auto 20px !important;
-    background: rgba(14,165,233,0.15) !important;
-    border: 1px solid rgba(34,211,238,0.3) !important;
-    border-radius: 22px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 14px !important;
-    box-shadow: 0 0 40px rgba(34,211,238,0.4) !important;
-}
-body:not(.dark-mode) .fut-logo {
-    background: rgba(14, 165, 233, 0.1) !important;
-    border-color: rgba(14, 165, 233, 0.3) !important;
-    box-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important;
-}
-.fut-logo img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
-
-.login-tabs {
-    display: flex !important;
-    gap: 6px !important;
-    margin-bottom: 20px !important;
-    background: rgba(2, 6, 23, 0.8) !important;
-    padding: 5px !important;
-    border-radius: 12px !important;
-    border: 1px solid rgba(56, 189, 248, 0.35) !important;
-    width: 100% !important;
-}
-.login-tab {
-    flex: 1 !important;
-    padding: 10px 12px !important;
-    background: transparent !important;
-    border: none !important;
-    border-radius: 8px !important;
-    color: #64748b !important;
-    font-size: 12px !important;
-    font-weight: 800 !important;
-    letter-spacing: 1px !important;
-    text-transform: uppercase !important;
-    cursor: pointer !important;
-    font-family: inherit !important;
-    transition: all 0.25s ease !important;
-}
-.login-tab.active {
-    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%) !important;
-    color: #ffffff !important;
-    font-weight: 900 !important;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-    letter-spacing: 1.2px !important;
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-}
-body:not(.dark-mode) .login-tabs { background: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; }
-body:not(.dark-mode) .login-tab { color: #64748b !important; }
-body:not(.dark-mode) .login-tab.active {
-    color: #ffffff !important;
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2) !important;
-}
-body:not(.dark-mode) .login-tab:hover:not(.active) { color: #0284c7 !important; }
-
-.fut-field { margin-bottom: 16px !important; position: relative !important; overflow: visible !important; }
-.fut-field label {
-    display: block !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    color: #22d3ee !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1.5px !important;
-    margin-bottom: 8px !important;
-}
-body:not(.dark-mode) .fut-field label { color: #0284c7 !important; font-weight: 800 !important; }
-
-.fut-select {
-    width: 100% !important;
-    padding: 13px 16px !important;
-    background: rgba(2,6,23,0.6) !important;
-    border: 1px solid rgba(34,211,238,0.2) !important;
-    border-radius: 12px !important;
-    color: #e2e8f0 !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
-    box-sizing: border-box !important;
-}
-body:not(.dark-mode) .fut-select {
-    background: #f8fafc !important;
-    border-color: rgba(14, 165, 233, 0.35) !important;
-    color: #334155 !important;
-}
-
-.fut-input, .fut-input-admin {
-    width: 100% !important;
-    padding: 13px 16px !important;
-    background: rgba(2,6,23,0.6) !important;
-    border: 1px solid rgba(34,211,238,0.2) !important;
-    border-radius: 12px !important;
-    color: #ffffff !important;
-    outline: none !important;
-    box-sizing: border-box !important;
-    font-weight: 600 !important;
-}
-.fut-input {
-    font-size: 20px !important;
-    font-weight: 800 !important;
-    text-align: center !important;
-    letter-spacing: 8px !important;
-}
-.fut-input::placeholder { color: rgba(148,163,184,0.4) !important; }
-.fut-input:focus, .fut-input-admin:focus {
-    border-color: #22d3ee !important;
-    box-shadow: 0 0 25px rgba(34,211,238,0.4) !important;
-}
-.fut-input-admin {
-    font-size: 14px !important;
-    text-align: left !important;
-    letter-spacing: 1px !important;
-}
-body:not(.dark-mode) .fut-input,
-body:not(.dark-mode) .fut-input-admin {
-    background: #f8fafc !important;
-    border-color: rgba(14, 165, 233, 0.35) !important;
-    color: #0f172a !important;
-}
-body:not(.dark-mode) .fut-input::placeholder,
-body:not(.dark-mode) .fut-input-admin::placeholder { color: rgba(100, 116, 139, 0.5) !important; }
-
-.fut-menu {
-    position: absolute !important;
-    left: 0 !important; right: 0 !important;
-    top: 100% !important;
-    margin-top: 6px !important;
-    background: rgba(15,23,42,0.98) !important;
-    border: 1px solid rgba(34,211,238,0.3) !important;
-    border-radius: 12px !important;
-    max-height: 260px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    z-index: 99999 !important;
-    padding: 6px !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transform: translateY(-8px) !important;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
-}
-.fut-menu.open {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: translateY(0) !important;
-}
-.fut-menu::-webkit-scrollbar { width: 6px !important; }
-.fut-menu::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.4) !important; border-radius: 3px !important; }
-.fut-menu::-webkit-scrollbar-thumb { background: #38bdf8 !important; border-radius: 3px !important; }
-.fut-menu .option {
-    padding: 12px 14px !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    color: #e2e8f0 !important;
-    cursor: pointer !important;
-    min-height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-.fut-menu .option:hover { background: rgba(34,211,238,0.15) !important; color: #22d3ee !important; }
-.fut-menu .option.selected { background: rgba(34,211,238,0.25) !important; color: #22d3ee !important; }
-.fut-menu .option.empty { color: #64748b !important; font-style: italic !important; text-align: center !important; }
-body:not(.dark-mode) .fut-menu { background: #ffffff !important; border-color: rgba(14, 165, 233, 0.35) !important; }
-body:not(.dark-mode) .fut-menu .option { color: #374151 !important; }
-body:not(.dark-mode) .fut-menu .option.selected { background: rgba(14, 165, 233, 0.2) !important; color: #0284c7 !important; }
-
-#custom-select-trigger { position: relative !important; z-index: 10000 !important; }
-
-.fut-error {
-    color: #f87171 !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    text-align: center !important;
-    min-height: 18px !important;
-    margin-bottom: 8px !important;
-}
-
-.fut-btn {
-    width: 100% !important;
-    padding: 15px !important;
-    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%) !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 12px !important;
-    font-size: 14px !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 2px !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
-    box-shadow: 0 0 30px rgba(34,211,238,0.4) !important;
-    font-family: inherit !important;
-}
-.fut-btn:active { transform: scale(0.98) !important; }
-.fut-btn:disabled { opacity: 0.6 !important; cursor: not-allowed !important; }
-
-.fut-footer {
-    text-align: center !important;
-    font-size: 12px !important;
-    color: #64748b !important;
-    margin: 18px 0 0 0 !important;
-    font-weight: 500 !important;
-}
-.fut-footer span { color: #22d3ee !important; font-weight: 700 !important; }
-body:not(.dark-mode) .fut-footer { color: #475569 !important; }
-body:not(.dark-mode) .fut-footer span { color: #0284c7 !important; }
-
-@media (max-width: 900px) {
-    #login-screen { padding: 12px !important; align-items: flex-start !important; padding-top: 20px !important; }
-    .fut-container { grid-template-columns: 1fr !important; gap: 16px !important; max-width: 480px !important; margin: 0 auto !important; }
-    .fut-left { padding: 8px !important; }
-    .fut-headline { font-size: 26px !important; margin-bottom: 4px !important; }
-    .fut-subheadline { font-size: 12px !important; margin-bottom: 14px !important; }
-    .fut-tagline { font-size: 10px !important; padding: 5px 12px !important; margin-bottom: 12px !important; }
-    .fut-characters .team-3d-img { max-height: 180px !important; }
-    .fut-live-status { font-size: 11px !important; padding: 7px 14px !important; }
-    .fut-card { padding: 24px 20px !important; border-radius: 20px !important; }
-    .fut-logo { width: 90px !important; height: 90px !important; margin-bottom: 14px !important; padding: 10px !important; }
-    .login-tab { padding: 9px 10px !important; font-size: 11px !important; }
-    .fut-field { margin-bottom: 14px !important; }
-    .fut-select, .fut-input, .fut-input-admin { padding: 12px 14px !important; }
-    .fut-input { font-size: 18px !important; letter-spacing: 6px !important; }
-    .fut-btn { padding: 14px !important; font-size: 13px !important; }
-}
-@media (max-width: 400px) {
-    #login-screen { padding: 8px !important; }
-    .fut-container { gap: 12px !important; }
-    .fut-headline { font-size: 22px !important; }
-    .fut-subheadline { font-size: 11px !important; margin-bottom: 10px !important; }
-    .fut-characters .team-3d-img { max-height: 140px !important; }
-    .fut-card { padding: 20px 16px !important; border-radius: 16px !important; }
-    .fut-logo { width: 80px !important; height: 80px !important; margin-bottom: 10px !important; padding: 8px !important; }
-    .login-theme-toggle { width: 34px !important; height: 34px !important; top: 12px !important; right: 12px !important; }
-    .login-theme-toggle svg { width: 16px !important; height: 16px !important; }
-}
-
-/* ===== LIGHT MODE (HTML NOT .dark-mode) ===== */
-html body:not(.dark-mode) {
-    background-color: #f8fafc !important;
-    background-image: 
-        radial-gradient(circle 400px at 10% 10%, rgba(14, 165, 233, 0.15), transparent 70%),
-        radial-gradient(circle 300px at 90% 90%, rgba(168, 85, 247, 0.12), transparent 70%),
-        linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important;
-    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
-    background-attachment: fixed !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .app-container {
-    background: #ffffff !important;
-    border: 2px solid #e2e8f0 !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .user-badge {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .user-badge > div > span { color: #64748b !important; }
-html body:not(.dark-mode) .user-badge strong,
-html body:not(.dark-mode) #label-user-aktif { color: #0f172a !important; text-shadow: none !important; }
-html body:not(.dark-mode) .timer-card-admin {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) .promotor-nama-aktif { color: #0f172a !important; text-shadow: none !important; }
-html body:not(.dark-mode) .timer-badge-title { color: #0ea5e9 !important; text-shadow: none !important; }
-html body:not(.dark-mode) .list-antrian li {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .list-antrian li b { color: #0f172a !important; text-shadow: none !important; }
-html body:not(.dark-mode) .live-urutan-title { color: #0284c7 !important; border-bottom: 2px solid #0284c7 !important; }
-html body:not(.dark-mode) .gps-box {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) #map-promotor { border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .info-radius {
-    background: rgba(100, 116, 139, 0.1) !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #64748b !important;
-}
-html body:not(.dark-mode) .aktivitas-header-toggle,
-html body:not(.dark-mode) .aktivitas-title {
-    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
-    border: 1px solid #334155 !important;
-}
-html body:not(.dark-mode) .aktivitas-list li {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .aktivitas-list li .nama { color: #0f172a !important; }
-html body:not(.dark-mode) .aktivitas-list li .waktu { color: #64748b !important; }
-html body:not(.dark-mode) .rekap-tabel th {
-    background: #f1f5f9 !important;
-    color: #64748b !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) .rekap-tabel td { border-bottom: 1px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .rekap-tabel tr.total-row td {
-    background: #f8fafc !important;
-    border-top: 2px solid #e2e8f0 !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .rekap-wrapper {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) .rekap-label { color: #64748b !important; }
-html body:not(.dark-mode) .modal-box {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) .modal-title { color: #0f172a !important; }
-html body:not(.dark-mode) .modal-desc { color: #64748b !important; }
-html body:not(.dark-mode) .app-container select,
-html body:not(.dark-mode) .app-container input {
-    background: #f8fafc !important;
-    color: #0f172a !important;
-    border: 1px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) .aktivitas-menu-btn {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .aktivitas-menu-label { color: #0f172a !important; }
-html body:not(.dark-mode) .aktivitas-menu-icon {
-    background: rgba(14, 165, 233, 0.1) !important;
-    border: 1px solid rgba(14, 165, 233, 0.3) !important;
-}
-html body:not(.dark-mode) .aktivitas-menu-icon svg { stroke: #0284c7 !important; }
-html body:not(.dark-mode) .popup-box {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-}
-html body:not(.dark-mode) .popup-header {
-    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
-}
-html body:not(.dark-mode) .admin-menu-header {
-    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
-    border-color: #334155 !important;
-}
-html body:not(.dark-mode) .admin-menu-card {
-    background: #ffffff !important;
-    border: 2px solid #2563eb !important;
-    color: #0f172a !important;
-}
-html body:not(.dark-mode) .admin-menu-card-label { color: #0f172a !important; }
-html body:not(.dark-mode) .logout-btn,
-html body:not(.dark-mode) #btn-logout-top {
-    background: #ffffff !important;
-    color: #dc2626 !important;
-    border: 1px solid #fca5a5 !important;
-    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.06) !important;
-    text-shadow: none !important;
-}
-html body:not(.dark-mode) .dark-mode-btn,
-html body:not(.dark-mode) #btn-toggle-dark {
-    background: #ffffff !important;
-    color: #475569 !important;
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
-    text-shadow: none !important;
-}
-
-/* ============================================================ */
-/* ===== HALAMAN PROMOTOR — TEMA GOLD/CYAN PREMIUM ============ */
-/* ============================================================ */
-body.dark-mode .app-container {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(15, 20, 35, 0.9)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-    box-shadow: 
-        0 0 40px rgba(212, 175, 55, 0.15),
-        inset 0 0 15px rgba(212, 175, 55, 0.05),
-        0 20px 50px -10px rgba(0, 0, 0, 0.7) !important;
-}
-body.dark-mode .user-badge {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2) !important;
-}
-body.dark-mode .user-badge strong,
-body.dark-mode #label-user-aktif {
-    color: #ffffff !important;
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important;
-}
-body.dark-mode .timer-card-admin {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.6)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.15) !important;
-}
-body.dark-mode .timer-badge-title {
-    color: #d4af37 !important;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important;
-}
-body.dark-mode .promotor-nama-aktif {
-    color: #ffffff !important;
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.6) !important;
-}
-body.dark-mode .status-badge-sistem {
-    border: 2px solid rgba(212, 175, 55, 0.6) !important;
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3) !important;
-    color: #ffffff !important;
-}
-body.dark-mode .app-container .btn-success,
-body.dark-mode .app-container .btn-customer {
-    background: linear-gradient(135deg, #d4af37 0%, #0ea5e9 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(212, 175, 55, 0.8) !important;
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
-    font-weight: 800 !important;
-}
-body.dark-mode .app-container .btn-purple,
-body.dark-mode .app-container .btn-indigo {
-    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(14, 165, 233, 0.7) !important;
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.4) !important;
-    font-weight: 800 !important;
-}
-body.dark-mode .list-antrian li {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.35) !important;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.1) !important;
-}
-body.dark-mode .list-antrian li.saya-sendiri {
-    border: 2px solid #d4af37 !important;
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(14, 165, 233, 0.08)) !important;
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4) !important;
-}
-body.dark-mode .live-urutan-title {
-    color: #d4af37 !important;
-    border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .aktivitas-header-toggle {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15) !important;
-}
-body.dark-mode .aktivitas-title {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-}
-body.dark-mode .aktivitas-list li {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.25) !important;
-    border-left: 3px solid #d4af37 !important;
-}
-body.dark-mode .aktivitas-menu-btn {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .aktivitas-menu-icon {
-    background: rgba(212, 175, 55, 0.15) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-}
-body.dark-mode .aktivitas-menu-icon svg { stroke: #d4af37 !important; }
-body.dark-mode .aktivitas-menu-count { background: #d4af37 !important; color: #111827 !important; }
-body.dark-mode .admin-menu-header {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important;
-    border: 2px solid rgba(212, 175, 55, 0.6) !important;
-}
-body.dark-mode .admin-menu-card {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
-    border: 2px solid rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .admin-menu-card-icon {
-    background: rgba(212, 175, 55, 0.15) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-}
-body.dark-mode .admin-menu-card-icon.t-operasional svg { stroke: #d4af37 !important; }
-body.dark-mode .rekap-tabel th {
-    background: linear-gradient(135deg, rgba(35, 28, 15, 0.8), rgba(17, 24, 39, 0.9)) !important;
-    color: #d4af37 !important;
-    border-bottom: 2px solid #d4af37 !important;
-}
-body.dark-mode .rekap-tabel tr.total-row td {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(17, 24, 39, 0.9)) !important;
-    color: #d4af37 !important;
-    border-top: 2px solid #d4af37 !important;
-}
-body.dark-mode .gps-box {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.4) !important;
-}
-body.dark-mode .rekap-wrapper {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important;
-    border: 1px solid rgba(212, 175, 55, 0.35) !important;
-}
-body.dark-mode .rekap-label { color: #d4af37 !important; }
-body.dark-mode .popup-box {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important;
-    border: 2px solid rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .popup-header {
-    background: linear-gradient(135deg, rgba(35, 28, 15, 0.9), rgba(17, 24, 39, 0.95)) !important;
-    border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .popup-title {
-    color: #ffffff !important;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important;
-}
-body.dark-mode .popup-close {
-    background: rgba(212, 175, 55, 0.15) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    color: #d4af37 !important;
-}
-body.dark-mode .modal-box {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important;
-    border: 2px solid rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .modal-title {
-    color: #d4af37 !important;
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.5) !important;
-}
-body.dark-mode .modal-actions button {
-    background: linear-gradient(135deg, #d4af37, #b8941f) !important;
-    color: #111827 !important;
-    border: 1px solid rgba(212, 175, 55, 0.8) !important;
-    font-weight: 800 !important;
-}
-body.dark-mode .modal-actions button.btn-cancel {
-    background: rgba(100, 116, 139, 0.2) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(100, 116, 139, 0.4) !important;
-}
-body.dark-mode .input-group label {
-    color: #d4af37 !important;
-    text-shadow: 0 0 8px rgba(212, 175, 55, 0.4) !important;
-}
-body.dark-mode .dark-mode-btn {
-    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%) !important;
-    color: #111827 !important;
-    border: 1px solid #d4af37 !important;
-    text-shadow: none !important;
-    font-weight: 800 !important;
-}
-
-/* ===== POPUP & ADMIN MENU (dasar) ===== */
-.popup-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(5, 8, 20, 0.88);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99998;
-    opacity: 0;
-    visibility: hidden;
-    padding: 16px;
-    box-sizing: border-box;
-}
-.popup-overlay.active { opacity: 1; visibility: visible; }
-.popup-box {
-    background: var(--cyber-card);
-    border: 2px solid var(--cyber-cyan);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 480px;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-.popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
-    background: linear-gradient(135deg, #0c1e33, #071321);
-    border-bottom: 2px solid var(--cyber-cyan);
-    flex-shrink: 0;
-}
-.popup-title {
-    font-size: 14px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-}
-.popup-close {
-    background: rgba(56, 189, 248, 0.2);
-    border: 1px solid #38bdf8;
-    color: #ffffff;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-.popup-body {
-    padding: 14px 16px;
-    overflow-y: auto;
-    flex: 1;
-}
-.popup-body .popup-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 12px;
-    background: var(--cyber-card-soft);
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 12.5px;
-    text-align: left;
-    border: 2px solid #38bdf8;
-    cursor: pointer;
-    margin-bottom: 8px;
-    font-family: inherit;
-}
-.popup-btn-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    background: rgba(56, 189, 248, 0.15);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-}
-.popup-btn-icon svg { width: 18px; height: 18px; stroke: #38bdf8; stroke-width: 2.2; fill: none; }
-.popup-btn-text { flex: 1; line-height: 1.3; color: #ffffff; }
-.popup-btn-text small { display: block; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 2px; text-transform: uppercase; }
-
-.admin-menu-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 12px 14px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0c1e33, #071321);
-    color: #ffffff;
-    margin-top: 24px;
-    margin-bottom: 12px;
-    border: 2px solid #38bdf8;
-}
-.admin-menu-header .judul {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #ffffff;
-}
-.admin-menu-header .judul svg { stroke: #ffffff !important; }
-.admin-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.admin-menu-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 18px 12px;
-    background: var(--cyber-card-soft);
-    border: 2px solid #38bdf8;
-    border-radius: 12px;
-    cursor: pointer;
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-family: inherit;
-    width: 100%;
-    min-height: 100px;
-    text-align: center;
-}
-.admin-menu-card-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(56, 189, 248, 0.15);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-}
-.admin-menu-card-icon svg { width: 22px; height: 22px; }
-.admin-menu-card-icon.t-operasional svg { stroke: #38bdf8; }
-.admin-menu-card-icon.t-urutan svg { stroke: #10b981; }
-.admin-menu-card-icon.t-darurat svg { stroke: #f87171; }
-.admin-menu-card-icon.t-gps svg { stroke: #c084fc; }
-.admin-menu-card-label {
-    font-size: 10.5px;
-    font-weight: 800;
-    color: #ffffff;
-    line-height: 1.25;
-    text-transform: uppercase;
-}
-
-body.admin-mode .admin-panel-wrapper { display: block !important; }
-body.admin-mode #section-checkin-awal,
-body.admin-mode #section-normal,
-body.admin-mode #panel-login,
-body.admin-mode .timer-box-wrapper,
-body.admin-mode #box-lock-timer { display: none !important; }
-
-.login-toast-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.4);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 999999; opacity: 0; visibility: hidden;
-    padding: 16px;
-}
-.login-toast-overlay.active { opacity: 1; visibility: visible; }
-.login-toast-card {
-    background: var(--cyber-card);
-    padding: 32px 40px;
-    border-radius: 24px;
-    text-align: center;
-    border: 2px solid var(--cyber-cyan);
-    min-width: 240px;
-}
-.login-toast-icon {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: linear-gradient(135deg, #27fabe, #10b981);
-    display: inline-flex; align-items: center; justify-content: center;
-    margin-bottom: 16px;
-}
-.login-toast-icon svg { width: 40px; height: 40px; stroke: #ffffff; stroke-width: 3; fill: none; }
-.login-toast-title { font-size: 18px; font-weight: 800; color: var(--cyber-text); margin-bottom: 4px; }
-.login-toast-subtitle { font-size: 13px; font-weight: 600; color: var(--cyber-text-muted); }
-.login-toast-name { color: var(--cyber-cyan); font-weight: 800; }
-
-.spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 0.8s ease-in-out infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
-</head>
-  <body>
-
-<!-- ========== LAYAR LOGIN ========== -->
-<div id="login-screen">
-    <div class="fut-grid"></div>
-    <div class="fut-orb fut-orb-1"></div>
-    <div class="fut-orb fut-orb-2"></div>
-    <div class="fut-orb fut-orb-3"></div>
-    <div class="fut-particles" id="fut-particles"></div>
-
-    <div class="fut-container">
-        <div class="fut-left">
-            <div class="fut-tagline">
-                <span class="fut-dot"></span>
-                <span>SISTEM ANTRIAN DIGITAL</span>
-            </div>
-            <h1 class="fut-headline" id="fut-headline" style="opacity: 1;">
-                <span id="fut-headline-text">Antrian Walk-In Promotor</span>
-            </h1>
-            <p class="fut-subheadline" id="fut-subheadline">UFO Malang Kebonsari</p>
-            <div class="fut-characters">
-                <img src="team-3d.png" alt="Tim Promotor UFO" class="team-3d-img" />
-            </div>
-            <div class="fut-live-status">
-                <span class="fut-pulse-dot"></span>
-                <span id="live-status-text">Memuat...</span>
-            </div>
-        </div>
-
-        <div class="fut-right">
-            <div class="fut-card">
-                <button type="button" class="login-theme-toggle" id="btn-login-theme" onclick="toggleDarkMode()" title="Ganti tema">
-                    <svg id="login-theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
-                </button>
-
-                <div class="fut-logo">
-                    <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='🛸';">
-                </div>
-
-                <div class="login-tabs">
-                    <button type="button" class="login-tab active" id="tab-promotor" onclick="switchLoginTab('promotor')">PROMOTOR</button>
-                    <button type="button" class="login-tab" id="tab-admin" onclick="switchLoginTab('admin')">ADMIN</button>
-                </div>
-
-                <div id="form-promotor">
-                    <div class="fut-field">
-                        <label>Pilih Nama</label>
-                        <input type="hidden" id="login-pilih-sales" value="">
-                        <div id="custom-select-trigger" onclick="toggleCustomSelect()" class="fut-select">
-                            <span id="custom-select-label">-- Memuat daftar promotor --</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </div>
-                        <div id="custom-select-menu" class="fut-menu"></div>
-                    </div>
-                </div>
-
-                <div id="form-admin" style="display:none;">
-                    <div class="fut-field">
-                        <label>Username Admin</label>
-                        <input type="text" id="login-admin-username" class="fut-input-admin" placeholder="Masukkan username admin" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="fut-field">
-                    <label>Masukkan PIN</label>
-                    <input type="password" id="login-pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="off" class="fut-input">
-                </div>
-
-                <div id="login-error" class="fut-error"></div>
-
-                <button type="button" id="btn-login-promotor" class="fut-btn">
-                    <span id="btn-login-text">MASUK</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </button>
-
-                <p class="fut-footer">Belum punya PIN? <span>Hubungi admin</span></p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ========== APLIKASI UTAMA ========== -->
-<div class="app-container" id="app-container" style="display: none;">
-    <div class="top-controls">
-        <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <span id="btn-toggle-dark-text">Gelap</span>
-        </button>
-        <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutPromotor()" style="display: none;">Logout</button>
-    </div>
-
-    <div id="badge-status-sistem" class="status-badge-sistem status-open">
-        <span class="dot"></span>
-        <span id="badge-status-text">STATUS ANTRIAN: OPEN</span>
-    </div>
-
-    <div id="panel-login" style="display: none;">
-        <div class="input-group">
-            <label>Pilih Nama Anda (Kunci Perangkat)</label>
-            <select id="pilih-sales"><option value="">-- Pilih Nama Anda --</option></select>
-        </div>
-        <button type="button" class="btn-customer" onclick="simpanAkunHP()">Simpan & Kunci di HP Ini</button>
-    </div>
+    <div id="panel-login" style="display: none;"></div>
 
     <div id="panel-menu-utama" style="display: none;">
         <div class="user-badge">
@@ -2344,13 +979,888 @@ body.admin-mode #box-lock-timer { display: none !important; }
     </div>
 </div>
 
-<div class="login-toast-overlay" id="login-toast">
-    <div class="login-toast-card">
-        <div class="login-toast-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg></div>
-        <div class="login-toast-title">Login Berhasil!</div>
-        <div class="login-toast-subtitle">Selamat datang, <span class="login-toast-name" id="login-toast-name">-</span></div>
-    </div>
-</div>
+<style>
+/* ============================================================ */
+/* ===== CSS LOGIN FINAL (SAMA DENGAN DASHBOARD) ============= */
+/* ============================================================ */
+
+.fut-grid, .fut-orb, .fut-orb-1, .fut-orb-2, .fut-orb-3,
+.fut-particle, .team-3d-img, .fut-pulse-dot, .fut-dot, .status-open .dot {
+    animation: none !important;
+}
+
+#login-screen {
+    position: fixed !important;
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    background: #050814 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 24px 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 99999 !important;
+    box-sizing: border-box !important;
+}
+body:not(.dark-mode) #login-screen { background: #f1f5f9 !important; }
+
+.fut-grid {
+    position: fixed !important;
+    inset: 0 !important;
+    background-image: 
+        linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important;
+    background-size: 40px 40px !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    display: block !important;
+}
+body:not(.dark-mode) .fut-grid {
+    background-image: 
+        linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important;
+}
+
+.fut-orb {
+    position: fixed !important;
+    border-radius: 50% !important;
+    filter: blur(80px) !important;
+    opacity: 0.55 !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    display: block !important;
+}
+.fut-orb-1 { width: 400px !important; height: 400px !important; background: #0ea5e9 !important; top: -100px !important; left: -100px !important; }
+.fut-orb-2 { width: 300px !important; height: 300px !important; background: #a855f7 !important; bottom: -80px !important; right: -80px !important; }
+.fut-orb-3 { width: 350px !important; height: 350px !important; background: #06b6d4 !important; top: 40% !important; left: 45% !important; opacity: 0.4 !important; }
+body:not(.dark-mode) .fut-orb { opacity: 0.25 !important; }
+
+.fut-particles {
+    position: fixed !important;
+    inset: 0 !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    display: block !important;
+}
+.fut-particle {
+    position: absolute !important;
+    width: 2px !important;
+    height: 2px !important;
+    border-radius: 50% !important;
+    display: block !important;
+}
+
+.fut-container {
+    position: relative !important;
+    z-index: 10 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 50px !important;
+    align-items: center !important;
+    max-width: 1100px !important;
+    width: 100% !important;
+}
+
+.fut-left {
+    color: #ffffff !important;
+    text-align: center !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+}
+body:not(.dark-mode) .fut-left { color: #0f172a !important; }
+
+.fut-tagline {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 6px 16px !important;
+    background: rgba(14,165,233,0.1) !important;
+    border: 1px solid rgba(14,165,233,0.3) !important;
+    border-radius: 100px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    color: #22d3ee !important;
+    margin-bottom: 20px !important;
+    text-transform: uppercase !important;
+}
+body:not(.dark-mode) .fut-tagline {
+    background: rgba(14, 165, 233, 0.12) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    color: #0284c7 !important;
+}
+
+.fut-dot {
+    width: 6px !important;
+    height: 6px !important;
+    background: #22d3ee !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px #22d3ee !important;
+}
+body:not(.dark-mode) .fut-dot {
+    background: #0284c7 !important;
+    box-shadow: 0 0 10px #0284c7 !important;
+}
+
+.fut-headline {
+    font-size: 42px !important;
+    font-weight: 900 !important;
+    margin: 0 0 8px 0 !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 30px rgba(34,211,238,0.5) !important;
+    line-height: 1.1 !important;
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+body:not(.dark-mode) .fut-headline {
+    color: #0c4a6e !important;
+    text-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important;
+}
+
+.fut-subheadline {
+    font-size: 14px !important;
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    margin: 0 0 30px 0 !important;
+    letter-spacing: 1px !important;
+}
+body:not(.dark-mode) .fut-subheadline { color: #334155 !important; font-weight: 600 !important; }
+
+.fut-characters {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-bottom: 30px !important;
+    width: 100% !important;
+}
+.fut-characters .team-3d-img {
+    display: block !important;
+    max-width: 100% !important;
+    max-height: 260px !important;
+    height: auto !important;
+    width: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)) !important;
+}
+
+.fut-live-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 10px 20px !important;
+    background: rgba(5,8,20,0.6) !important;
+    border: 1px solid rgba(34,211,238,0.3) !important;
+    border-radius: 100px !important;
+    font-size: 12px !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+}
+body:not(.dark-mode) .fut-live-status {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    color: #075985 !important;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
+}
+
+.fut-pulse-dot {
+    width: 8px !important;
+    height: 8px !important;
+    background: #22d3ee !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px #22d3ee !important;
+}
+body:not(.dark-mode) .fut-pulse-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
+
+.fut-right { display: flex !important; justify-content: center !important; align-items: center !important; min-width: 0 !important; }
+
+.fut-card {
+    width: 100% !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    background: rgba(15, 23, 42, 0.7) !important;
+    backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(34,211,238,0.2) !important;
+    border-radius: 24px !important;
+    padding: 40px 32px !important;
+    box-shadow: 0 0 60px rgba(14,165,233,0.15) !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+body:not(.dark-mode) .fut-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(14, 165, 233, 0.25) !important;
+    box-shadow: 0 20px 50px rgba(14, 165, 233, 0.15), 0 8px 20px rgba(0, 0, 0, 0.05) !important;
+}
+.fut-card::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0; left: 0; right: 0 !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, #22d3ee, transparent) !important;
+}
+
+.login-theme-toggle {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    background: rgba(2, 6, 23, 0.6) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10 !important;
+    padding: 0 !important;
+    color: #38bdf8 !important;
+    transition: all 0.25s ease !important;
+}
+.login-theme-toggle svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    fill: none !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+.login-theme-toggle:hover {
+    background: rgba(56, 189, 248, 0.2) !important;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6) !important;
+    transform: rotate(15deg) !important;
+}
+body:not(.dark-mode) .login-theme-toggle {
+    background: #ffffff !important;
+    border-color: rgba(37, 99, 235, 0.3) !important;
+    color: #0284c7 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important;
+}
+
+.fut-logo {
+    width: 110px !important;
+    height: 110px !important;
+    margin: 0 auto 20px !important;
+    background: rgba(14,165,233,0.15) !important;
+    border: 1px solid rgba(34,211,238,0.3) !important;
+    border-radius: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 14px !important;
+    box-shadow: 0 0 40px rgba(34,211,238,0.4) !important;
+}
+body:not(.dark-mode) .fut-logo {
+    background: rgba(14, 165, 233, 0.1) !important;
+    border-color: rgba(14, 165, 233, 0.3) !important;
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important;
+}
+.fut-logo img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
+
+.login-hero {
+    text-align: center !important;
+    margin-bottom: 22px !important;
+}
+.login-hero-title {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    margin: 0 0 6px 0 !important;
+    letter-spacing: -0.5px !important;
+}
+body:not(.dark-mode) .login-hero-title { color: #0c4a6e !important; }
+.login-hero-sub {
+    font-size: 13px !important;
+    color: #94a3b8 !important;
+    margin: 0 !important;
+    font-weight: 500 !important;
+    line-height: 1.5 !important;
+}
+body:not(.dark-mode) .login-hero-sub { color: #475569 !important; }
+
+.btn-google {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+    color: #111827 !important;
+    border: none !important;
+    border-radius: 14px !important;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
+}
+.btn-google:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset !important;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important;
+}
+.btn-google:active { transform: translateY(0) scale(0.98) !important; }
+.btn-google:disabled { opacity: 0.7 !important; cursor: not-allowed !important; }
+
+.btn-google-icon {
+    width: 34px !important;
+    height: 34px !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    transition: transform 0.3s ease !important;
+}
+.btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg) !important; }
+
+.btn-google-text {
+    flex: 1 !important;
+    text-align: left !important;
+    font-size: 14.5px !important;
+    letter-spacing: 0.2px !important;
+    color: #111827 !important;
+}
+
+.btn-google-arrow {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #64748b !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+}
+.btn-google:hover .btn-google-arrow {
+    color: #0284c7 !important;
+    transform: translateX(4px) !important;
+}
+
+@media (max-width: 900px) {
+    #login-screen { padding: 12px !important; align-items: flex-start !important; padding-top: 20px !important; }
+    .fut-container { grid-template-columns: 1fr !important; gap: 16px !important; max-width: 480px !important; margin: 0 auto !important; }
+    .fut-left { padding: 8px !important; }
+    .fut-headline { font-size: 26px !important; margin-bottom: 4px !important; }
+    .fut-subheadline { font-size: 12px !important; margin-bottom: 14px !important; }
+    .fut-tagline { font-size: 10px !important; padding: 5px 12px !important; margin-bottom: 12px !important; }
+    .fut-characters .team-3d-img { max-height: 180px !important; }
+    .fut-live-status { font-size: 11px !important; padding: 7px 14px !important; }
+    .fut-card { padding: 24px 20px !important; border-radius: 20px !important; }
+    .fut-logo { width: 90px !important; height: 90px !important; margin-bottom: 14px !important; padding: 10px !important; }
+    .btn-google { padding: 12px 14px !important; font-size: 13.5px !important; }
+    .btn-google-icon { width: 30px !important; height: 30px !important; }
+}
+@media (max-width: 400px) {
+    #login-screen { padding: 8px !important; }
+    .fut-container { gap: 12px !important; }
+    .fut-headline { font-size: 22px !important; }
+    .fut-subheadline { font-size: 11px !important; margin-bottom: 10px !important; }
+    .fut-characters .team-3d-img { max-height: 140px !important; }
+    .fut-card { padding: 20px 16px !important; border-radius: 16px !important; }
+    .fut-logo { width: 80px !important; height: 80px !important; margin-bottom: 10px !important; padding: 8px !important; }
+    .login-theme-toggle { width: 34px !important; height: 34px !important; top: 12px !important; right: 12px !important; }
+    .login-theme-toggle svg { width: 16px !important; height: 16px !important; }
+}
+
+/* ===== LIGHT MODE (HTML NOT .dark-mode) ===== */
+html body:not(.dark-mode) {
+    background-color: #f8fafc !important;
+    background-image: 
+        radial-gradient(circle 400px at 10% 10%, rgba(14, 165, 233, 0.15), transparent 70%),
+        radial-gradient(circle 300px at 90% 90%, rgba(168, 85, 247, 0.12), transparent 70%),
+        linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important;
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+    background-attachment: fixed !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .app-container {
+    background: #ffffff !important;
+    border: 2px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .user-badge {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .user-badge > div > span { color: #64748b !important; }
+html body:not(.dark-mode) .user-badge strong,
+html body:not(.dark-mode) #label-user-aktif { color: #0f172a !important; text-shadow: none !important; }
+html body:not(.dark-mode) .timer-card-admin {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) .promotor-nama-aktif { color: #0f172a !important; text-shadow: none !important; }
+html body:not(.dark-mode) .timer-badge-title { color: #0ea5e9 !important; text-shadow: none !important; }
+html body:not(.dark-mode) .list-antrian li {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .list-antrian li b { color: #0f172a !important; text-shadow: none !important; }
+html body:not(.dark-mode) .live-urutan-title { color: #0284c7 !important; border-bottom: 2px solid #0284c7 !important; }
+html body:not(.dark-mode) .gps-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) #map-promotor { border: 1px solid #e2e8f0 !important; }
+html body:not(.dark-mode) .info-radius {
+    background: rgba(100, 116, 139, 0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #64748b !important;
+}
+html body:not(.dark-mode) .aktivitas-header-toggle,
+html body:not(.dark-mode) .aktivitas-title {
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+    border: 1px solid #334155 !important;
+}
+html body:not(.dark-mode) .aktivitas-list li {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .aktivitas-list li .nama { color: #0f172a !important; }
+html body:not(.dark-mode) .aktivitas-list li .waktu { color: #64748b !important; }
+html body:not(.dark-mode) .rekap-tabel th {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) .rekap-tabel td { border-bottom: 1px solid #e2e8f0 !important; color: #0f172a !important; }
+html body:not(.dark-mode) .rekap-tabel tr.total-row td {
+    background: #f8fafc !important;
+    border-top: 2px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .rekap-wrapper {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) .rekap-label { color: #64748b !important; }
+html body:not(.dark-mode) .modal-box {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) .modal-title { color: #0f172a !important; }
+html body:not(.dark-mode) .modal-desc { color: #64748b !important; }
+html body:not(.dark-mode) .app-container select,
+html body:not(.dark-mode) .app-container input {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) .aktivitas-menu-btn {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .aktivitas-menu-label { color: #0f172a !important; }
+html body:not(.dark-mode) .aktivitas-menu-icon {
+    background: rgba(14, 165, 233, 0.1) !important;
+    border: 1px solid rgba(14, 165, 233, 0.3) !important;
+}
+html body:not(.dark-mode) .aktivitas-menu-icon svg { stroke: #0284c7 !important; }
+html body:not(.dark-mode) .popup-box {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+html body:not(.dark-mode) .popup-header {
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+}
+html body:not(.dark-mode) .admin-menu-header {
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+    border-color: #334155 !important;
+}
+html body:not(.dark-mode) .admin-menu-card {
+    background: #ffffff !important;
+    border: 2px solid #2563eb !important;
+    color: #0f172a !important;
+}
+html body:not(.dark-mode) .admin-menu-card-label { color: #0f172a !important; }
+html body:not(.dark-mode) .logout-btn,
+html body:not(.dark-mode) #btn-logout-top {
+    background: #ffffff !important;
+    color: #dc2626 !important;
+    border: 1px solid #fca5a5 !important;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.06) !important;
+    text-shadow: none !important;
+}
+html body:not(.dark-mode) .dark-mode-btn,
+html body:not(.dark-mode) #btn-toggle-dark {
+    background: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+    text-shadow: none !important;
+}
+
+/* ===== HALAMAN PROMOTOR GOLD/CYAN PREMIUM ===== */
+body.dark-mode .app-container {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(15, 20, 35, 0.9)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.15), inset 0 0 15px rgba(212, 175, 55, 0.05), 0 20px 50px -10px rgba(0, 0, 0, 0.7) !important;
+}
+body.dark-mode .user-badge {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2) !important;
+}
+body.dark-mode .user-badge strong,
+body.dark-mode #label-user-aktif {
+    color: #ffffff !important;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .timer-card-admin {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.6)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.15) !important;
+}
+body.dark-mode .timer-badge-title {
+    color: #d4af37 !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .promotor-nama-aktif {
+    color: #ffffff !important;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .status-badge-sistem {
+    border: 2px solid rgba(212, 175, 55, 0.6) !important;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3) !important;
+    color: #ffffff !important;
+}
+body.dark-mode .app-container .btn-success,
+body.dark-mode .app-container .btn-customer {
+    background: linear-gradient(135deg, #d4af37 0%, #0ea5e9 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(212, 175, 55, 0.8) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
+    font-weight: 800 !important;
+}
+body.dark-mode .app-container .btn-purple,
+body.dark-mode .app-container .btn-indigo {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(14, 165, 233, 0.7) !important;
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.4) !important;
+    font-weight: 800 !important;
+}
+body.dark-mode .list-antrian li {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.1) !important;
+}
+body.dark-mode .list-antrian li.saya-sendiri {
+    border: 2px solid #d4af37 !important;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(14, 165, 233, 0.08)) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .live-urutan-title {
+    color: #d4af37 !important;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .aktivitas-header-toggle {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15) !important;
+}
+body.dark-mode .aktivitas-title {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .aktivitas-list li {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border-left: 3px solid #d4af37 !important;
+}
+body.dark-mode .aktivitas-menu-btn {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .aktivitas-menu-icon {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .aktivitas-menu-icon svg { stroke: #d4af37 !important; }
+body.dark-mode .aktivitas-menu-count { background: #d4af37 !important; color: #111827 !important; }
+body.dark-mode .admin-menu-header {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .admin-menu-card {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .admin-menu-card-icon {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .admin-menu-card-icon.t-operasional svg { stroke: #d4af37 !important; }
+body.dark-mode .rekap-tabel th {
+    background: linear-gradient(135deg, rgba(35, 28, 15, 0.8), rgba(17, 24, 39, 0.9)) !important;
+    color: #d4af37 !important;
+    border-bottom: 2px solid #d4af37 !important;
+}
+body.dark-mode .rekap-tabel tr.total-row td {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(17, 24, 39, 0.9)) !important;
+    color: #d4af37 !important;
+    border-top: 2px solid #d4af37 !important;
+}
+body.dark-mode .gps-box {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .rekap-wrapper {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+}
+body.dark-mode .rekap-label { color: #d4af37 !important; }
+body.dark-mode .popup-box {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .popup-header {
+    background: linear-gradient(135deg, rgba(35, 28, 15, 0.9), rgba(17, 24, 39, 0.95)) !important;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .popup-title {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .popup-close {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #d4af37 !important;
+}
+body.dark-mode .modal-box {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .modal-title {
+    color: #d4af37 !important;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .modal-actions button {
+    background: linear-gradient(135deg, #d4af37, #b8941f) !important;
+    color: #111827 !important;
+    border: 1px solid rgba(212, 175, 55, 0.8) !important;
+    font-weight: 800 !important;
+}
+body.dark-mode .modal-actions button.btn-cancel {
+    background: rgba(100, 116, 139, 0.2) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+}
+body.dark-mode .input-group label {
+    color: #d4af37 !important;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .dark-mode-btn {
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%) !important;
+    color: #111827 !important;
+    border: 1px solid #d4af37 !important;
+    text-shadow: none !important;
+    font-weight: 800 !important;
+}
+
+/* ===== POPUP & ADMIN MENU ===== */
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(5, 8, 20, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99998;
+    opacity: 0;
+    visibility: hidden;
+    padding: 16px;
+    box-sizing: border-box;
+}
+.popup-overlay.active { opacity: 1; visibility: visible; }
+.popup-box {
+    background: var(--cyber-card);
+    border: 2px solid var(--cyber-cyan);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #0c1e33, #071321);
+    border-bottom: 2px solid var(--cyber-cyan);
+    flex-shrink: 0;
+}
+.popup-title {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+.popup-close {
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid #38bdf8;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.popup-body {
+    padding: 14px 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+.popup-body .popup-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--cyber-card-soft);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 12.5px;
+    text-align: left;
+    border: 2px solid #38bdf8;
+    cursor: pointer;
+    margin-bottom: 8px;
+    font-family: inherit;
+}
+.popup-btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.popup-btn-icon svg { width: 18px; height: 18px; stroke: #38bdf8; stroke-width: 2.2; fill: none; }
+.popup-btn-text { flex: 1; line-height: 1.3; color: #ffffff; }
+.popup-btn-text small { display: block; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 2px; text-transform: uppercase; }
+
+.admin-menu-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0c1e33, #071321);
+    color: #ffffff;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    border: 2px solid #38bdf8;
+}
+.admin-menu-header .judul {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+.admin-menu-header .judul svg { stroke: #ffffff !important; }
+.admin-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-menu-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 18px 12px;
+    background: var(--cyber-card-soft);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-family: inherit;
+    width: 100%;
+    min-height: 100px;
+    text-align: center;
+}
+.admin-menu-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.admin-menu-card-icon svg { width: 22px; height: 22px; }
+.admin-menu-card-icon.t-operasional svg { stroke: #38bdf8; }
+.admin-menu-card-icon.t-urutan svg { stroke: #10b981; }
+.admin-menu-card-icon.t-darurat svg { stroke: #f87171; }
+.admin-menu-card-icon.t-gps svg { stroke: #c084fc; }
+.admin-menu-card-label {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+body.admin-mode .admin-panel-wrapper { display: block !important; }
+body.admin-mode #section-checkin-awal,
+body.admin-mode #section-normal,
+body.admin-mode #panel-login,
+body.admin-mode .timer-box-wrapper,
+body.admin-mode #box-lock-timer { display: none !important; }
+
+.spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s ease-in-out infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
 <script>
 /* ============================================================ */
 /* ========== GLOBAL VARIABLES ================================= */
@@ -2374,21 +1884,17 @@ let geolocationWatchId = null;
 let lockTimerInterval = null;
 let lockDataGlobal = null;
 let autoCleanupInterval = null;
-let loginModeGlobal = 'promotor';
 let adminSessionGlobal = null;
 let adminPinPromotorGlobal = {};
 let listenerAdminSiap = false;
-let customSelectOptions = [];
 
-const DURASI_PIN_VALID = 12 * 60 * 60 * 1000;
-
-const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const SVG_ICON_LIHAT = `👀`;
+const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const SVG_ICON_MOON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
 const SVG_ICON_SUN = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
 
 /* ============================================================ */
-/* ========== HELPER FUNCTIONS ================================= */
+/* ========== HELPER =========================================== */
 /* ============================================================ */
 function waktuServer() { return Date.now() + (window.serverTimeOffset || 0); }
 function getTanggalIndo(d) {
@@ -2450,6 +1956,7 @@ function initDarkMode() {
     else document.body.classList.remove('dark-mode');
     updateThemeIcons(isDark);
 }
+window.toggleDarkMode = toggleDarkMode;
 window.addEventListener('storage', (e) => {
     if (e.key === 'ufo_theme') {
         const isDark = e.newValue !== 'light';
@@ -2460,32 +1967,28 @@ window.addEventListener('storage', (e) => {
 });
 
 /* ============================================================ */
-/* ========== LOGIN TAB ======================================== */
+/* ========== LOGIN GOOGLE ===================================== */
 /* ============================================================ */
-function switchLoginTab(mode) {
-    loginModeGlobal = mode;
-    const tabPromotor = document.getElementById('tab-promotor');
-    const tabAdmin = document.getElementById('tab-admin');
-    const formPromotor = document.getElementById('form-promotor');
-    const formAdmin = document.getElementById('form-admin');
-    const btnText = document.getElementById('btn-login-text');
-    if (mode === 'promotor') {
-        tabPromotor.classList.add('active');
-        tabAdmin.classList.remove('active');
-        formPromotor.style.display = 'block';
-        formAdmin.style.display = 'none';
-        if (btnText) btnText.innerText = 'MASUK';
-    } else {
-        tabAdmin.classList.add('active');
-        tabPromotor.classList.remove('active');
-        formPromotor.style.display = 'none';
-        formAdmin.style.display = 'block';
-        if (btnText) btnText.innerText = 'MASUK ADMIN';
+async function loginDenganGoogle() {
+    const btn = document.getElementById('btn-login-google');
+    const txt = document.getElementById('btn-login-text');
+    const asli = txt.innerText;
+    btn.disabled = true;
+    txt.innerText = 'MEMBUKA GOOGLE...';
+    try {
+        const provider = new window.firebaseGoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
+    } catch (err) {
+        console.error('Login gagal:', err);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            alert('Login gagal: ' + err.message);
+        }
+        btn.disabled = false;
+        txt.innerText = asli;
     }
-    const errEl = document.getElementById('login-error');
-    if (errEl) errEl.innerText = '';
 }
-window.switchLoginTab = switchLoginTab;
+window.loginDenganGoogle = loginDenganGoogle;
 
 /* ============================================================ */
 /* ========== PARTICLES ======================================== */
@@ -2530,64 +2033,9 @@ function applyBranding(setting) {
 }
 
 /* ============================================================ */
-/* ========== CUSTOM SELECT LOGIN ============================== */
-/* ============================================================ */
-function toggleCustomSelect() {
-    const menu = document.getElementById('custom-select-menu');
-    const trigger = document.getElementById('custom-select-trigger');
-    if (!menu || !trigger) return;
-    const isOpen = menu.classList.contains('open');
-    if (isOpen) { menu.classList.remove('open'); trigger.classList.remove('open'); }
-    else { menu.classList.add('open'); trigger.classList.add('open'); }
-}
-window.toggleCustomSelect = toggleCustomSelect;
-
-function pilihOpsiCustom(value, label) {
-    const hidden = document.getElementById('login-pilih-sales');
-    const labelEl = document.getElementById('custom-select-label');
-    const menu = document.getElementById('custom-select-menu');
-    const trigger = document.getElementById('custom-select-trigger');
-    if (!hidden || !labelEl) return;
-    hidden.value = value;
-    labelEl.innerText = label;
-    menu.querySelectorAll('.option').forEach(opt => { opt.classList.toggle('selected', opt.dataset.value === value); });
-    menu.classList.remove('open');
-    trigger.classList.remove('open');
-}
-window.pilihOpsiCustom = pilihOpsiCustom;
-
-function renderCustomSelectOptions(names) {
-    const menu = document.getElementById('custom-select-menu');
-    const labelEl = document.getElementById('custom-select-label');
-    if (!menu || !labelEl) return;
-    customSelectOptions = names;
-    if (!names || names.length === 0) {
-        menu.innerHTML = '<div class="option empty">-- Belum ada promotor --</div>';
-        labelEl.innerText = '-- Memuat daftar promotor --';
-        return;
-    }
-    labelEl.innerText = '-- Pilih Nama Anda --';
-    menu.innerHTML = names.map(n => {
-        const safe = String(n).replace(/"/g, '&quot;');
-        return `<div class="option" data-value="${safe}" onclick="pilihOpsiCustom('${safe.replace(/'/g, "\\'")}', '${safe.replace(/'/g, "\\'")}')">${n}</div>`;
-    }).join('');
-}
-
-document.addEventListener('click', (e) => {
-    const wrap = document.getElementById('custom-select-trigger');
-    const menu = document.getElementById('custom-select-menu');
-    if (!wrap || !menu) return;
-    if (!wrap.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.remove('open');
-        wrap.classList.remove('open');
-    }
-});
-
-/* ============================================================ */
 /* ========== MASTER SALES ===================================== */
 /* ============================================================ */
 function prosesMasterSales(dataRaw) {
-    let selectHtml = '<option value="">-- Pilih Nama Anda --</option>';
     let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw);
     let names = [];
     listSales.forEach(item => {
@@ -2597,30 +2045,12 @@ function prosesMasterSales(dataRaw) {
         if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim());
     });
     names = [...new Set(names)].sort();
-    names.forEach(n => { selectHtml += `<option value="${n}">${n}</option>`; });
-    const selectEl = document.getElementById('pilih-sales');
-    if (selectEl) selectEl.innerHTML = selectHtml;
-    renderCustomSelectOptions(names);
+    masterSalesGlobal = names.map(n => ({ nama: n }));
 }
 
 /* ============================================================ */
 /* ========== LOGIN / LOGOUT =================================== */
 /* ============================================================ */
-function cekAdminSessionTersimpan() {
-    const saved = localStorage.getItem('ufo_antrian_admin_session');
-    if (!saved) return false;
-    try {
-        const data = JSON.parse(saved);
-        if (data && data.role === 'ADMIN') {
-            adminSessionGlobal = data;
-            tampilkanAplikasiUtamaAdmin(data.nama || data.username);
-            return true;
-        }
-    } catch (e) {}
-    return false;
-}
-window.cekAdminSessionTersimpan = cekAdminSessionTersimpan;
-
 function tampilkanAplikasiUtamaAdmin(namaAdmin) {
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
@@ -2635,7 +2065,7 @@ function tampilkanAplikasiUtamaAdmin(namaAdmin) {
     renderUI();
     renderAktivitas();
     renderRekapBawaCustomer();
-    if (typeof mulaiListenerFirebaseAdmin === 'function') mulaiListenerFirebaseAdmin();
+    mulaiListenerFirebaseAdmin();
 }
 window.tampilkanAplikasiUtamaAdmin = tampilkanAplikasiUtamaAdmin;
 
@@ -2662,184 +2092,22 @@ function tampilkanLayarLogin() {
     if (appContainer) appContainer.style.display = 'none';
     const btnLogoutTop = document.getElementById('btn-logout-top');
     if (btnLogoutTop) btnLogoutTop.style.display = 'none';
+    document.body.classList.remove('admin-mode');
 }
-
-async function loginAdminInternal() {
-    const errEl = document.getElementById('login-error');
-    const btn = document.getElementById('btn-login-promotor');
-    const pin = document.getElementById('login-pin-input').value.trim();
-    const username = document.getElementById('login-admin-username').value.trim().toUpperCase();
-    errEl.style.color = '#f87171';
-    errEl.innerText = '';
-    if (!username) { errEl.innerText = 'Masukkan username admin!'; return; }
-    if (!/^\d{6}$/.test(pin)) { errEl.innerText = 'PIN harus 6 digit angka'; return; }
-    const asli = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
-    try {
-        const snap = await window.dbGet(window.dbRef(window.db, 'users/admin'));
-        if (!snap.exists()) {
-            errEl.innerText = 'Belum ada admin terdaftar.';
-            btn.disabled = false; btn.innerHTML = asli; return;
-        }
-        const admins = snap.val();
-        let foundKey = null, foundData = null;
-        Object.keys(admins).forEach(k => {
-            const a = admins[k];
-            if (a && String(a.username || '').toUpperCase() === username) {
-                foundKey = k; foundData = a;
-            }
-        });
-        if (!foundKey) { errEl.innerText = 'Username admin tidak ditemukan.'; btn.disabled = false; btn.innerHTML = asli; return; }
-        if (String(foundData.pin) !== pin) {
-            errEl.innerText = 'PIN admin salah!';
-            document.getElementById('login-pin-input').value = '';
-            document.getElementById('login-pin-input').focus();
-            btn.disabled = false; btn.innerHTML = asli; return;
-        }
-        if (foundData.aktif === false) { errEl.innerText = 'Akun admin ini tidak aktif.'; btn.disabled = false; btn.innerHTML = asli; return; }
-        const adminSession = { key: foundKey, username: foundData.username, nama: foundData.nama || foundData.username, role: 'ADMIN' };
-        localStorage.setItem('ufo_antrian_admin_session', JSON.stringify(adminSession));
-        adminSessionGlobal = adminSession;
-        document.getElementById('login-toast-name').innerText = foundData.nama || foundData.username;
-        const toast = document.getElementById('login-toast');
-        toast.classList.add('active');
-        setTimeout(() => {
-            tampilkanAplikasiUtamaAdmin(foundData.nama || foundData.username);
-            document.getElementById('login-pin-input').value = '';
-            document.getElementById('login-admin-username').value = '';
-            errEl.innerText = '';
-            btn.disabled = false;
-            btn.innerHTML = asli;
-            setTimeout(() => { toast.classList.remove('active'); }, 800);
-        }, 1400);
-    } catch (e) {
-        console.error('Error login admin:', e);
-        errEl.innerText = 'Gagal koneksi. Coba lagi.';
-        btn.disabled = false;
-        btn.innerHTML = asli;
-    }
-}
-
-async function prosesLoginPromotor() {
-    const namaPilih = document.getElementById('login-pilih-sales').value;
-    const pin = document.getElementById('login-pin-input').value.trim();
-    const errEl = document.getElementById('login-error');
-    const btn = document.getElementById('btn-login-promotor');
-    errEl.style.color = '#f87171';
-    errEl.innerText = '';
-    if (loginModeGlobal === 'admin') return loginAdminInternal();
-    if (!namaPilih) { errEl.innerText = 'Silakan pilih nama Anda!'; return; }
-    if (!/^\d{6}$/.test(pin)) { errEl.innerText = 'PIN harus 6 digit angka'; return; }
-    const clean = sanitizeNama(namaPilih);
-    const asli = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
-    try {
-        const snapLock = await window.dbGet(window.dbRef(window.db, 'lockPromotor/' + clean));
-        if (snapLock.exists()) {
-            const lockData = snapLock.val();
-            if (lockData && lockData.locked) {
-                const sekarang = waktuServer();
-                const waktuMulai = Number(lockData.waktuMulaiLock) || 0;
-                const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
-                const sudahMulai = waktuMulai === 0 || sekarang >= waktuMulai;
-                const belumExpired = waktuExpired === 0 || sekarang < waktuExpired;
-                if (sudahMulai && belumExpired) {
-                    let sisaTeks = 'tanpa batas waktu';
-                    if (waktuExpired > 0) { const sisaMenit = Math.ceil((waktuExpired - sekarang) / 60000); sisaTeks = `${sisaMenit} menit lagi`; }
-                    errEl.innerText = `🔒 Akun dikunci: ${lockData.alasan || '-'} (${sisaTeks})`;
-                    btn.disabled = false; btn.innerHTML = asli; return;
-                }
-            }
-        }
-        const snapPin = await window.dbGet(window.dbRef(window.db, 'pinPromotor/' + clean));
-        if (!snapPin.exists()) { errEl.innerText = 'PIN belum diatur. Hubungi admin.'; btn.disabled = false; btn.innerHTML = asli; return; }
-        const pinBenar = String(snapPin.val()).trim();
-        if (pin !== pinBenar) {
-            errEl.innerText = '❌ PIN salah. Coba lagi.';
-            document.getElementById('login-pin-input').value = '';
-            document.getElementById('login-pin-input').focus();
-            window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: namaPilih, aksi: "PIN_Salah", waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: "PIN Salah", kategori: "Keamanan", sumber: "Login" }).catch(() => {});
-            btn.disabled = false; btn.innerHTML = asli; return;
-        }
-        namaSalesAktifGlobal = namaPilih;
-        localStorage.setItem('ufo_nama_sales_aktif', namaPilih);
-        localStorage.setItem('ufo_pin_verified', 'true');
-        localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
-        document.getElementById('login-toast-name').innerText = namaPilih;
-        const toast = document.getElementById('login-toast');
-        toast.classList.add('active');
-        setTimeout(() => {
-            tampilkanAplikasiUtama();
-            document.getElementById('login-pin-input').value = '';
-            errEl.innerText = '';
-            btn.disabled = false;
-            btn.innerHTML = asli;
-            setTimeout(() => { toast.classList.remove('active'); }, 800);
-        }, 1400);
-    } catch (e) {
-        console.error('Error login:', e);
-        errEl.innerText = 'Gagal koneksi. Coba lagi.';
-        btn.disabled = false;
-        btn.innerHTML = asli;
-    }
-}
-window.prosesLoginPromotor = prosesLoginPromotor;
 
 function logoutPromotor() {
     const isAdmin = document.body.classList.contains('admin-mode');
-    const pesan = isAdmin ? 'Yakin logout dari akun ADMIN?' : 'Yakin ingin logout dari akun ini?\n\nAnda harus memasukkan PIN lagi untuk masuk.';
-    tampilkanModalKonfirmasi("Logout", pesan, () => {
-        localStorage.removeItem('ufo_antrian_admin_session');
-        adminSessionGlobal = null;
-        document.body.classList.remove('admin-mode');
+    const pesan = isAdmin ? 'Yakin logout dari akun ADMIN?' : 'Yakin ingin logout dari akun ini?';
+    tampilkanModalKonfirmasi("Logout", pesan, async () => {
+        try {
+            await window.firebaseSignOut(window.firebaseAuth);
+        } catch(e) { console.error(e); }
         localStorage.removeItem('ufo_nama_sales_aktif');
-        localStorage.removeItem('ufo_pin_verified');
-        localStorage.removeItem('ufo_pin_verified_at');
-        localStorage.removeItem('ufo_checkin_hari_ini');
-        localStorage.removeItem('ufo_checkin_tanggal');
         namaSalesAktifGlobal = '';
-        document.getElementById('login-pin-input').value = '';
-        document.getElementById('login-pilih-sales').value = '';
-        const admU = document.getElementById('login-admin-username');
-        if (admU) admU.value = '';
-        const labelEl = document.getElementById('custom-select-label');
-        if (labelEl) labelEl.innerText = '-- Pilih Nama Anda --';
-        const menuEl = document.getElementById('custom-select-menu');
-        if (menuEl) menuEl.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-        document.getElementById('login-error').innerText = '';
-        switchLoginTab('promotor');
-        tampilkanLayarLogin();
+        setTimeout(() => location.reload(), 400);
     });
 }
 window.logoutPromotor = logoutPromotor;
-
-/* ============================================================ */
-/* ========== PIN VERIFICATION ================================= */
-/* ============================================================ */
-function resetCheckinHarianJikaPerlu() {
-    const tglTersimpan = localStorage.getItem('ufo_checkin_tanggal');
-    const hariIni = getTanggalKey();
-    if (tglTersimpan !== hariIni) {
-        localStorage.removeItem('ufo_checkin_hari_ini');
-        localStorage.removeItem('ufo_checkin_tanggal');
-    }
-}
-function cekPINVerification() {
-    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
-    const verified = localStorage.getItem('ufo_pin_verified');
-    const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
-    if (!cachedNama) return;
-    const kadaluarsa = (Date.now() - verifiedAt) > DURASI_PIN_VALID;
-    if (verified !== 'true' || kadaluarsa) {
-        localStorage.removeItem('ufo_nama_sales_aktif');
-        localStorage.removeItem('ufo_pin_verified');
-        localStorage.removeItem('ufo_pin_verified_at');
-        tampilkanLayarLogin();
-    }
-}
-setInterval(cekPINVerification, 30 * 60 * 1000);
 
 /* ============================================================ */
 /* ========== AKTIVITAS TOGGLE ================================= */
@@ -2877,28 +2145,33 @@ function restoreAktivitasState() {
 /* ============================================================ */
 window.addEventListener('firebase-ready', () => {
     initDarkMode();
-    resetCheckinHarianJikaPerlu();
     restoreAktivitasState();
-    if (cekAdminSessionTersimpan()) {
+    
+    if (!window.firebaseUser) {
+        tampilkanLayarLogin();
         inisialisasiRealtimeFirebase();
-        cekPINVerification();
         return;
     }
-    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
-    const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
-    const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
-    const pinKadaluarsa = (Date.now() - verifiedAt) > DURASI_PIN_VALID;
-    if (cachedNama && pinVerified && !pinKadaluarsa) {
-        namaSalesAktifGlobal = cachedNama;
-        tampilkanAplikasiUtama();
-    } else {
-        localStorage.removeItem('ufo_nama_sales_aktif');
-        localStorage.removeItem('ufo_pin_verified');
-        localStorage.removeItem('ufo_pin_verified_at');
-        tampilkanLayarLogin();
+    
+    const user = window.firebaseUser;
+    
+    if (user.role === 'ADMIN') {
+        adminSessionGlobal = {
+            email: user.email,
+            uid: user.uid,
+            nama: user.nama || user.email,
+            role: 'ADMIN'
+        };
+        tampilkanAplikasiUtamaAdmin(adminSessionGlobal.nama);
+        inisialisasiRealtimeFirebase();
+        return;
     }
+    
+    // Promotor
+    namaSalesAktifGlobal = user.nama;
+    localStorage.setItem('ufo_nama_sales_aktif', user.nama);
+    tampilkanAplikasiUtama();
     inisialisasiRealtimeFirebase();
-    cekPINVerification();
 });
 
 function inisialisasiRealtimeFirebase() {
@@ -2958,19 +2231,6 @@ function inisialisasiRealtimeFirebase() {
     window.dbOnValue(window.dbRef(db, 'checkinHarian'), (snapshot) => {
         const dataCheckin = snapshot.val() || {};
         checkinHarianGlobal = dataCheckin;
-        const akunSaya = sanitizeNama(getAkunAktif());
-        if (!akunSaya) { renderRekapBawaCustomer(); return; }
-        const dataSaya = dataCheckin[akunSaya];
-        const hariIni = getTanggalKey();
-        let sudahHariIni = false;
-        if (dataSaya) { if (dataSaya[hariIni] || (dataSaya.tanggalKey === hariIni)) sudahHariIni = true; }
-        if (sudahHariIni) {
-            localStorage.setItem('ufo_checkin_hari_ini', 'true');
-            localStorage.setItem('ufo_checkin_tanggal', hariIni);
-        } else {
-            localStorage.removeItem('ufo_checkin_hari_ini');
-            localStorage.removeItem('ufo_checkin_tanggal');
-        }
         renderUI();
         renderRekapBawaCustomer();
     });
@@ -2997,13 +2257,9 @@ function inisialisasiRealtimeFirebase() {
                 if (daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya)) {
                     window.dbRemove(window.dbRef(window.db, 'antrian/' + akunSaya));
                 }
-            } else if (!sudahMulai) {
-                lockDataGlobal = null;
-                sembunyikanLockTimer();
             } else {
                 lockDataGlobal = null;
                 sembunyikanLockTimer();
-                autoUnlockSendiri(akunSaya, lockSaya);
             }
         } else {
             lockDataGlobal = null;
@@ -3302,9 +2558,6 @@ function bukaModalKeluarIstirahat() {
     });
 }
 window.bukaModalKeluarIstirahat = bukaModalKeluarIstirahat;
-
-function simpanAkunHP() { tampilkanLayarLogin(); }
-window.simpanAkunHP = simpanAkunHP;
 
 function catatAktivitas(nama, aksi, hasil, extra) {
     const payload = { nama: nama, aksi: aksi, waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: hasil || "" };
@@ -3667,6 +2920,7 @@ function mulaiListenerFirebaseAdmin() {
     const db = window.db;
     window.dbOnValue(window.dbRef(db, 'pinPromotor'), (snap) => { adminPinPromotorGlobal = snap.val() || {}; });
 }
+window.mulaiListenerFirebaseAdmin = mulaiListenerFirebaseAdmin;
 
 function bukaPopupAdminAdmin(jenis) {
     const popup = document.getElementById('popup-aktivitas');
@@ -3702,7 +2956,6 @@ function bukaPopupAdminAdmin(jenis) {
         html = `
             <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAntriAdmin()"><span class="popup-btn-icon">${ICONS.tambahAntri}</span><span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan</small></span></button>
             <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahMasterSales()"><span class="popup-btn-icon">${ICONS.tambahSales}</span><span class="popup-btn-text">Tambah Nama Promotor Baru<small>Daftarkan promotor baru</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKelolaPIN()"><span class="popup-btn-icon">${ICONS.pin}</span><span class="popup-btn-text">Buat PIN Promotor<small>Atur kode akses login</small></span></button>
             <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKeluarkanAntrian()"><span class="popup-btn-icon">${ICONS.keluarkan}</span><span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan aktif</small></span></button>
             <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalHapusMasterSales()"><span class="popup-btn-icon">${ICONS.hapus}</span><span class="popup-btn-text">Hapus Nama Permanen<small>Hapus dari daftar promotor</small></span></button>
         `;
@@ -3802,29 +3055,6 @@ async function eksekusiTambahSales() {
     catch (e) { tampilkanModal("Gagal", e.message); }
 }
 window.eksekusiTambahSales = eksekusiTambahSales;
-
-function bukaModalKelolaPIN() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => { const clean = sanitizeNama(n.nama); const ada = adminPinPromotorGlobal[clean] ? " ✅" : " ⚠️"; options += `<option value="${n.nama}">${n.nama}${ada}</option>`; });
-    document.getElementById('modal-title').innerText = "🔑 Buat/Atur PIN Promotor";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="admin-select-pin-sales" style="margin-bottom:10px;">${options}</select>PIN Baru (6 digit):<br><input type="text" id="admin-input-pin-baru" maxlength="6" inputmode="numeric" style="width:100%; padding:12px; border-radius:10px; font-size:18px; font-weight:800; text-align:center; letter-spacing:6px; box-sizing:border-box;">`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiSimpanPIN()">Simpan PIN</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-    setTimeout(() => { const inp = document.getElementById('admin-input-pin-baru'); if (inp) inp.addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g,'').slice(0,6); }); }, 100);
-}
-window.bukaModalKelolaPIN = bukaModalKelolaPIN;
-
-async function eksekusiSimpanPIN() {
-    const nama = document.getElementById('admin-select-pin-sales').value;
-    const pin = document.getElementById('admin-input-pin-baru').value.trim();
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    if (!/^\d{6}$/.test(pin)) { tampilkanModal("Perhatian", "PIN harus 6 digit!"); return; }
-    const clean = sanitizeNama(nama);
-    try { await window.dbSet(window.dbRef(window.db, 'pinPromotor/' + clean), pin); tutupModal(); tampilkanModal("Berhasil", `PIN ${nama}: ${pin}`); }
-    catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiSimpanPIN = eksekusiSimpanPIN;
 
 function bukaModalKeluarkanAntrian() {
     if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
@@ -3966,19 +3196,6 @@ function toggleGPSAdmin(aktif) {
     );
 }
 window.toggleGPSAdmin = toggleGPSAdmin;
-
-/* ============================================================ */
-/* ========== INIT ============================================= */
-/* ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-    const btnLogin = document.getElementById('btn-login-promotor');
-    if (btnLogin) btnLogin.onclick = window.prosesLoginPromotor;
-    const inputPin = document.getElementById('login-pin-input');
-    if (inputPin) {
-        inputPin.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
-        inputPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.prosesLoginPromotor(); });
-    }
-});
 </script>
 </body>
 </html>

@@ -2136,7 +2136,7 @@ function bukaModalTambahPromotor() {
     document.getElementById('modal-desc').innerHTML = `
         <label style="font-size:11px; font-weight:700;">Nama Promotor (Nama + Merk):</label><br>
         <input type="text" id="input-promotor-nama" placeholder="contoh: RONI AQUA" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:6px; box-sizing:border-box; text-transform:uppercase;" oninput="this.value = this.value.toUpperCase()">
-        <div style="font-size:11px; color:#64748b; margin-bottom:10px;">Format: <b>NAMA MERK</b> — contoh: RONI AQUA, RIZKA TOSHIBA, BUDI LG</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:10px;">Format: <b>NAMA MERK</b> — contoh: RONI AQUA,</div>
         <div style="font-size:11px; color:#64748b;">PIN awal otomatis: <b>123456</b> (promotor wajib ganti saat login pertama)</div>
     `;
     document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahPromotor()">Simpan</button>`;

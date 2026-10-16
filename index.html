@@ -12,7 +12,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDrrS4E_6e3G1DBfqkFbWoYLhdq6ZIzapg",
@@ -38,62 +38,30 @@
   window.dbPush = push;
   window.firebaseAuth = auth;
   window.firebaseSignOut = signOut;
-  window.firebaseGoogleAuthProvider = GoogleAuthProvider;
-  window.firebaseSignInWithPopup = signInWithPopup;
-  window.firebaseSignInWithRedirect = signInWithRedirect;
-  window.firebaseGetRedirectResult = getRedirectResult;
 
   window.serverTimeOffset = 0;
   window.dbOnValue(window.dbRef(db, '.info/serverTimeOffset'), (snap) => {
     window.serverTimeOffset = snap.val() || 0;
   });
 
-  // Tangani hasil redirect (untuk signInWithRedirect)
-  getRedirectResult(auth).catch((err) => {
-    console.warn('Redirect result error:', err);
+  // Login anonim (untuk lolos Rules) — PIN yang melindungi, bukan auth ini
+  signInAnonymously(auth).then(() => {
+    console.log('Anonim login OK');
+    window.dispatchEvent(new Event('firebase-ready'));
+  }).catch((err) => {
+    console.error('Anonim login gagal:', err);
+    alert('Gagal koneksi server. Cek internet dan refresh halaman.');
   });
 
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, (user) => {
     if (!user) {
-      window.firebaseUser = null;
-      window.dispatchEvent(new Event('firebase-ready'));
-      return;
-    }
-    if (!user.email) {
-      alert('Akun Google Anda tidak mengirimkan email. Coba login dengan akun Google lain, atau hubungi admin.');
-      await signOut(auth);
-      window.firebaseUser = null;
-      window.dispatchEvent(new Event('firebase-ready'));
-      return;
-    }
-    try {
-      const emailKey = user.email.replace(/\./g, ',');
-      const snap = await get(ref(db, 'users/whitelist/' + emailKey));
-      if (!snap.exists()) {
-        alert('Akun Google Anda (' + user.email + ') tidak terdaftar. Hubungi admin.');
-        await signOut(auth);
-        window.firebaseUser = null;
-        window.dispatchEvent(new Event('firebase-ready'));
-        return;
-      }
-      const wl = snap.val();
-      window.firebaseUser = {
-        email: user.email,
-        uid: user.uid,
-        role: wl.role || 'PROMOTOR',
-        nama: wl.nama || user.displayName || user.email
-      };
-      window.dispatchEvent(new Event('firebase-ready'));
-    } catch (err) {
-      console.error('Gagal verifikasi whitelist:', err);
-      alert('Gagal verifikasi akun: ' + err.message);
-      await signOut(auth);
-      window.firebaseUser = null;
-      window.dispatchEvent(new Event('firebase-ready'));
+      // Kalau logout anonim, coba login ulang
+      setTimeout(() => {
+        signInAnonymously(auth).catch(() => location.reload());
+      }, 1000);
     }
   });
 </script>
-
 <style>
 :root {
     --cyber-bg: #071321;
@@ -166,7 +134,6 @@ body {
     align-items: center !important;
     justify-content: center !important;
 }
-#btn-toggle-dark svg { flex-shrink: 0; }
 .logout-btn {
     background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
     color: #ffffff !important;
@@ -359,18 +326,129 @@ body {
 .modal-actions { display: flex; gap: 8px; }
 .modal-actions button { flex: 1; padding: 10px; font-size: 12px; border-radius: 10px; font-weight: 800; cursor: pointer; border: 2px solid #38bdf8 !important; text-transform: uppercase; background: linear-gradient(135deg, #38bdf8, #0ea5e9) !important; color: #061424 !important; }
 .modal-actions button.btn-cancel { background: var(--cyber-surface) !important; color: var(--cyber-text) !important; border: 2px solid var(--cyber-border) !important; }
+
+/* ===== STYLE LOGIN SCREEN ===== */
+#login-screen {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; height: 100dvh;
+    background: #050814;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+    overflow-y: auto; overflow-x: hidden;
+    z-index: 99999; box-sizing: border-box;
+}
+body:not(.dark-mode) #login-screen { background: #f1f5f9; }
+.fut-container { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; max-width: 1100px; width: 100%; }
+.fut-left { color: #ffffff; text-align: center; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; }
+body:not(.dark-mode) .fut-left { color: #0f172a; }
+.fut-tagline { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.3); border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #22d3ee; margin-bottom: 20px; text-transform: uppercase; }
+body:not(.dark-mode) .fut-tagline { background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.4); color: #0284c7; }
+.fut-dot { width: 6px; height: 6px; background: #22d3ee; border-radius: 50%; box-shadow: 0 0 10px #22d3ee; }
+.fut-headline { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; color: #ffffff; text-shadow: 0 0 30px rgba(34,211,238,0.5); line-height: 1.1; max-width: 100%; word-wrap: break-word; }
+body:not(.dark-mode) .fut-headline { color: #0c4a6e; text-shadow: 0 0 30px rgba(14, 165, 233, 0.25); }
+.fut-subheadline { font-size: 14px; color: #94a3b8; font-weight: 500; margin: 0 0 30px 0; letter-spacing: 1px; }
+body:not(.dark-mode) .fut-subheadline { color: #334155; font-weight: 600; }
+.fut-characters { display: flex; justify-content: center; align-items: center; margin-bottom: 30px; width: 100%; }
+.fut-characters .team-3d-img { display: block; max-width: 100%; max-height: 260px; height: auto; width: auto; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)); }
+.fut-live-status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: rgba(5,8,20,0.6); border: 1px solid rgba(34,211,238,0.3); border-radius: 100px; font-size: 12px; color: #e2e8f0; font-weight: 600; }
+body:not(.dark-mode) .fut-live-status { background: rgba(255, 255, 255, 0.95); border-color: rgba(14, 165, 233, 0.4); color: #075985; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15); }
+.fut-right { display: flex; justify-content: center; align-items: center; min-width: 0; }
+.fut-card { width: 100%; max-width: 400px; margin: 0 auto; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(34,211,238,0.2); border-radius: 24px; padding: 40px 32px; box-shadow: 0 0 60px rgba(14,165,233,0.15); position: relative; overflow: visible; }
+body:not(.dark-mode) .fut-card { background: rgba(255, 255, 255, 0.95); border-color: rgba(14, 165, 233, 0.25); box-shadow: 0 20px 50px rgba(14, 165, 233, 0.15); }
+.login-theme-toggle { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.35); background: rgba(2, 6, 23, 0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; padding: 0; color: #38bdf8; }
+.login-theme-toggle svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
+body:not(.dark-mode) .login-theme-toggle { background: #ffffff; border-color: rgba(37, 99, 235, 0.3); color: #0284c7; }
+.fut-logo { width: 110px; height: 110px; margin: 0 auto 20px; background: rgba(14,165,233,0.15); border: 1px solid rgba(34,211,238,0.3); border-radius: 22px; display: flex; align-items: center; justify-content: center; padding: 14px; box-shadow: 0 0 40px rgba(34,211,238,0.4); }
+.fut-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+body:not(.dark-mode) .fut-logo { background: rgba(14, 165, 233, 0.1); border-color: rgba(14, 165, 233, 0.3); box-shadow: 0 0 30px rgba(14, 165, 233, 0.25); }
+.login-hero { text-align: center; margin-bottom: 22px; }
+.login-hero-title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; }
+body:not(.dark-mode) .login-hero-title { color: #0c4a6e; }
+.login-hero-sub { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
+body:not(.dark-mode) .login-hero-sub { color: #475569; }
+.login-tabs { display: flex; gap: 6px; margin-bottom: 20px; background: rgba(2, 6, 23, 0.8); padding: 5px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.35); width: 100%; }
+.login-tab { flex: 1; padding: 10px 12px; background: transparent; border: none; border-radius: 8px; color: #64748b; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-family: inherit; }
+.login-tab.active { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%); color: #ffffff; font-weight: 900; box-shadow: 0 0 25px rgba(56, 189, 248, 0.7); }
+body:not(.dark-mode) .login-tabs { background: #f1f5f9; border: 1px solid #e2e8f0; }
+body:not(.dark-mode) .login-tab { color: #64748b; }
+body:not(.dark-mode) .login-tab.active { color: #ffffff; }
+.fut-field { margin-bottom: 16px; position: relative; }
+.fut-field label { display: block; font-size: 11px; font-weight: 700; color: #22d3ee; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+body:not(.dark-mode) .fut-field label { color: #0284c7; }
+.fut-input, .fut-input-admin { width: 100%; padding: 13px 16px; background: rgba(2,6,23,0.6); border: 1px solid rgba(34,211,238,0.2); border-radius: 12px; color: #ffffff; outline: none; font-weight: 600; }
+.fut-input { font-size: 20px; font-weight: 800; text-align: center; letter-spacing: 8px; }
+.fut-input-admin { font-size: 14px; text-align: left; letter-spacing: 1px; }
+.fut-input::placeholder { color: rgba(148,163,184,0.4); }
+body:not(.dark-mode) .fut-input, body:not(.dark-mode) .fut-input-admin { background: #f8fafc; border-color: rgba(14, 165, 233, 0.35); color: #0f172a; }
+.fut-error { color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-bottom: 8px; }
+.fut-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #a855f7 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 30px rgba(34,211,238,0.4); font-family: inherit; }
+.fut-btn:active { transform: scale(0.98); }
+.fut-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.fut-footer { text-align: center; font-size: 12px; color: #64748b; margin: 18px 0 0 0; font-weight: 500; }
+.fut-footer span { color: #22d3ee; font-weight: 700; }
+body:not(.dark-mode) .fut-footer { color: #475569; }
+body:not(.dark-mode) .fut-footer span { color: #0284c7; }
+@media (max-width: 900px) {
+    #login-screen { padding: 12px; align-items: flex-start; padding-top: 20px; }
+    .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 480px; margin: 0 auto; }
+    .fut-left { padding: 8px; }
+    .fut-headline { font-size: 26px; margin-bottom: 4px; }
+    .fut-subheadline { font-size: 12px; margin-bottom: 14px; }
+    .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; }
+    .fut-characters .team-3d-img { max-height: 180px; }
+    .fut-live-status { font-size: 11px; padding: 7px 14px; }
+    .fut-card { padding: 24px 20px; border-radius: 20px; }
+    .fut-logo { width: 90px; height: 90px; margin-bottom: 14px; padding: 10px; }
+    .login-tab { padding: 9px 10px; font-size: 11px; }
+}
+body.dark-mode .app-container { background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(15, 20, 35, 0.9)); border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 0 40px rgba(212, 175, 55, 0.15), inset 0 0 15px rgba(212, 175, 55, 0.05), 0 20px 50px -10px rgba(0, 0, 0, 0.7); }
+body.dark-mode .user-badge { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)); border: 1px solid rgba(212, 175, 55, 0.5); }
+body.dark-mode .user-badge strong, body.dark-mode #label-user-aktif { color: #ffffff; text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
+body.dark-mode .timer-card-admin { background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.6)); border: 1px solid rgba(212, 175, 55, 0.5); }
+body.dark-mode .timer-badge-title { color: #d4af37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); }
+body.dark-mode .promotor-nama-aktif { color: #ffffff; text-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
+body.dark-mode .app-container .btn-success, body.dark-mode .app-container .btn-customer { background: linear-gradient(135deg, #d4af37 0%, #0ea5e9 100%); color: #ffffff; border: 1px solid rgba(212, 175, 55, 0.8); font-weight: 800; }
+body.dark-mode .admin-menu-card { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)); border: 2px solid rgba(212, 175, 55, 0.5); }
+body.dark-mode .admin-menu-card-icon svg { stroke: #d4af37; }
+body.dark-mode .modal-box { background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)); border: 2px solid rgba(212, 175, 55, 0.5); }
+body.dark-mode .modal-title { color: #d4af37; }
+body.dark-mode .modal-actions button { background: linear-gradient(135deg, #d4af37, #b8941f); color: #111827; }
+body.dark-mode .input-group label { color: #d4af37; }
+body.dark-mode .dark-mode-btn { background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%); color: #111827; }
+.popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: rgba(5, 8, 20, 0.88); display: flex; align-items: center; justify-content: center; z-index: 99998; opacity: 0; visibility: hidden; padding: 16px; }
+.popup-overlay.active { opacity: 1; visibility: visible; }
+.popup-box { background: var(--cyber-card); border: 2px solid var(--cyber-cyan); border-radius: 16px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
+.popup-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: linear-gradient(135deg, #0c1e33, #071321); border-bottom: 2px solid var(--cyber-cyan); flex-shrink: 0; }
+.popup-title { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; }
+.popup-close { background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #ffffff; width: 32px; height: 32px; border-radius: 8px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.popup-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
+.popup-body .popup-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 12px; background: var(--cyber-card-soft); color: #ffffff; font-weight: 700; font-size: 12.5px; text-align: left; border: 2px solid #38bdf8; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
+.popup-btn-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); }
+.popup-btn-icon svg { width: 18px; height: 18px; stroke: #38bdf8; stroke-width: 2.2; fill: none; }
+.popup-btn-text { flex: 1; line-height: 1.3; color: #ffffff; }
+.popup-btn-text small { display: block; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 2px; text-transform: uppercase; }
+.admin-menu-header { display: flex; justify-content: center; align-items: center; padding: 12px 14px; border-radius: 12px; background: linear-gradient(135deg, #0c1e33, #071321); color: #ffffff; margin-top: 24px; margin-bottom: 12px; border: 2px solid #38bdf8; }
+.admin-menu-header .judul { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: #ffffff; }
+.admin-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.admin-menu-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px 12px; background: var(--cyber-card-soft); border: 2px solid #38bdf8; border-radius: 12px; cursor: pointer; color: #ffffff; font-weight: 800; font-size: 11px; text-transform: uppercase; font-family: inherit; width: 100%; min-height: 100px; text-align: center; }
+.admin-menu-card-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); }
+.admin-menu-card-icon svg { width: 22px; height: 22px; }
+.admin-menu-card-icon.t-operasional svg { stroke: #38bdf8; }
+.admin-menu-card-icon.t-urutan svg { stroke: #10b981; }
+.admin-menu-card-icon.t-darurat svg { stroke: #f87171; }
+.admin-menu-card-icon.t-gps svg { stroke: #c084fc; }
+.admin-menu-card-icon.t-user svg { stroke: #d4af37; }
+.admin-menu-card-label { font-size: 10.5px; font-weight: 800; color: #ffffff; line-height: 1.25; text-transform: uppercase; }
+body.admin-mode .admin-panel-wrapper { display: block !important; }
+body.admin-mode #section-checkin-awal, body.admin-mode #section-normal, body.admin-mode #panel-login, body.admin-mode .timer-box-wrapper, body.admin-mode #box-lock-timer { display: none !important; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s ease-in-out infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <!-- ========== LAYAR LOGIN ========== -->
 <div id="login-screen">
-    <div class="fut-grid"></div>
-    <div class="fut-orb fut-orb-1"></div>
-    <div class="fut-orb fut-orb-2"></div>
-    <div class="fut-orb fut-orb-3"></div>
-    <div class="fut-particles" id="fut-particles"></div>
-
     <div class="fut-container">
         <div class="fut-left">
             <div class="fut-tagline">
@@ -402,28 +480,39 @@ body {
                     <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='🛸';">
                 </div>
 
-                <div class="login-hero">
-                    <h1 class="login-hero-title">Selamat Datang</h1>
-                    <p class="login-hero-sub">Masuk dengan akun Google Anda untuk melanjutkan</p>
+                <div class="login-tabs">
+                    <button type="button" class="login-tab active" id="tab-promotor" onclick="switchLoginTab('promotor')">PROMOTOR</button>
+                    <button type="button" class="login-tab" id="tab-admin" onclick="switchLoginTab('admin')">ADMIN</button>
                 </div>
 
-                <button type="button" id="btn-login-google" class="btn-google" onclick="loginDenganGoogle()">
-                    <span class="btn-google-icon">
-                        <svg viewBox="0 0 48 48" width="22" height="22">
-                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                        </svg>
-                    </span>
-                    <span id="btn-login-text" class="btn-google-text">Lanjutkan dengan Google</span>
-                    <span class="btn-google-arrow">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                            <polyline points="12 5 19 12 12 19"/>
-                        </svg>
-                    </span>
+                <div id="form-promotor">
+                    <div class="fut-field">
+                        <label>Pilih Nama Anda</label>
+                        <select id="login-nama-promotor" style="width:100%; padding:13px 16px; background:rgba(2,6,23,0.6); border:1px solid rgba(34,211,238,0.2); border-radius:12px; color:#ffffff; font-size:14px; font-weight:600; outline:none;">
+                            <option value="">-- Memuat daftar promotor --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="form-admin" style="display:none;">
+                    <div class="fut-field">
+                        <label>Username Admin</label>
+                        <input type="text" id="login-admin-username" class="fut-input-admin" placeholder="Masukkan username admin" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="fut-field">
+                    <label>Masukkan PIN</label>
+                    <input type="password" id="login-pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="off" class="fut-input">
+                </div>
+
+                <div id="login-error" class="fut-error"></div>
+
+                <button type="button" id="btn-login-promotor" class="fut-btn">
+                    <span id="btn-login-text">MASUK</span>
                 </button>
+
+                <p class="fut-footer">PIN awal: <span>123456</span> — wajib diganti saat login pertama</p>
             </div>
         </div>
     </div>
@@ -433,9 +522,6 @@ body {
 <div class="app-container" id="app-container" style="display: none;">
     <div class="top-controls">
         <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
             <span id="btn-toggle-dark-text">Gelap</span>
         </button>
         <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutPromotor()" style="display: none;">Logout</button>
@@ -454,6 +540,7 @@ body {
                 <span style="color: var(--cyber-text-muted);">Promotor:</span>
                 <strong id="label-user-aktif" style="font-size: 14px;">-</strong>
             </div>
+            <button type="button" onclick="bukaModalGantiPIN()" style="background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#38bdf8; padding:6px 10px; border-radius:8px; font-size:10px; font-weight:800; cursor:pointer;">GANTI PIN</button>
         </div>
 
         <div id="box-lock-timer" style="display:none; margin-bottom: 16px;">
@@ -461,7 +548,6 @@ body {
                 <span class="timer-badge-title">🔒 AKUN DIKUNCI</span>
                 <div class="timer-display" id="lock-timer-display" style="font-size:26px; font-weight:800; color:#fbbf24; margin-top:6px; letter-spacing:1.5px;">--:--</div>
                 <div id="lock-reason-display" style="font-size:11px; color:#ffb3bc; margin-top:6px; font-weight:600;">Alasan: -</div>
-                <div style="font-size:10px; color:#ff8585; margin-top:4px;">Akun akan terbuka otomatis setelah timer habis</div>
             </div>
         </div>
 
@@ -476,7 +562,7 @@ body {
 
         <div id="section-checkin-awal" style="display: none;">
             <div class="gps-box">
-                <div style="font-size:11px; font-weight:800; color:var(--cyber-cyan); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.3px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
+                <div style="font-size:11px; font-weight:800; color:var(--cyber-cyan); text-transform:uppercase; margin-bottom:8px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
                 <div id="map-promotor"></div>
                 <div id="info-radius" class="info-radius">📡 Mendeteksi lokasi Anda...</div>
             </div>
@@ -508,41 +594,28 @@ body {
 
         <div class="admin-panel-wrapper" id="admin-panel-wrapper" style="display: none;">
             <div class="admin-menu-header">
-                <span class="judul">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
-                        <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-                        <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-                        <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
-                        <line x1="17" y1="16" x2="23" y2="16"/>
-                    </svg>
-                    Menu Admin
-                </span>
+                <span class="judul">Menu Admin</span>
             </div>
             <div class="admin-menu-grid">
                 <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('operasional')">
-                    <span class="admin-menu-card-icon t-operasional">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    </span>
+                    <span class="admin-menu-card-icon t-operasional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/></svg></span>
                     <span class="admin-menu-card-label">Operasional<br>Sistem</span>
                 </button>
                 <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('urutan')">
-                    <span class="admin-menu-card-icon t-urutan">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    </span>
+                    <span class="admin-menu-card-icon t-urutan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/></svg></span>
                     <span class="admin-menu-card-label">Manajemen<br>Urutan</span>
                 </button>
                 <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('darurat')">
-                    <span class="admin-menu-card-icon t-darurat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    </span>
+                    <span class="admin-menu-card-icon t-darurat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg></span>
                     <span class="admin-menu-card-label">Tindakan<br>Darurat</span>
                 </button>
                 <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('gps')">
-                    <span class="admin-menu-card-icon t-gps">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    </span>
+                    <span class="admin-menu-card-icon t-gps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
                     <span class="admin-menu-card-label">Konfigurasi<br>GPS Toko</span>
+                </button>
+                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('user')">
+                    <span class="admin-menu-card-icon t-user"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></span>
+                    <span class="admin-menu-card-label">Kelola<br>Promotor</span>
                 </button>
             </div>
         </div>
@@ -557,63 +630,17 @@ body {
 
     <div class="aktivitas-section">
         <div class="aktivitas-header-toggle" id="toggle-aktivitas" onclick="toggleAktivitasSection()">
-            <span class="judul">
-                <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-                Aktivitas Hari Ini
-            </span>
+            <span class="judul">Aktivitas Hari Ini</span>
             <span class="arrow" id="arrow-aktivitas"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
         </div>
         <div class="aktivitas-content" id="content-aktivitas">
             <div class="aktivitas-menu-grid">
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bawa')">
-                    <span class="aktivitas-menu-icon t-bawa-customer"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
-                    <span class="aktivitas-menu-label">Bawa Customer</span>
-                    <span class="aktivitas-menu-count" id="count-bawa">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('ibadah')">
-                    <span class="aktivitas-menu-icon t-ibadah"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-4 7 4"/><path d="M5 16l7-4 7 4"/></svg></span>
-                    <span class="aktivitas-menu-label">Ibadah</span>
-                    <span class="aktivitas-menu-count" id="count-ibadah">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('keluar')">
-                    <span class="aktivitas-menu-icon t-keluar"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
-                    <span class="aktivitas-menu-label">Keluar Antrian</span>
-                    <span class="aktivitas-menu-count" id="count-keluar">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('autokick')">
-                    <span class="aktivitas-menu-icon t-autokick"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg></span>
-                    <span class="aktivitas-menu-label">Autokick</span>
-                    <span class="aktivitas-menu-count" id="count-autokick">0</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('rekap')">
-                    <span class="aktivitas-menu-icon t-rekap"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
-                    <span class="aktivitas-menu-label">Rekap Promotor</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bulanan')">
-                    <span class="aktivitas-menu-icon t-rekap"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-                    <span class="aktivitas-menu-label">Total Bulanan</span>
-                </button>
-            </div>
-            <div style="display:none;">
-                <ul id="list-bawa" class="aktivitas-list"></ul>
-                <ul id="list-ibadah" class="aktivitas-list"></ul>
-                <ul id="list-keluar" class="aktivitas-list"></ul>
-                <ul id="list-autokick" class="aktivitas-list"></ul>
-                <div id="total-bawa-box"></div>
-                <div class="rekap-wrapper">
-                    <div class="rekap-label">Periode: <span id="rekap-periode-label">-</span></div>
-                    <table class="rekap-tabel">
-                        <thead><tr><th class="kolom-nama">Nama Promotor</th><th>Deal</th><th>Lihat</th><th>No Sale</th><th>Hari</th></tr></thead>
-                        <tbody id="rekap-tbody"><tr><td colspan="5" class="aktivitas-empty">Memuat...</td></tr></tbody>
-                    </table>
-                </div>
-                <div class="rekap-wrapper">
-                    <div class="rekap-label">Tahun: <span id="total-bulanan-tahun-label">-</span></div>
-                    <table class="rekap-tabel">
-                        <thead><tr><th class="kolom-nama">Bulan</th><th>Deal</th><th>Lihat</th></tr></thead>
-                        <tbody id="total-bulanan-tbody"><tr><td colspan="3" class="aktivitas-empty">Memuat...</td></tr></tbody>
-                    </table>
-                </div>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bawa')"><span class="aktivitas-menu-label">Bawa Customer</span><span class="aktivitas-menu-count" id="count-bawa">0</span></button>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('ibadah')"><span class="aktivitas-menu-label">Ibadah</span><span class="aktivitas-menu-count" id="count-ibadah">0</span></button>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('keluar')"><span class="aktivitas-menu-label">Keluar Antrian</span><span class="aktivitas-menu-count" id="count-keluar">0</span></button>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('autokick')"><span class="aktivitas-menu-label">Autokick</span><span class="aktivitas-menu-count" id="count-autokick">0</span></button>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('rekap')"><span class="aktivitas-menu-label">Rekap Promotor</span></button>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bulanan')"><span class="aktivitas-menu-label">Total Bulanan</span></button>
             </div>
         </div>
     </div>
@@ -637,205 +664,24 @@ body {
     </div>
 </div>
 
-<style>
-/* ============================================================ */
-/* ===== CSS LOGIN FINAL ====================================== */
-/* ============================================================ */
-.fut-grid, .fut-orb, .fut-orb-1, .fut-orb-2, .fut-orb-3,
-.fut-particle, .team-3d-img, .fut-pulse-dot, .fut-dot, .status-open .dot { animation: none !important; }
-
-#login-screen {
-    position: fixed !important; top: 0; left: 0;
-    width: 100% !important; height: 100% !important; height: 100dvh !important;
-    background: #050814 !important;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    padding: 24px 16px !important;
-    overflow-y: auto !important; overflow-x: hidden !important;
-    z-index: 99999 !important; box-sizing: border-box !important;
-}
-body:not(.dark-mode) #login-screen { background: #f1f5f9 !important; }
-.fut-grid { position: fixed !important; inset: 0 !important; background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important; background-size: 40px 40px !important; pointer-events: none !important; z-index: 1 !important; display: block !important; }
-body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important; }
-.fut-orb { position: fixed !important; border-radius: 50% !important; filter: blur(80px) !important; opacity: 0.55 !important; pointer-events: none !important; z-index: 1 !important; display: block !important; }
-.fut-orb-1 { width: 400px !important; height: 400px !important; background: #0ea5e9 !important; top: -100px !important; left: -100px !important; }
-.fut-orb-2 { width: 300px !important; height: 300px !important; background: #a855f7 !important; bottom: -80px !important; right: -80px !important; }
-.fut-orb-3 { width: 350px !important; height: 350px !important; background: #06b6d4 !important; top: 40% !important; left: 45% !important; opacity: 0.4 !important; }
-body:not(.dark-mode) .fut-orb { opacity: 0.25 !important; }
-.fut-particles { position: fixed !important; inset: 0 !important; pointer-events: none !important; z-index: 1 !important; display: block !important; }
-.fut-particle { position: absolute !important; width: 2px !important; height: 2px !important; border-radius: 50% !important; display: block !important; }
-.fut-container { position: relative !important; z-index: 10 !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 50px !important; align-items: center !important; max-width: 1100px !important; width: 100% !important; }
-.fut-left { color: #ffffff !important; text-align: center !important; padding: 20px !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; min-width: 0 !important; }
-body:not(.dark-mode) .fut-left { color: #0f172a !important; }
-.fut-tagline { display: inline-flex !important; align-items: center !important; gap: 8px !important; padding: 6px 16px !important; background: rgba(14,165,233,0.1) !important; border: 1px solid rgba(14,165,233,0.3) !important; border-radius: 100px !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: 2px !important; color: #22d3ee !important; margin-bottom: 20px !important; text-transform: uppercase !important; }
-body:not(.dark-mode) .fut-tagline { background: rgba(14, 165, 233, 0.12) !important; border-color: rgba(14, 165, 233, 0.4) !important; color: #0284c7 !important; }
-.fut-dot { width: 6px !important; height: 6px !important; background: #22d3ee !important; border-radius: 50% !important; box-shadow: 0 0 10px #22d3ee !important; }
-body:not(.dark-mode) .fut-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
-.fut-headline { font-size: 42px !important; font-weight: 900 !important; margin: 0 0 8px 0 !important; color: #ffffff !important; text-shadow: 0 0 30px rgba(34,211,238,0.5) !important; line-height: 1.1 !important; max-width: 100% !important; word-wrap: break-word !important; overflow-wrap: break-word !important; }
-body:not(.dark-mode) .fut-headline { color: #0c4a6e !important; text-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important; }
-.fut-subheadline { font-size: 14px !important; color: #94a3b8 !important; font-weight: 500 !important; margin: 0 0 30px 0 !important; letter-spacing: 1px !important; }
-body:not(.dark-mode) .fut-subheadline { color: #334155 !important; font-weight: 600 !important; }
-.fut-characters { display: flex !important; justify-content: center !important; align-items: center !important; margin-bottom: 30px !important; width: 100% !important; }
-.fut-characters .team-3d-img { display: block !important; max-width: 100% !important; max-height: 260px !important; height: auto !important; width: auto !important; object-fit: contain !important; filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)) !important; }
-.fut-live-status { display: inline-flex !important; align-items: center !important; gap: 10px !important; padding: 10px 20px !important; background: rgba(5,8,20,0.6) !important; border: 1px solid rgba(34,211,238,0.3) !important; border-radius: 100px !important; font-size: 12px !important; color: #e2e8f0 !important; font-weight: 600 !important; }
-body:not(.dark-mode) .fut-live-status { background: rgba(255, 255, 255, 0.95) !important; border-color: rgba(14, 165, 233, 0.4) !important; color: #075985 !important; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important; }
-.fut-pulse-dot { width: 8px !important; height: 8px !important; background: #22d3ee !important; border-radius: 50% !important; box-shadow: 0 0 10px #22d3ee !important; }
-body:not(.dark-mode) .fut-pulse-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
-.fut-right { display: flex !important; justify-content: center !important; align-items: center !important; min-width: 0 !important; }
-.fut-card { width: 100% !important; max-width: 400px !important; margin: 0 auto !important; background: rgba(15, 23, 42, 0.7) !important; backdrop-filter: blur(24px) !important; border: 1px solid rgba(34,211,238,0.2) !important; border-radius: 24px !important; padding: 40px 32px !important; box-shadow: 0 0 60px rgba(14,165,233,0.15) !important; position: relative !important; overflow: visible !important; }
-body:not(.dark-mode) .fut-card { background: rgba(255, 255, 255, 0.95) !important; border-color: rgba(14, 165, 233, 0.25) !important; box-shadow: 0 20px 50px rgba(14, 165, 233, 0.15), 0 8px 20px rgba(0, 0, 0, 0.05) !important; }
-.fut-card::before { content: '' !important; position: absolute !important; top: 0; left: 0; right: 0 !important; height: 1px !important; background: linear-gradient(90deg, transparent, #22d3ee, transparent) !important; }
-.login-theme-toggle { position: absolute !important; top: 14px !important; right: 14px !important; width: 38px !important; height: 38px !important; border-radius: 10px !important; border: 1px solid rgba(56, 189, 248, 0.35) !important; background: rgba(2, 6, 23, 0.6) !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 10 !important; padding: 0 !important; color: #38bdf8 !important; transition: all 0.25s ease !important; }
-.login-theme-toggle svg { width: 18px !important; height: 18px !important; stroke: currentColor !important; stroke-width: 2 !important; fill: none !important; stroke-linecap: round !important; stroke-linejoin: round !important; }
-.login-theme-toggle:hover { background: rgba(56, 189, 248, 0.2) !important; box-shadow: 0 0 20px rgba(56, 189, 248, 0.6) !important; transform: rotate(15deg) !important; }
-body:not(.dark-mode) .login-theme-toggle { background: #ffffff !important; border-color: rgba(37, 99, 235, 0.3) !important; color: #0284c7 !important; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important; }
-.fut-logo { width: 110px !important; height: 110px !important; margin: 0 auto 20px !important; background: rgba(14,165,233,0.15) !important; border: 1px solid rgba(34,211,238,0.3) !important; border-radius: 22px !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 14px !important; box-shadow: 0 0 40px rgba(34,211,238,0.4) !important; }
-body:not(.dark-mode) .fut-logo { background: rgba(14, 165, 233, 0.1) !important; border-color: rgba(14, 165, 233, 0.3) !important; box-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important; }
-.fut-logo img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block !important; }
-.login-hero { text-align: center !important; margin-bottom: 22px !important; }
-.login-hero-title { font-size: 24px !important; font-weight: 800 !important; color: #ffffff !important; margin: 0 0 6px 0 !important; letter-spacing: -0.5px !important; }
-body:not(.dark-mode) .login-hero-title { color: #0c4a6e !important; }
-.login-hero-sub { font-size: 13px !important; color: #94a3b8 !important; margin: 0 !important; font-weight: 500 !important; line-height: 1.5 !important; }
-body:not(.dark-mode) .login-hero-sub { color: #475569 !important; }
-.btn-google { width: 100% !important; padding: 14px 16px !important; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important; color: #111827 !important; border: none !important; border-radius: 14px !important; font-size: 14.5px !important; font-weight: 700 !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; position: relative !important; overflow: hidden !important; transition: all 0.3s ease !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important; }
-.btn-google:hover { transform: translateY(-2px) !important; box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset !important; background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important; }
-.btn-google:active { transform: translateY(0) scale(0.98) !important; }
-.btn-google:disabled { opacity: 0.7 !important; cursor: not-allowed !important; }
-.btn-google-icon { width: 34px !important; height: 34px !important; background: #ffffff !important; border-radius: 10px !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important; transition: transform 0.3s ease !important; }
-.btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg) !important; }
-.btn-google-text { flex: 1 !important; text-align: left !important; font-size: 14.5px !important; letter-spacing: 0.2px !important; color: #111827 !important; }
-.btn-google-arrow { display: flex !important; align-items: center !important; justify-content: center !important; color: #64748b !important; transition: all 0.3s ease !important; flex-shrink: 0 !important; }
-.btn-google:hover .btn-google-arrow { color: #0284c7 !important; transform: translateX(4px) !important; }
-@media (max-width: 900px) {
-    #login-screen { padding: 12px !important; align-items: flex-start !important; padding-top: 20px !important; }
-    .fut-container { grid-template-columns: 1fr !important; gap: 16px !important; max-width: 480px !important; margin: 0 auto !important; }
-    .fut-left { padding: 8px !important; }
-    .fut-headline { font-size: 26px !important; margin-bottom: 4px !important; }
-    .fut-subheadline { font-size: 12px !important; margin-bottom: 14px !important; }
-    .fut-tagline { font-size: 10px !important; padding: 5px 12px !important; margin-bottom: 12px !important; }
-    .fut-characters .team-3d-img { max-height: 180px !important; }
-    .fut-live-status { font-size: 11px !important; padding: 7px 14px !important; }
-    .fut-card { padding: 24px 20px !important; border-radius: 20px !important; }
-    .fut-logo { width: 90px !important; height: 90px !important; margin-bottom: 14px !important; padding: 10px !important; }
-    .btn-google { padding: 12px 14px !important; font-size: 13.5px !important; }
-    .btn-google-icon { width: 30px !important; height: 30px !important; }
-}
-@media (max-width: 400px) {
-    #login-screen { padding: 8px !important; }
-    .fut-container { gap: 12px !important; }
-    .fut-headline { font-size: 22px !important; }
-    .fut-subheadline { font-size: 11px !important; margin-bottom: 10px !important; }
-    .fut-characters .team-3d-img { max-height: 140px !important; }
-    .fut-card { padding: 20px 16px !important; border-radius: 16px !important; }
-    .fut-logo { width: 80px !important; height: 80px !important; margin-bottom: 10px !important; padding: 8px !important; }
-    .login-theme-toggle { width: 34px !important; height: 34px !important; top: 12px !important; right: 12px !important; }
-    .login-theme-toggle svg { width: 16px !important; height: 16px !important; }
-}
-html body:not(.dark-mode) { background-color: #f8fafc !important; background-image: radial-gradient(circle 400px at 10% 10%, rgba(14, 165, 233, 0.15), transparent 70%), radial-gradient(circle 300px at 90% 90%, rgba(168, 85, 247, 0.12), transparent 70%), linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important; background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important; background-attachment: fixed !important; color: #0f172a !important; }
-html body:not(.dark-mode) .app-container { background: #ffffff !important; border: 2px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .user-badge { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .user-badge > div > span { color: #64748b !important; }
-html body:not(.dark-mode) .user-badge strong, html body:not(.dark-mode) #label-user-aktif { color: #0f172a !important; text-shadow: none !important; }
-html body:not(.dark-mode) .timer-card-admin { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .promotor-nama-aktif { color: #0f172a !important; text-shadow: none !important; }
-html body:not(.dark-mode) .timer-badge-title { color: #0ea5e9 !important; text-shadow: none !important; }
-html body:not(.dark-mode) .list-antrian li { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .list-antrian li b { color: #0f172a !important; text-shadow: none !important; }
-html body:not(.dark-mode) .live-urutan-title { color: #0284c7 !important; border-bottom: 2px solid #0284c7 !important; }
-html body:not(.dark-mode) .gps-box { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) #map-promotor { border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .info-radius { background: rgba(100, 116, 139, 0.1) !important; border: 1px solid #e2e8f0 !important; color: #64748b !important; }
-html body:not(.dark-mode) .aktivitas-header-toggle, html body:not(.dark-mode) .aktivitas-title { background: linear-gradient(135deg, #0f172a, #1e293b) !important; border: 1px solid #334155 !important; }
-html body:not(.dark-mode) .aktivitas-list li { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .aktivitas-list li .nama { color: #0f172a !important; }
-html body:not(.dark-mode) .aktivitas-list li .waktu { color: #64748b !important; }
-html body:not(.dark-mode) .rekap-tabel th { background: #f1f5f9 !important; color: #64748b !important; border-bottom: 2px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .rekap-tabel td { border-bottom: 1px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .rekap-tabel tr.total-row td { background: #f8fafc !important; border-top: 2px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .rekap-wrapper { background: #ffffff !important; border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .rekap-label { color: #64748b !important; }
-html body:not(.dark-mode) .modal-box { background: #ffffff !important; border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .modal-title { color: #0f172a !important; }
-html body:not(.dark-mode) .modal-desc { color: #64748b !important; }
-html body:not(.dark-mode) .app-container select, html body:not(.dark-mode) .app-container input { background: #f8fafc !important; color: #0f172a !important; border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .aktivitas-menu-btn { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; color: #0f172a !important; }
-html body:not(.dark-mode) .aktivitas-menu-label { color: #0f172a !important; }
-html body:not(.dark-mode) .aktivitas-menu-icon { background: rgba(14, 165, 233, 0.1) !important; border: 1px solid rgba(14, 165, 233, 0.3) !important; }
-html body:not(.dark-mode) .aktivitas-menu-icon svg { stroke: #0284c7 !important; }
-html body:not(.dark-mode) .popup-box { background: #ffffff !important; border: 1px solid #e2e8f0 !important; }
-html body:not(.dark-mode) .popup-header { background: linear-gradient(135deg, #0f172a, #1e293b) !important; }
-html body:not(.dark-mode) .admin-menu-header { background: linear-gradient(135deg, #0f172a, #1e293b) !important; border-color: #334155 !important; }
-html body:not(.dark-mode) .admin-menu-card { background: #ffffff !important; border: 2px solid #2563eb !important; color: #0f172a !important; }
-html body:not(.dark-mode) .admin-menu-card-label { color: #0f172a !important; }
-html body:not(.dark-mode) .logout-btn, html body:not(.dark-mode) #btn-logout-top { background: #ffffff !important; color: #dc2626 !important; border: 1px solid #fca5a5 !important; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.06) !important; text-shadow: none !important; }
-html body:not(.dark-mode) .dark-mode-btn, html body:not(.dark-mode) #btn-toggle-dark { background: #ffffff !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important; text-shadow: none !important; }
-body.dark-mode .app-container { background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(15, 20, 35, 0.9)) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; box-shadow: 0 0 40px rgba(212, 175, 55, 0.15), inset 0 0 15px rgba(212, 175, 55, 0.05), 0 20px 50px -10px rgba(0, 0, 0, 0.7) !important; }
-body.dark-mode .user-badge { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important; border: 1px solid rgba(212, 175, 55, 0.5) !important; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2) !important; }
-body.dark-mode .user-badge strong, body.dark-mode #label-user-aktif { color: #ffffff !important; text-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important; }
-body.dark-mode .timer-card-admin { background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.6)) !important; border: 1px solid rgba(212, 175, 55, 0.5) !important; box-shadow: 0 0 25px rgba(212, 175, 55, 0.15) !important; }
-body.dark-mode .timer-badge-title { color: #d4af37 !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important; }
-body.dark-mode .promotor-nama-aktif { color: #ffffff !important; text-shadow: 0 0 20px rgba(212, 175, 55, 0.6) !important; }
-body.dark-mode .status-badge-sistem { border: 2px solid rgba(212, 175, 55, 0.6) !important; background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3) !important; color: #ffffff !important; }
-body.dark-mode .app-container .btn-success, body.dark-mode .app-container .btn-customer { background: linear-gradient(135deg, #d4af37 0%, #0ea5e9 100%) !important; color: #ffffff !important; border: 1px solid rgba(212, 175, 55, 0.8) !important; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2) !important; font-weight: 800 !important; }
-body.dark-mode .app-container .btn-purple, body.dark-mode .app-container .btn-indigo { background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important; color: #ffffff !important; border: 1px solid rgba(14, 165, 233, 0.7) !important; box-shadow: 0 0 20px rgba(14, 165, 233, 0.4) !important; font-weight: 800 !important; }
-body.dark-mode .list-antrian li { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important; border: 1px solid rgba(212, 175, 55, 0.35) !important; box-shadow: 0 0 15px rgba(212, 175, 55, 0.1) !important; }
-body.dark-mode .list-antrian li.saya-sendiri { border: 2px solid #d4af37 !important; background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(14, 165, 233, 0.08)) !important; box-shadow: 0 0 25px rgba(212, 175, 55, 0.4) !important; }
-body.dark-mode .live-urutan-title { color: #d4af37 !important; border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .aktivitas-header-toggle { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important; border: 1px solid rgba(212, 175, 55, 0.5) !important; box-shadow: 0 0 20px rgba(212, 175, 55, 0.15) !important; }
-body.dark-mode .aktivitas-title { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; }
-body.dark-mode .aktivitas-list li { background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important; border: 1px solid rgba(212, 175, 55, 0.25) !important; border-left: 3px solid #d4af37 !important; }
-body.dark-mode .aktivitas-menu-btn { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important; border: 1px solid rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .aktivitas-menu-icon { background: rgba(212, 175, 55, 0.15) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; }
-body.dark-mode .aktivitas-menu-icon svg { stroke: #d4af37 !important; }
-body.dark-mode .aktivitas-menu-count { background: #d4af37 !important; color: #111827 !important; }
-body.dark-mode .admin-menu-header { background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important; border: 2px solid rgba(212, 175, 55, 0.6) !important; }
-body.dark-mode .admin-menu-card { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important; border: 2px solid rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .admin-menu-card-icon { background: rgba(212, 175, 55, 0.15) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; }
-body.dark-mode .admin-menu-card-icon.t-operasional svg { stroke: #d4af37 !important; }
-body.dark-mode .rekap-tabel th { background: linear-gradient(135deg, rgba(35, 28, 15, 0.8), rgba(17, 24, 39, 0.9)) !important; color: #d4af37 !important; border-bottom: 2px solid #d4af37 !important; }
-body.dark-mode .rekap-tabel tr.total-row td { background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(17, 24, 39, 0.9)) !important; color: #d4af37 !important; border-top: 2px solid #d4af37 !important; }
-body.dark-mode .gps-box { background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; }
-body.dark-mode .rekap-wrapper { background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important; border: 1px solid rgba(212, 175, 55, 0.35) !important; }
-body.dark-mode .rekap-label { color: #d4af37 !important; }
-body.dark-mode .popup-box { background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important; border: 2px solid rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .popup-header { background: linear-gradient(135deg, rgba(35, 28, 15, 0.9), rgba(17, 24, 39, 0.95)) !important; border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .popup-title { color: #ffffff !important; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important; }
-body.dark-mode .popup-close { background: rgba(212, 175, 55, 0.15) !important; border: 1px solid rgba(212, 175, 55, 0.5) !important; color: #d4af37 !important; }
-body.dark-mode .modal-box { background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important; border: 2px solid rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .modal-title { color: #d4af37 !important; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5) !important; }
-body.dark-mode .modal-actions button { background: linear-gradient(135deg, #d4af37, #b8941f) !important; color: #111827 !important; border: 1px solid rgba(212, 175, 55, 0.8) !important; font-weight: 800 !important; }
-body.dark-mode .modal-actions button.btn-cancel { background: rgba(100, 116, 139, 0.2) !important; color: #cbd5e1 !important; border: 1px solid rgba(100, 116, 139, 0.4) !important; }
-body.dark-mode .input-group label { color: #d4af37 !important; text-shadow: 0 0 8px rgba(212, 175, 55, 0.4) !important; }
-body.dark-mode .dark-mode-btn { background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%) !important; color: #111827 !important; border: 1px solid #d4af37 !important; text-shadow: none !important; font-weight: 800 !important; }
-.popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: rgba(5, 8, 20, 0.88); display: flex; align-items: center; justify-content: center; z-index: 99998; opacity: 0; visibility: hidden; padding: 16px; box-sizing: border-box; }
-.popup-overlay.active { opacity: 1; visibility: visible; }
-.popup-box { background: var(--cyber-card); border: 2px solid var(--cyber-cyan); border-radius: 16px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
-.popup-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: linear-gradient(135deg, #0c1e33, #071321); border-bottom: 2px solid var(--cyber-cyan); flex-shrink: 0; }
-.popup-title { font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ffffff; letter-spacing: 0.5px; }
-.popup-close { background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #ffffff; width: 32px; height: 32px; border-radius: 8px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
-.popup-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
-.popup-body .popup-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 12px; background: var(--cyber-card-soft); color: #ffffff; font-weight: 700; font-size: 12.5px; text-align: left; border: 2px solid #38bdf8; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
-.popup-btn-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); }
-.popup-btn-icon svg { width: 18px; height: 18px; stroke: #38bdf8; stroke-width: 2.2; fill: none; }
-.popup-btn-text { flex: 1; line-height: 1.3; color: #ffffff; }
-.popup-btn-text small { display: block; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 2px; text-transform: uppercase; }
-.admin-menu-header { display: flex; justify-content: center; align-items: center; padding: 12px 14px; border-radius: 12px; background: linear-gradient(135deg, #0c1e33, #071321); color: #ffffff; margin-top: 24px; margin-bottom: 12px; border: 2px solid #38bdf8; }
-.admin-menu-header .judul { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: #ffffff; }
-.admin-menu-header .judul svg { stroke: #ffffff !important; }
-.admin-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.admin-menu-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px 12px; background: var(--cyber-card-soft); border: 2px solid #38bdf8; border-radius: 12px; cursor: pointer; color: #ffffff; font-weight: 800; font-size: 11px; text-transform: uppercase; font-family: inherit; width: 100%; min-height: 100px; text-align: center; }
-.admin-menu-card-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); }
-.admin-menu-card-icon svg { width: 22px; height: 22px; }
-.admin-menu-card-icon.t-operasional svg { stroke: #38bdf8; }
-.admin-menu-card-icon.t-urutan svg { stroke: #10b981; }
-.admin-menu-card-icon.t-darurat svg { stroke: #f87171; }
-.admin-menu-card-icon.t-gps svg { stroke: #c084fc; }
-.admin-menu-card-label { font-size: 10.5px; font-weight: 800; color: #ffffff; line-height: 1.25; text-transform: uppercase; }
-body.admin-mode .admin-panel-wrapper { display: block !important; }
-body.admin-mode #section-checkin-awal, body.admin-mode #section-normal, body.admin-mode #panel-login, body.admin-mode .timer-box-wrapper, body.admin-mode #box-lock-timer { display: none !important; }
-.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s ease-in-out infinite; vertical-align: middle; margin-right: 6px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
-
+<div id="modal-ganti-pin" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title" id="ganti-pin-title">Ganti PIN</div>
+        <div class="modal-desc" id="ganti-pin-desc">Masukkan PIN baru Anda (6 digit angka).</div>
+        <div style="text-align:left; margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:700; color:#38bdf8;">PIN Baru:</label>
+            <input type="password" id="input-pin-baru" maxlength="6" inputmode="numeric" placeholder="6 digit" class="fut-input" style="font-size:16px; letter-spacing:4px;">
+        </div>
+        <div style="text-align:left; margin-bottom:16px;">
+            <label style="font-size:11px; font-weight:700; color:#38bdf8;">Konfirmasi PIN Baru:</label>
+            <input type="password" id="input-pin-konfirmasi" maxlength="6" inputmode="numeric" placeholder="ulangi 6 digit" class="fut-input" style="font-size:16px; letter-spacing:4px;">
+        </div>
+        <div id="ganti-pin-error" style="color:#f87171; font-size:12px; font-weight:700; text-align:center; min-height:18px; margin-bottom:8px;"></div>
+        <div class="modal-actions" id="ganti-pin-actions">
+            <button type="button" id="btn-ganti-pin-simpan" onclick="simpanPinBaru()">Simpan PIN</button>
+        </div>
+    </div>
+</div>
 <script>
 /* ============================================================ */
 /* ========== GLOBAL VARIABLES ================================= */
@@ -851,9 +697,9 @@ let riwayatBulananGlobal = {};
 let lockGlobal = {};
 let koordinatToko = { lat: null, lng: null, radius: 50 };
 let mapPromotor = null;
-let circleTokoPeta = null;
 let markerTokoPeta = null;
 let markerSayaPeta = null;
+let circleTokoPeta = null;
 let posisiSaya = { lat: null, lng: null, ok: false };
 let geolocationWatchId = null;
 let lockTimerInterval = null;
@@ -862,10 +708,14 @@ let autoCleanupInterval = null;
 let adminSessionGlobal = null;
 let adminPinPromotorGlobal = {};
 let listenerAdminSiap = false;
-let sudahInisialisasi = false;   // PENTING: cegah double init
+let sudahInisialisasi = false;
+let loginModeGlobal = 'promotor';
 
-const SVG_ICON_LIHAT = `👀`;
-const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const PIN_AWAL = "123456";
+const PIN_TERLARANG = ["123456", "111111", "222222", "333333", "444444", "555555", "666666", "777777", "888888", "999999", "000000", "654321"];
+const DURASI_PIN_VALID = 12 * 60 * 60 * 1000;
+
+const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const SVG_ICON_MOON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
 const SVG_ICON_SUN = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
 
@@ -909,6 +759,23 @@ function getAkunAktif() {
 }
 
 /* ============================================================ */
+/* ========== HASH PIN ========================================= */
+/* ============================================================ */
+async function hashPin(pin, salt) {
+    const data = new TextEncoder().encode(salt + ':' + pin);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function generateSalt() {
+    return crypto.randomUUID ? crypto.randomUUID() : 'salt_' + Math.random().toString(36).slice(2) + Date.now();
+}
+async function verifikasiPin(pinInput, pinHash, pinSalt) {
+    if (!pinHash || !pinSalt) return false;
+    const hash = await hashPin(pinInput, pinSalt);
+    return hash === pinHash;
+}
+
+/* ============================================================ */
 /* ========== THEME ============================================ */
 /* ============================================================ */
 function updateThemeIcons(isDark) {
@@ -916,8 +783,6 @@ function updateThemeIcons(isDark) {
     if (loginIcon) loginIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
     const btnText = document.getElementById('btn-toggle-dark-text');
     if (btnText) btnText.innerText = isDark ? 'Terang' : 'Gelap';
-    const btnIcon = document.querySelector('#btn-toggle-dark svg');
-    if (btnIcon) btnIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
 }
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
@@ -933,56 +798,310 @@ function initDarkMode() {
     updateThemeIcons(isDark);
 }
 window.toggleDarkMode = toggleDarkMode;
-window.addEventListener('storage', (e) => {
-    if (e.key === 'ufo_theme') {
-        const isDark = e.newValue !== 'light';
-        if (isDark) document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-        updateThemeIcons(isDark);
-    }
-});
 
 /* ============================================================ */
-/* ========== LOGIN GOOGLE (REDIRECT MODE) ==================== */
+/* ========== LOGIN TAB ======================================== */
 /* ============================================================ */
-async function loginDenganGoogle() {
-    const btn = document.getElementById('btn-login-google');
-    const txt = document.getElementById('btn-login-text');
-    const asli = txt.innerText;
+function switchLoginTab(mode) {
+    loginModeGlobal = mode;
+    const tabPromotor = document.getElementById('tab-promotor');
+    const tabAdmin = document.getElementById('tab-admin');
+    const formPromotor = document.getElementById('form-promotor');
+    const formAdmin = document.getElementById('form-admin');
+    const btnText = document.getElementById('btn-login-text');
+    if (mode === 'promotor') {
+        tabPromotor.classList.add('active');
+        tabAdmin.classList.remove('active');
+        formPromotor.style.display = 'block';
+        formAdmin.style.display = 'none';
+        if (btnText) btnText.innerText = 'MASUK';
+    } else {
+        tabAdmin.classList.add('active');
+        tabPromotor.classList.remove('active');
+        formPromotor.style.display = 'none';
+        formAdmin.style.display = 'block';
+        if (btnText) btnText.innerText = 'MASUK ADMIN';
+    }
+    const errEl = document.getElementById('login-error');
+    if (errEl) errEl.innerText = '';
+}
+window.switchLoginTab = switchLoginTab;
+
+/* ============================================================ */
+/* ========== PROSES LOGIN ===================================== */
+/* ============================================================ */
+async function prosesLogin() {
+    const errEl = document.getElementById('login-error');
+    const btn = document.getElementById('btn-login-promotor');
+    const pin = document.getElementById('login-pin-input').value.trim();
+    errEl.innerText = '';
+    
+    if (!pin || pin.length !== 6) {
+        errEl.innerText = 'PIN harus 6 digit angka!';
+        return;
+    }
+    
+    const asli = btn.innerHTML;
     btn.disabled = true;
-    txt.innerText = 'MEMBUKA GOOGLE...';
+    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
+    
     try {
-        const provider = new window.firebaseGoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        // PAKAI REDIRECT: halaman akan pindah ke Google, lalu kembali.
-        // Kode di bawah ini tidak akan dieksekusi (halaman reload).
-        await window.firebaseSignInWithRedirect(window.firebaseAuth, provider);
-    } catch (err) {
-        console.error('Login gagal:', err);
-        alert('Login gagal: ' + err.message);
+        if (loginModeGlobal === 'promotor') {
+            const nama = document.getElementById('login-nama-promotor').value;
+            if (!nama) {
+                errEl.innerText = 'Pilih nama Anda dulu!';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            const clean = sanitizeNama(nama);
+            const snap = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
+            if (!snap.exists()) {
+                errEl.innerText = 'Promotor tidak terdaftar di sistem.';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            const data = snap.val();
+            if (data.aktif === false) {
+                errEl.innerText = 'Akun Anda dinonaktifkan. Hubungi admin.';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            // Kalau belum ada pinHash, anggap pakai PIN_AWAL (migrasi otomatis)
+            let pinHash = data.pinHash;
+            let pinSalt = data.pinSalt;
+            if (!pinHash || !pinSalt) {
+                const newSalt = generateSalt();
+                pinHash = await hashPin(PIN_AWAL, newSalt);
+                pinSalt = newSalt;
+                await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
+                    pinHash: pinHash,
+                    pinSalt: pinSalt,
+                    wajibGantiPin: true
+                });
+            }
+            const cocok = await verifikasiPin(pin, pinHash, pinSalt);
+            if (!cocok) {
+                errEl.innerText = '❌ PIN salah. Coba lagi.';
+                document.getElementById('login-pin-input').value = '';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            // Login berhasil
+            namaSalesAktifGlobal = nama;
+            localStorage.setItem('ufo_nama_sales_aktif', nama);
+            adminSessionGlobal = null;
+            document.body.classList.remove('admin-mode');
+            
+            // Cek wajib ganti PIN
+            if (data.wajibGantiPin === true) {
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                tampilkanLayarLoginKeDashboard(nama, 'promotor');
+                bukaModalGantiPIN(true);
+                return;
+            }
+            tampilkanLayarLoginKeDashboard(nama, 'promotor');
+        } else {
+            // ADMIN LOGIN
+            const username = document.getElementById('login-admin-username').value.trim().toUpperCase();
+            if (!username) {
+                errEl.innerText = 'Masukkan username admin!';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            const snap = await window.dbGet(window.dbRef(window.db, 'users/admin'));
+            if (!snap.exists()) {
+                errEl.innerText = 'Belum ada admin terdaftar.';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            const admins = snap.val();
+            let foundKey = null, foundData = null;
+            Object.keys(admins).forEach(k => {
+                const a = admins[k];
+                if (a && String(a.username || '').toUpperCase() === username) {
+                    foundKey = k;
+                    foundData = a;
+                }
+            });
+            if (!foundKey) {
+                errEl.innerText = 'Username admin tidak ditemukan.';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            if (foundData.aktif === false) {
+                errEl.innerText = 'Akun admin ini dinonaktifkan.';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            // Migrasi PIN admin kalau belum ada hash
+            let pinHash = foundData.pinHash;
+            let pinSalt = foundData.pinSalt;
+            if (!pinHash || !pinSalt) {
+                const oldPin = foundData.pin ? String(foundData.pin) : PIN_AWAL;
+                const newSalt = generateSalt();
+                pinHash = await hashPin(oldPin, newSalt);
+                pinSalt = newSalt;
+                await window.dbUpdate(window.dbRef(window.db, 'users/admin/' + foundKey), {
+                    pinHash: pinHash,
+                    pinSalt: pinSalt,
+                    pin: null,
+                    wajibGantiPin: true
+                });
+            }
+            const cocok = await verifikasiPin(pin, pinHash, pinSalt);
+            if (!cocok) {
+                errEl.innerText = '❌ PIN admin salah.';
+                document.getElementById('login-pin-input').value = '';
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                return;
+            }
+            const adminSession = {
+                key: foundKey,
+                username: foundData.username,
+                nama: foundData.nama || foundData.username,
+                role: 'ADMIN'
+            };
+            adminSessionGlobal = adminSession;
+            namaSalesAktifGlobal = '';
+            document.body.classList.add('admin-mode');
+            
+            // Cek wajib ganti PIN admin
+            if (foundData.wajibGantiPin === true) {
+                btn.disabled = false;
+                btn.innerHTML = asli;
+                tampilkanLayarLoginKeDashboard(adminSession.nama, 'admin');
+                bukaModalGantiPIN(true);
+                return;
+            }
+            tampilkanLayarLoginKeDashboard(adminSession.nama, 'admin');
+        }
+    } catch (e) {
+        console.error('Login error:', e);
+        errEl.innerText = 'Gagal koneksi: ' + e.message;
         btn.disabled = false;
-        txt.innerText = asli;
+        btn.innerHTML = asli;
     }
 }
-window.loginDenganGoogle = loginDenganGoogle;
+window.prosesLogin = prosesLogin;
+
+function tampilkanLayarLoginKeDashboard(nama, role) {
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'block';
+    document.getElementById('panel-login').style.display = 'none';
+    document.getElementById('panel-menu-utama').style.display = 'block';
+    document.getElementById('btn-logout-top').style.display = 'block';
+    
+    if (role === 'admin') {
+        document.getElementById('label-user-aktif').innerHTML = `<span style="color:#38bdf8;">● ADMIN</span> — ${nama}`;
+        document.body.classList.add('admin-mode');
+        if (typeof mulaiListenerFirebaseAdmin === 'function') mulaiListenerFirebaseAdmin();
+    } else {
+        document.getElementById('label-user-aktif').innerText = nama;
+        document.body.classList.remove('admin-mode');
+    }
+    renderUI();
+    if (typeof renderAktivitas === 'function') renderAktivitas();
+    if (typeof renderRekapBawaCustomer === 'function') renderRekapBawaCustomer();
+    inisialisasiRealtimeFirebase();
+}
+
+function logoutPromotor() {
+    const isAdmin = document.body.classList.contains('admin-mode');
+    const pesan = isAdmin ? 'Yakin logout dari akun ADMIN?' : 'Yakin ingin logout dari akun ini?';
+    tampilkanModalKonfirmasi("Logout", pesan, () => {
+        localStorage.removeItem('ufo_nama_sales_aktif');
+        namaSalesAktifGlobal = '';
+        adminSessionGlobal = null;
+        sudahInisialisasi = false;
+        document.body.classList.remove('admin-mode');
+        document.getElementById('login-pin-input').value = '';
+        document.getElementById('login-admin-username').value = '';
+        document.getElementById('login-error').innerText = '';
+        switchLoginTab('promotor');
+        location.reload();
+    });
+}
+window.logoutPromotor = logoutPromotor;
 
 /* ============================================================ */
-/* ========== PARTICLES ======================================== */
+/* ========== MODAL GANTI PIN ================================== */
 /* ============================================================ */
-(function() {
-    const container = document.getElementById('fut-particles');
-    if (!container) return;
-    for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div');
-        p.className = 'fut-particle';
-        p.style.left = Math.random() * 100 + '%';
-        const colors = ['#22d3ee', '#a855f7', '#3b82f6'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        p.style.background = color;
-        p.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
-        container.appendChild(p);
+function bukaModalGantiPIN(wajib) {
+    document.getElementById('modal-ganti-pin').classList.add('active');
+    document.getElementById('input-pin-baru').value = '';
+    document.getElementById('input-pin-konfirmasi').value = '';
+    document.getElementById('ganti-pin-error').innerText = '';
+    
+    if (wajib) {
+        document.getElementById('ganti-pin-title').innerText = '⚠️ WAJIB GANTI PIN';
+        document.getElementById('ganti-pin-desc').innerHTML = '<b>Ini login pertama Anda.</b> Untuk keamanan, silakan ganti PIN Anda. PIN baru tidak boleh 123456 atau angka berulang.';
+        document.getElementById('btn-ganti-pin-simpan').innerText = 'GANTI PIN SEKARANG';
+    } else {
+        document.getElementById('ganti-pin-title').innerText = 'Ganti PIN';
+        document.getElementById('ganti-pin-desc').innerText = 'Masukkan PIN baru (6 digit angka).';
+        document.getElementById('btn-ganti-pin-simpan').innerText = 'Simpan PIN';
     }
-})();
+}
+window.bukaModalGantiPIN = bukaModalGantiPIN;
+
+async function simpanPinBaru() {
+    const pinBaru = document.getElementById('input-pin-baru').value.trim();
+    const pinKonfirm = document.getElementById('input-pin-konfirmasi').value.trim();
+    const errEl = document.getElementById('ganti-pin-error');
+    errEl.innerText = '';
+    
+    if (!pinBaru || pinBaru.length !== 6 || !/^\d{6}$/.test(pinBaru)) {
+        errEl.innerText = 'PIN harus 6 digit angka!';
+        return;
+    }
+    if (PIN_TERLARANG.includes(pinBaru)) {
+        errEl.innerText = 'PIN terlalu mudah ditebak. Pilih PIN lain.';
+        return;
+    }
+    if (pinBaru !== pinKonfirm) {
+        errEl.innerText = 'Konfirmasi PIN tidak sama!';
+        return;
+    }
+    
+    try {
+        const salt = generateSalt();
+        const hash = await hashPin(pinBaru, salt);
+        
+        if (adminSessionGlobal && adminSessionGlobal.role === 'ADMIN') {
+            await window.dbUpdate(window.dbRef(window.db, 'users/admin/' + adminSessionGlobal.key), {
+                pinHash: hash,
+                pinSalt: salt,
+                wajibGantiPin: false
+            });
+        } else {
+            const nama = getAkunAktif();
+            const clean = sanitizeNama(nama);
+            await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
+                pinHash: hash,
+                pinSalt: salt,
+                wajibGantiPin: false
+            });
+        }
+        
+        document.getElementById('modal-ganti-pin').classList.remove('active');
+        tampilkanModal("✅ Berhasil", "PIN Anda sudah diganti. Simpan PIN baru Anda dengan aman.");
+    } catch (e) {
+        errEl.innerText = 'Gagal simpan: ' + e.message;
+    }
+}
+window.simpanPinBaru = simpanPinBaru;
 
 /* ============================================================ */
 /* ========== BRANDING ========================================= */
@@ -1022,173 +1141,53 @@ function prosesMasterSales(dataRaw) {
     });
     names = [...new Set(names)].sort();
     masterSalesGlobal = names.map(n => ({ nama: n }));
+    isiDaftarPromotorKeDropdown(names);
 }
 
-/* ============================================================ */
-/* ========== TAMPILKAN DASHBOARD (ANTI-RACE) ================= */
-/* ============================================================ */
-function cobaTampilkanDashboard() {
-    if (sudahInisialisasi) return;
-    sudahInisialisasi = true;
-    
-    if (!window.firebaseUser) {
-        tampilkanLayarLogin();
-        inisialisasiRealtimeFirebase();
-        return;
-    }
-    
-    const user = window.firebaseUser;
-    
-    if (user.role === 'ADMIN') {
-        adminSessionGlobal = {
-            email: user.email,
-            uid: user.uid,
-            nama: user.nama || user.email,
-            role: 'ADMIN'
-        };
-        tampilkanAplikasiUtamaAdmin(adminSessionGlobal.nama);
-        inisialisasiRealtimeFirebase();
-        return;
-    }
-    
-    // Promotor
-    namaSalesAktifGlobal = user.nama;
-    localStorage.setItem('ufo_nama_sales_aktif', user.nama);
-    tampilkanAplikasiUtama();
-    inisialisasiRealtimeFirebase();
-}
-window.cobaTampilkanDashboard = cobaTampilkanDashboard;
-
-/* ============================================================ */
-/* ========== LOGIN / LOGOUT =================================== */
-/* ============================================================ */
-function tampilkanAplikasiUtamaAdmin(namaAdmin) {
-    const loginScreen = document.getElementById('login-screen');
-    const appContainer = document.getElementById('app-container');
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (appContainer) appContainer.style.display = 'block';
-    document.getElementById('panel-login').style.display = 'none';
-    document.getElementById('panel-menu-utama').style.display = 'block';
-    document.getElementById('label-user-aktif').innerHTML = `<span style="color:#38bdf8;">● ADMIN</span> — ${namaAdmin}`;
-    const btnLogoutTop = document.getElementById('btn-logout-top');
-    if (btnLogoutTop) btnLogoutTop.style.display = 'block';
-    document.body.classList.add('admin-mode');
-    renderUI();
-    renderAktivitas();
-    renderRekapBawaCustomer();
-    mulaiListenerFirebaseAdmin();
-}
-window.tampilkanAplikasiUtamaAdmin = tampilkanAplikasiUtamaAdmin;
-
-function tampilkanAplikasiUtama() {
-    const loginScreen = document.getElementById('login-screen');
-    const appContainer = document.getElementById('app-container');
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (appContainer) appContainer.style.display = 'block';
-    const cachedNama = getAkunAktif();
-    document.getElementById('panel-login').style.display = 'none';
-    document.getElementById('panel-menu-utama').style.display = 'block';
-    document.getElementById('label-user-aktif').innerText = cachedNama;
-    const btnLogoutTop = document.getElementById('btn-logout-top');
-    if (btnLogoutTop) btnLogoutTop.style.display = 'block';
-    renderUI();
-    renderAktivitas();
-    renderRekapBawaCustomer();
-}
-window.tampilkanAplikasiUtama = tampilkanAplikasiUtama;
-
-function tampilkanLayarLogin() {
-    const loginScreen = document.getElementById('login-screen');
-    const appContainer = document.getElementById('app-container');
-    if (loginScreen) loginScreen.style.display = 'flex';
-    if (appContainer) appContainer.style.display = 'none';
-    const btnLogoutTop = document.getElementById('btn-logout-top');
-    if (btnLogoutTop) btnLogoutTop.style.display = 'none';
-    document.body.classList.remove('admin-mode');
-}
-window.tampilkanLayarLogin = tampilkanLayarLogin;
-
-function logoutPromotor() {
-    const isAdmin = document.body.classList.contains('admin-mode');
-    const pesan = isAdmin ? 'Yakin logout dari akun ADMIN?' : 'Yakin ingin logout dari akun ini?';
-    tampilkanModalKonfirmasi("Logout", pesan, async () => {
-        try {
-            await window.firebaseSignOut(window.firebaseAuth);
-        } catch(e) { console.error(e); }
-        localStorage.removeItem('ufo_nama_sales_aktif');
-        namaSalesAktifGlobal = '';
-        sudahInisialisasi = false;
-        setTimeout(() => location.reload(), 400);
+function isiDaftarPromotorKeDropdown(names) {
+    const sel = document.getElementById('login-nama-promotor');
+    if (!sel) return;
+    let html = '<option value="">-- Pilih Nama Anda --</option>';
+    names.forEach(n => {
+        const safe = String(n).replace(/"/g, '&quot;');
+        html += `<option value="${safe}">${n}</option>`;
     });
-}
-window.logoutPromotor = logoutPromotor;
-
-/* ============================================================ */
-/* ========== AKTIVITAS TOGGLE ================================= */
-/* ============================================================ */
-function toggleAktivitasSection() {
-    const header = document.getElementById('toggle-aktivitas');
-    const content = document.getElementById('content-aktivitas');
-    if (!header || !content) return;
-    const isOpen = content.classList.contains('open');
-    if (isOpen) {
-        content.classList.remove('open');
-        header.classList.remove('open');
-        localStorage.setItem('ufo_aktivitas_open', 'false');
-    } else {
-        content.classList.add('open');
-        header.classList.add('open');
-        localStorage.setItem('ufo_aktivitas_open', 'true');
-    }
-}
-window.toggleAktivitasSection = toggleAktivitasSection;
-
-function restoreAktivitasState() {
-    setTimeout(() => {
-        const saved = localStorage.getItem('ufo_aktivitas_open');
-        if (saved === 'true') {
-            const header = document.getElementById('toggle-aktivitas');
-            const content = document.getElementById('content-aktivitas');
-            if (header && content) { header.classList.add('open'); content.classList.add('open'); }
-        }
-    }, 150);
+    sel.innerHTML = html;
+    const liveEl = document.getElementById('live-status-text');
+    if (liveEl) liveEl.innerText = names.length ? `${names.length} promotor terdaftar` : 'Belum ada promotor';
 }
 
 /* ============================================================ */
-/* ========== FIREBASE INIT ==================================== */
+/* ========== FIREBASE INIT (REALTIME) ========================= */
 /* ============================================================ */
 window.addEventListener('firebase-ready', () => {
     initDarkMode();
-    restoreAktivitasState();
-    cobaTampilkanDashboard();
-});
-
-// FALLBACK: kalau event firebase-ready terlewat, panggil ulang setelah load
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        if (!sudahInisialisasi) {
-            console.warn('Fallback: firebase-ready terlewat, coba render ulang');
-            cobaTampilkanDashboard();
-        }
-    }, 1500);
+    // Cek session tersimpan
+    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
+    const isAdmin = localStorage.getItem('ufo_admin_session');
+    
+    if (isAdmin) {
+        try {
+            const adm = JSON.parse(isAdmin);
+            adminSessionGlobal = adm;
+            document.body.classList.add('admin-mode');
+            tampilkanLayarLoginKeDashboard(adm.nama || adm.username, 'admin');
+            return;
+        } catch(e) {}
+    }
+    if (cachedNama) {
+        namaSalesAktifGlobal = cachedNama;
+        tampilkanLayarLoginKeDashboard(cachedNama, 'promotor');
+        return;
+    }
+    // Belum login — muat listener dasar
+    inisialisasiRealtimeFirebase();
 });
 
 function inisialisasiRealtimeFirebase() {
+    if (sudahInisialisasi) return;
+    sudahInisialisasi = true;
     const db = window.db;
-
-    window.dbOnValue(window.dbRef(db, 'antrian'), (snapshot) => {
-        const dataRaw = snapshot.val();
-        daftarAntrianGlobal = [];
-        if (dataRaw) {
-            Object.keys(dataRaw).forEach(k => {
-                const item = dataRaw[k];
-                if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); }
-            });
-        }
-        updateLiveStatus();
-        renderUI();
-        renderAktivitas();
-    });
 
     window.dbOnValue(window.dbRef(db, 'mastersales'), (snapshot) => {
         const dataRaw = snapshot.val();
@@ -1199,6 +1198,23 @@ function inisialisasiRealtimeFirebase() {
                 if (d2 && !masterSalesLoaded) { prosesMasterSales(d2); masterSalesLoaded = true; }
             });
         }
+    });
+
+    window.dbOnValue(window.dbRef(db, 'antrian'), (snapshot) => {
+        const dataRaw = snapshot.val();
+        daftarAntrianGlobal = [];
+        if (dataRaw) {
+            Object.keys(dataRaw).forEach(k => {
+                const item = dataRaw[k];
+                if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); }
+            });
+        }
+        const liveEl = document.getElementById('live-status-text');
+        if (liveEl && masterSalesGlobal.length === 0) {
+            liveEl.innerText = daftarAntrianGlobal.length ? `${daftarAntrianGlobal.length} orang antri` : 'Memuat...';
+        }
+        renderUI();
+        if (typeof renderAktivitas === 'function') renderAktivitas();
     });
 
     window.dbOnValue(window.dbRef(db, 'setting'), (snapshot) => {
@@ -1223,20 +1239,19 @@ function inisialisasiRealtimeFirebase() {
                 if (item && item.nama) { item._key = k; aktivitasGlobal.push(item); }
             });
         }
-        renderAktivitas();
-        renderRekapBawaCustomer();
+        if (typeof renderAktivitas === 'function') renderAktivitas();
+        if (typeof renderRekapBawaCustomer === 'function') renderRekapBawaCustomer();
     });
 
     window.dbOnValue(window.dbRef(db, 'checkinHarian'), (snapshot) => {
-        const dataCheckin = snapshot.val() || {};
-        checkinHarianGlobal = dataCheckin;
+        checkinHarianGlobal = snapshot.val() || {};
         renderUI();
-        renderRekapBawaCustomer();
+        if (typeof renderRekapBawaCustomer === 'function') renderRekapBawaCustomer();
     });
 
     window.dbOnValue(window.dbRef(db, 'riwayatBulanan'), (snapshot) => {
         riwayatBulananGlobal = snapshot.val() || {};
-        renderTotalBulanan();
+        if (typeof renderTotalBulanan === 'function') renderTotalBulanan();
     });
 
     window.dbOnValue(window.dbRef(db, 'lockPromotor'), (snapshot) => {
@@ -1253,9 +1268,6 @@ function inisialisasiRealtimeFirebase() {
             if (sudahMulai && belumExpired) {
                 lockDataGlobal = { waktuExpired, alasan: lockSaya.alasan || "-" };
                 mulaiLockTimer(waktuExpired, lockSaya.alasan || "-");
-                if (daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya)) {
-                    window.dbRemove(window.dbRef(window.db, 'antrian/' + akunSaya));
-                }
             } else {
                 lockDataGlobal = null;
                 sembunyikanLockTimer();
@@ -1269,7 +1281,6 @@ function inisialisasiRealtimeFirebase() {
 
     if (autoCleanupInterval) clearInterval(autoCleanupInterval);
     autoCleanupInterval = setInterval(() => { cekLockExpired(); }, 15000);
-    setTimeout(() => { cekLockExpired(); }, 2000);
 }
 
 /* ============================================================ */
@@ -1296,14 +1307,13 @@ function mulaiLockTimer(waktuExpired, alasan) {
     if (!box || !display) return;
     box.style.display = 'block';
     if (reasonEl) reasonEl.innerText = `Alasan: ${alasan}`;
-    if (waktuExpired === 0) { display.innerText = "∞"; if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } return; }
+    if (waktuExpired === 0) { display.innerText = "∞"; return; }
     if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
     const tick = () => {
         const sisa = waktuExpired - waktuServer();
         if (sisa <= 0) {
             display.innerText = "00:00";
             sembunyikanLockTimer();
-            if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
             const akunSaya = sanitizeNama(getAkunAktif());
             if (akunSaya) autoUnlockSendiri(akunSaya, lockGlobal[akunSaya]);
             return;
@@ -1346,7 +1356,7 @@ function initPetaPromotor() {
     const container = document.getElementById('map-promotor');
     if (!container) return;
     mapPromotor = L.map('map-promotor', { zoomControl: false }).setView([koordinatToko.lat, koordinatToko.lng], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapPromotor);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapPromotor);
     markerTokoPeta = L.marker([koordinatToko.lat, koordinatToko.lng]).addTo(mapPromotor).bindPopup("Lokasi Toko");
     circleTokoPeta = L.circle([koordinatToko.lat, koordinatToko.lng], { radius: koordinatToko.radius, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.15 }).addTo(mapPromotor);
     setTimeout(() => mapPromotor.invalidateSize(), 200);
@@ -1354,17 +1364,12 @@ function initPetaPromotor() {
 }
 function mulaiDeteksiLokasi() {
     if (geolocationWatchId !== null) navigator.geolocation.clearWatch(geolocationWatchId);
-    const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
-    if (!navigator.geolocation) {
-        const infoEl = document.getElementById('info-radius');
-        if (infoEl) { infoEl.innerHTML = `${ICON_X} <span>Browser tidak mendukung GPS</span>`; infoEl.className = "info-radius err"; }
-        return;
-    }
+    if (!navigator.geolocation) return;
     geolocationWatchId = navigator.geolocation.watchPosition(
         (pos) => { posisiSaya.lat = pos.coords.latitude; posisiSaya.lng = pos.coords.longitude; updatePetaLokasiSaya(); },
         (err) => {
             const infoEl = document.getElementById('info-radius');
-            if (infoEl) { infoEl.innerHTML = `${ICON_X} <span>Izin lokasi ditolak / tidak tersedia</span>`; infoEl.className = "info-radius err"; }
+            if (infoEl) { infoEl.innerHTML = `<span>Izin lokasi ditolak</span>`; infoEl.className = "info-radius err"; }
         },
         { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
@@ -1373,7 +1378,7 @@ function updatePetaLokasiSaya() {
     if (!mapPromotor || !koordinatToko.lat) return;
     const lat = posisiSaya.lat, lng = posisiSaya.lng;
     if (markerSayaPeta) mapPromotor.removeLayer(markerSayaPeta);
-    markerSayaPeta = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="background:#38bdf8;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px #38bdf8;"></div>', iconSize: [16,16] }) }).addTo(mapPromotor).bindPopup("Posisi Anda");
+    markerSayaPeta = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="background:#38bdf8;width:16px;height:16px;border-radius:50%;border:3px solid white;"></div>', iconSize: [16,16] }) }).addTo(mapPromotor);
     const jarak = hitungJarak(lat, lng, koordinatToko.lat, koordinatToko.lng);
     const infoEl = document.getElementById('info-radius');
     const btnHadir = document.getElementById('btn-hadir');
@@ -1381,7 +1386,7 @@ function updatePetaLokasiSaya() {
     const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
     if (jarak <= koordinatToko.radius) {
         posisiSaya.ok = true;
-        infoEl.innerHTML = `${ICON_CHECK} Anda dalam radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
+        infoEl.innerHTML = `${ICON_CHECK} Anda dalam radius (${Math.round(jarak)}m)`;
         infoEl.className = "info-radius ok";
         if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
     } else {
@@ -1405,19 +1410,15 @@ function aksiHadirKerja() {
             const lockData = snap.val();
             if (lockData && lockData.locked) {
                 const sekarang = waktuServer();
-                const waktuMulai = Number(lockData.waktuMulaiLock) || 0;
                 const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
-                const sudahMulai = waktuMulai === 0 || sekarang >= waktuMulai;
-                const belumExpired = waktuExpired === 0 || sekarang < waktuExpired;
-                if (sudahMulai && belumExpired) {
-                    window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: getAkunAktif(), aksi: "Autokick", waktu: sekarang, tanggal: getTanggalIndo(), hasil: "Coba Check-in Saat Lock", kategori: "Lock Hukuman", sumber: "Promotor" });
+                if (sekarang < waktuExpired) {
                     tampilkanModal("🔒 Akun Dikunci", `Akun Anda sedang DIKUNCI.\n\nAlasan: ${lockData.alasan || "-"}`);
                     return;
                 }
             }
         }
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
-        if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko untuk check-in."); return; }
+        if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko."); return; }
         const kat = document.getElementById('pilih-kategori-hadir').value;
         const nama = getAkunAktif();
         const clean = sanitizeNama(nama);
@@ -1443,8 +1444,6 @@ function aksiDaftarAntrianNormal() {
     const waktuSekarang = waktuServer();
     window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 }).then(() => {
         window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang });
-        localStorage.setItem('ufo_checkin_hari_ini', 'true');
-        localStorage.setItem('ufo_checkin_tanggal', tglKey);
         catatAktivitas(nama, "DaftarAntrian", kat);
     });
 }
@@ -1467,7 +1466,7 @@ function aksiToggleIbadah() {
         const kat = String(itemSaya.kategori || "HA").toUpperCase();
         const listStandby = daftarAntrianGlobal.filter(i => i.status === "Standby" && String(i.kategori).toUpperCase() === kat).sort((a,b) => (a.waktuStandby||0) - (b.waktuStandby||0));
         const posisi = listStandby.findIndex(i => sanitizeNama(i.nama) === clean) + 1;
-        tampilkanModalKonfirmasi("Sedang Ibadah", `Posisi antrian Anda (#${posisi}) akan DIKUNCI sampai Anda menekan tombol "Selesai Ibadah". Lanjutkan?`, () => {
+        tampilkanModalKonfirmasi("Sedang Ibadah", `Posisi antrian Anda (#${posisi}) akan DIKUNCI sampai Anda menekan "Selesai Ibadah". Lanjutkan?`, () => {
             const now = waktuServer();
             window.dbUpdate(window.dbRef(window.db, 'antrian/' + clean), { status: "Ibadah", timerMulai: 0, timerAksi: "Ibadah", posisiTerkunci: posisi }).then(() => catatAktivitasIbadah(nama, "MulaiIbadah", now, posisi));
         });
@@ -1508,7 +1507,7 @@ function selesaiMelayaniAction(hasil) {
     if (target && target._key) {
         window.dbUpdate(window.dbRef(window.db, 'statistikAktivitas/' + target._key), { waktuSelesai: now, hasil: hasil, durasiDetik: Math.floor((now - waktuMulaiMelayani) / 1000) });
     } else {
-        window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: nama, aksi: "BawaCustomer", waktu: waktuMulaiMelayani, waktuMulai: waktuMulaiMelayani, waktuSelesai: now, tanggal: hariIni, hasil: hasil, durasiDetik: Math.floor((now - waktuMulaiMelayani) / 1000) });
+        window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: nama, aksi: "BawaCustomer", waktu: waktuMulaiMelayani, waktuMulai: waktuMulaiMelayani, waktuSelesai: now, tanggal: hariIni, hasil: hasil });
     }
     updateRiwayatBulanan(nama, hasil);
     window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
@@ -1521,11 +1520,9 @@ function updateRiwayatBulanan(nama, hasil) {
     const pathRiwayat = `riwayatBulanan/${bulanKey}/${clean}`;
     window.dbGet(window.dbRef(window.db, pathRiwayat)).then(snap => {
         const existing = snap.exists() ? snap.val() : { nama: nama, lihat: 0, deal: 0, noSale: 0 };
-        if (typeof existing.noSale !== 'number') existing.noSale = 0;
         if (hasil === "Deal") existing.deal = (existing.deal || 0) + 1;
         else if (hasil === "Lihat") existing.lihat = (existing.lihat || 0) + 1;
         existing.nama = nama;
-        existing.lastUpdate = waktuServer();
         existing.bulanKey = bulanKey;
         window.dbUpdate(window.dbRef(window.db, pathRiwayat), existing);
     });
@@ -1569,7 +1566,6 @@ function catatAktivitasIbadah(nama, aksi, waktuSekarang, posisi, waktuMulaiSebel
     if (aksi === "SelesaiIbadah") {
         payload.waktuMulai = waktuMulaiSebelumnya || waktuSekarang;
         payload.waktuSelesai = waktuSekarang;
-        payload.durasiDetik = Math.floor((waktuSekarang - (waktuMulaiSebelumnya||waktuSekarang)) / 1000);
     }
     window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), payload);
 }
@@ -1577,13 +1573,6 @@ function catatAktivitasIbadah(nama, aksi, waktuSekarang, posisi, waktuMulaiSebel
 /* ============================================================ */
 /* ========== RENDER UI ======================================== */
 /* ============================================================ */
-function updateLiveStatus() {
-    const el = document.getElementById('live-status-text');
-    if (!el) return;
-    const total = daftarAntrianGlobal.length;
-    el.innerText = total === 0 ? 'Belum ada yang antri' : `${total} Orang Sedang Antri`;
-}
-
 function renderUI() {
     const badge = document.getElementById('badge-status-sistem');
     const badgeText = document.getElementById('badge-status-text');
@@ -1643,19 +1632,6 @@ function renderUI() {
         secNormal.style.display = 'none';
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif) setTimeout(initPetaPromotor, 150);
-        else {
-            const gpsBox = document.querySelector('.gps-box');
-            if (gpsBox) gpsBox.style.display = 'none';
-            const infoEl = document.getElementById('info-radius');
-            if (infoEl) {
-                const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
-                infoEl.innerHTML = `${ICON_CHECK} <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`;
-                infoEl.className = "info-radius ok";
-                infoEl.style.display = 'flex';
-            }
-            const btnHadir = document.getElementById('btn-hadir');
-            if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
-        }
     } else { secCheckin.style.display = 'none'; secNormal.style.display = 'block'; }
     const gKategori = document.getElementById('group-pilih-kategori-normal');
     if (gKategori) gKategori.style.display = statusSaya === "belum_ada" ? "block" : "none";
@@ -1690,64 +1666,35 @@ function renderAktivitas() {
     const listBawaStatistik = list.filter(a => a.aksi === "BawaCustomer");
     const statistikSelesai = listBawaStatistik.filter(a => a.waktuSelesai);
     const statistikMasihProses = listBawaStatistik.filter(a => !a.waktuSelesai);
-    const namaSudahSelesai = new Set(statistikSelesai.map(a => sanitizeNama(a.nama)));
-    const listSedangMelayani = daftarAntrianGlobal.filter(item => item.status === "Melayani").map(item => ({ nama: item.nama, waktuMulai: item.waktuMulaiMelayani || item.waktuStandby || waktuServer(), waktuSelesai: null, hasil: null, _sedangMelayani: true }));
-    const namaSedangMelayani = new Set(listSedangMelayani.map(i => sanitizeNama(i.nama)));
     let semuaBawa = [];
-    listSedangMelayani.forEach(item => semuaBawa.push(item));
-    statistikMasihProses.forEach(a => {
-        const clean = sanitizeNama(a.nama);
-        if (!namaSedangMelayani.has(clean) && !namaSudahSelesai.has(clean)) semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: null, hasil: null, _sedangMelayani: false });
-    });
-    statistikSelesai.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: a.waktuSelesai, hasil: a.hasil, _sedangMelayani: false }));
+    statistikMasihProses.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: null, hasil: null }));
+    statistikSelesai.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: a.waktuSelesai, hasil: a.hasil }));
     semuaBawa.sort((a, b) => (b.waktuMulai || 0) - (a.waktuMulai || 0));
     const cBawa = document.getElementById('count-bawa');
     if (cBawa) cBawa.innerText = semuaBawa.length;
-    let totalLihat = 0, totalDeal = 0;
-    semuaBawa.forEach(a => { if (a.hasil === "Lihat") totalLihat++; else if (a.hasil === "Deal") totalDeal++; });
-    const totalBox = document.getElementById('total-bawa-box');
-    if (totalBox) {
-        if (semuaBawa.length === 0) { totalBox.innerHTML = ''; totalBox.style.display = 'none'; }
-        else {
-            totalBox.style.display = 'block';
-            totalBox.innerHTML = `TOTAL: <span class="total-lihat">👀 ${totalLihat} Lihat</span> &nbsp;│&nbsp; <span class="total-deal">✓ ${totalDeal} Deal</span>`;
-        }
-    }
-    const lBawa = document.getElementById('list-bawa');
-    if (lBawa) lBawa.innerHTML = semuaBawa.length === 0 ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
-        : semuaBawa.map(a => {
-            const mulai = a.waktuMulai, selesai = a.waktuSelesai;
-            let rangeLabel, namaLabel;
-            if (a._sedangMelayani) { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-melayani">(MELAYANI)</span>`; }
-            else if (selesai) {
-                rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
-                if (a.hasil === "Deal") namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
-                else if (a.hasil === "Lihat") namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
-                else namaLabel = `${a.nama} <span class="label-lihat">(selesai)</span>`;
-            } else { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-lihat">(proses)</span>`; }
-            return `<li><span class="nama">${namaLabel}</span><span class="waktu">${rangeLabel}</span></li>`;
-        }).join('');
     const listIbadah = gabungRentang(list, "MulaiIbadah", "SelesaiIbadah");
     const cIbadah = document.getElementById('count-ibadah');
     if (cIbadah) cIbadah.innerText = listIbadah.length;
-    const lIbadah = document.getElementById('list-ibadah');
-    if (lIbadah) lIbadah.innerHTML = listIbadah.length === 0 ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
-        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#ffffff; font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
-    const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
+    const listKeluar = list.filter(a => a.aksi === "KeluarAntrian");
     const cKeluar = document.getElementById('count-keluar');
     if (cKeluar) cKeluar.innerText = listKeluar.length;
-    const lKeluar = document.getElementById('list-keluar');
-    if (lKeluar) lKeluar.innerHTML = listKeluar.length === 0 ? '<div class="aktivitas-empty">Belum ada yang keluar antrian</div>'
-        : listKeluar.map(a => `<li><span class="nama">${a.nama}</span><span class="waktu">${formatJam(a.waktu)}</span></li>`).join('');
-    const listAutokick = list.filter(a => a.aksi === "Autokick").sort((a,b) => (b.waktu||0) - (a.waktu||0));
+    const listAutokick = list.filter(a => a.aksi === "Autokick");
     const cAuto = document.getElementById('count-autokick');
     if (cAuto) cAuto.innerText = listAutokick.length;
-    const lAuto = document.getElementById('list-autokick');
-    if (lAuto) lAuto.innerHTML = listAutokick.length === 0 ? '<div class="aktivitas-empty">Tidak ada pelanggaran hari ini 👍</div>'
-        : listAutokick.map(a => {
-            const teksAlasan = a.alasan ? a.alasan : (a.kategori || "");
-            return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#f43f5e; font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`;
-        }).join('');
+}
+function gabungRentang(list, aksiMulai, aksiSelesai) {
+    const perNama = {};
+    list.forEach(a => {
+        if (a.aksi === aksiMulai) {
+            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null };
+        } else if (a.aksi === aksiSelesai) {
+            if (perNama[a.nama]) perNama[a.nama].selesai = a.waktuSelesai || a.waktu;
+        }
+    });
+    return Object.values(perNama).map(a => {
+        const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`;
+        return { ...a, label };
+    });
 }
 
 function renderRekapBawaCustomer() {
@@ -1756,10 +1703,9 @@ function renderRekapBawaCustomer() {
     if (!tbody) return;
     const bulanIni = getBulanKey();
     const tglHariIni = new Date(waktuServer()).getDate();
-    const labelBulan = getBulanLabelIndo();
-    if (labelPeriode) labelPeriode.innerText = `1 - ${tglHariIni} ${labelBulan}`;
+    if (labelPeriode) labelPeriode.innerText = `1 - ${tglHariIni} ${getBulanLabelIndo()}`;
     const promotorMap = {};
-    masterSalesGlobal.forEach(item => { const clean = sanitizeNama(item.nama); if (clean) promotorMap[clean] = { nama: item.nama, clean: clean }; });
+    masterSalesGlobal.forEach(item => { const clean = sanitizeNama(item.nama); if (clean) promotorMap[clean] = { nama: item.nama }; });
     const perPromotor = {};
     Object.keys(promotorMap).forEach(clean => { perPromotor[clean] = { nama: promotorMap[clean].nama, deal: 0, lihat: 0, noSale: 0, hari: 0 }; });
     aktivitasGlobal.forEach(a => {
@@ -1779,73 +1725,17 @@ function renderRekapBawaCustomer() {
         if (!dataCheckinPromotor) return;
         const hariSet = new Set();
         Object.keys(dataCheckinPromotor).forEach(k => { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && k.startsWith(bulanIni)) hariSet.add(k); });
-        if (dataCheckinPromotor.tanggalKey && /^\d{4}-\d{2}-\d{2}$/.test(dataCheckinPromotor.tanggalKey) && dataCheckinPromotor.tanggalKey.startsWith(bulanIni)) hariSet.add(dataCheckinPromotor.tanggalKey);
         perPromotor[clean].hari = hariSet.size;
-        let noSaleCount = 0;
-        hariSet.forEach(tglKeyHari => {
-            const p = tglKeyHari.split('-');
-            const tglIndoHari = `${p[2]}-${p[1]}-${p[0]}`;
-            const adaDeal = aktivitasGlobal.some(a => sanitizeNama(a.nama) === clean && a.tanggal === tglIndoHari && a.aksi === "BawaCustomer" && a.hasil === "Deal");
-            if (!adaDeal) noSaleCount++;
-        });
-        perPromotor[clean].noSale = noSaleCount;
     });
-    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => {
-        if (b.deal !== a.deal) return b.deal - a.deal;
-        if (b.lihat !== a.lihat) return b.lihat - a.lihat;
-        return a.nama.localeCompare(b.nama);
-    });
+    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => b.deal - a.deal);
     if (arr.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="aktivitas-empty">Belum ada data bulan ini</td></tr>'; return; }
-    let totalDeal = 0, totalLihat = 0, totalNoSale = 0;
-    arr.forEach(p => { totalDeal += p.deal; totalLihat += p.lihat; totalNoSale += p.noSale; });
-    let html = arr.map(p => `<tr><td class="kolom-nama">${p.nama}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td><td class="angka-nosale">${p.noSale}</td><td class="angka-hari">${p.hari}</td></tr>`).join('');
-    html += `<tr class="total-row"><td class="kolom-nama">TOTAL</td><td class="angka-deal">${totalDeal}</td><td class="angka-lihat">${totalLihat}</td><td class="angka-nosale">${totalNoSale}</td><td></td></tr>`;
-    tbody.innerHTML = html;
+    tbody.innerHTML = arr.map(p => `<tr><td class="kolom-nama">${p.nama}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td><td class="angka-nosale">${p.noSale}</td><td class="angka-hari">${p.hari}</td></tr>`).join('');
 }
 
 function renderTotalBulanan() {
     const tbody = document.getElementById('total-bulanan-tbody');
-    const labelTahun = document.getElementById('total-bulanan-tahun-label');
     if (!tbody) return;
-    const tahunIni = String(new Date(waktuServer()).getFullYear());
-    if (labelTahun) labelTahun.innerText = tahunIni;
-    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    const perBulan = {};
-    aktivitasGlobal.forEach(a => {
-        if (a.aksi !== "BawaCustomer" || !a.waktuSelesai || !a.tanggal) return;
-        const parts = String(a.tanggal).split('-'); if (parts.length !== 3) return;
-        const tglKey = `${parts[2]}-${parts[1]}-${parts[0]}`;
-        if (!tglKey.startsWith(tahunIni)) return;
-        const bulanKey = tglKey.substring(0, 7);
-        if (!perBulan[bulanKey]) perBulan[bulanKey] = { deal: 0, lihat: 0 };
-        if (a.hasil === "Deal") perBulan[bulanKey].deal++;
-        else if (a.hasil === "Lihat") perBulan[bulanKey].lihat++;
-    });
-    const keysSorted = Object.keys(perBulan).sort().reverse();
-    if (keysSorted.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="aktivitas-empty">Belum ada data tahun ini</td></tr>'; return; }
-    tbody.innerHTML = keysSorted.map(bulanKey => {
-        const p = perBulan[bulanKey];
-        const parts = bulanKey.split('-');
-        const namaBln = namaBulan[parseInt(parts[1]) - 1];
-        return `<tr><td class="kolom-nama">${namaBln} ${parts[0]}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td></tr>`;
-    }).join('');
-}
-
-function gabungRentang(list, aksiMulai, aksiSelesai) {
-    const perNama = {};
-    list.forEach(a => {
-        if (a.aksi === aksiMulai) {
-            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null };
-            else perNama[a.nama].mulai = a.waktuMulai || a.waktu;
-        } else if (a.aksi === aksiSelesai) {
-            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: a.waktuSelesai || a.waktu };
-            else perNama[a.nama].selesai = a.waktuSelesai || a.waktu;
-        }
-    });
-    return Object.values(perNama).sort((a,b) => (b.mulai||0) - (a.mulai||0)).map(a => {
-        const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`;
-        return { ...a, label };
-    });
+    tbody.innerHTML = '';
 }
 
 /* ============================================================ */
@@ -1854,13 +1744,13 @@ function gabungRentang(list, aksiMulai, aksiSelesai) {
 function tampilkanModal(j, d) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()">OK</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" onclick="tutupModal()">OK</button>`;
     document.getElementById('custom-modal').classList.add('active');
 }
 function tampilkanModalKonfirmasi(j, d, cb) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya">Ya</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" id="btn-modal-ya">Ya</button>`;
     document.getElementById('custom-modal').classList.add('active');
     document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); };
 }
@@ -1872,43 +1762,21 @@ function bukaPopupAktivitas(jenis) {
     const title = document.getElementById('popup-aktivitas-title');
     const body = document.getElementById('popup-aktivitas-body');
     if (!popup || !title || !body) return;
-    let kontenAsli = '';
-    if (jenis === 'bawa') {
-        title.innerText = 'Bawa Customer';
-        const totalBox = document.getElementById('total-bawa-box');
-        const listBawa = document.getElementById('list-bawa');
-        kontenAsli = (totalBox ? totalBox.outerHTML : '') + (listBawa ? listBawa.outerHTML : '');
-    } else if (jenis === 'ibadah') { title.innerText = 'Aktivitas Ibadah'; const el = document.getElementById('list-ibadah'); kontenAsli = el ? el.outerHTML : ''; }
-    else if (jenis === 'keluar') { title.innerText = 'Keluar Antrian'; const el = document.getElementById('list-keluar'); kontenAsli = el ? el.outerHTML : ''; }
-    else if (jenis === 'autokick') { title.innerText = 'Autokick (Pelanggaran)'; const el = document.getElementById('list-autokick'); kontenAsli = el ? el.outerHTML : ''; }
-    else if (jenis === 'rekap') {
-        title.innerText = 'Rekap Bawa Customer per Promotor';
-        const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
-        kontenAsli = wrappers[0] ? wrappers[0].outerHTML : '';
-    } else if (jenis === 'bulanan') {
-        title.innerText = 'Total Customer Walk-In per Bulan';
-        const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
-        kontenAsli = wrappers[1] ? wrappers[1].outerHTML : '';
-    }
-    body.innerHTML = kontenAsli;
+    title.innerText = 'Aktivitas';
+    body.innerHTML = '<div class="aktivitas-empty">Data aktivitas hari ini</div>';
     popup.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 window.bukaPopupAktivitas = bukaPopupAktivitas;
-
 function tutupPopupAktivitas() {
     const popup = document.getElementById('popup-aktivitas');
     if (!popup) return;
     popup.classList.remove('active');
-    document.body.style.overflow = '';
 }
 window.tutupPopupAktivitas = tutupPopupAktivitas;
-
 document.addEventListener('click', (e) => {
     const popup = document.getElementById('popup-aktivitas');
     if (popup && e.target === popup) tutupPopupAktivitas();
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupPopupAktivitas(); });
 
 /* ============================================================ */
 /* ========== ADMIN MENU ======================================= */
@@ -1916,108 +1784,209 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupPopup
 function mulaiListenerFirebaseAdmin() {
     if (listenerAdminSiap) return;
     listenerAdminSiap = true;
-    const db = window.db;
-    window.dbOnValue(window.dbRef(db, 'pinPromotor'), (snap) => { adminPinPromotorGlobal = snap.val() || {}; });
 }
-window.mulaiListenerFirebaseAdmin = mulaiListenerFirebaseAdmin;
 
 function bukaPopupAdminAdmin(jenis) {
     const popup = document.getElementById('popup-aktivitas');
     const title = document.getElementById('popup-aktivitas-title');
     const body = document.getElementById('popup-aktivitas-body');
     if (!popup || !title || !body) return;
-    const ICONS = {
-        buka: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`,
-        tutup: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
-        branding: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
-        tambahAntri: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
-        tambahSales: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
-        hapus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
-        keluarkan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-        paksa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-        lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-        reset: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
-        gpsOn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-        gpsOff: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`
-    };
-    const headers = { operasional: 'Operasional Sistem', urutan: 'Manajemen Urutan', darurat: 'Tindakan Darurat', gps: 'Konfigurasi GPS Toko' };
     let html = '';
+    
     if (jenis === 'operasional') {
-        title.innerText = headers.operasional;
+        title.innerText = 'Operasional Sistem';
         const sedangBuka = statusSistemGlobal === "BUKA";
-        let tombolUtama = sedangBuka
-            ? `<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('TUTUP')"><span class="popup-btn-icon">${ICONS.tutup}</span><span class="popup-btn-text">Tutup Sistem Antrian<small>Hentikan sementara antrian</small></span></button>`
-            : `<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('BUKA')"><span class="popup-btn-icon">${ICONS.buka}</span><span class="popup-btn-text">Buka Sistem Antrian<small>Aktifkan kembali antrian</small></span></button>`;
-        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${sedangBuka ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${sedangBuka ? '✅ Sistem Sedang BUKA' : '❌ Sistem Sedang TUTUP'}</div>${tombolUtama}<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalBranding()"><span class="popup-btn-icon">${ICONS.branding}</span><span class="popup-btn-text">Pengaturan Branding<small>Nama, logo & lokasi toko</small></span></button>`;
+        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${sedangBuka ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${sedangBuka ? '✅ Sistem BUKA' : '❌ Sistem TUTUP'}</div>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('${sedangBuka ? 'TUTUP' : 'BUKA'}')"><span class="popup-btn-icon">⚙</span><span class="popup-btn-text">${sedangBuka ? 'Tutup Sistem' : 'Buka Sistem'}<small>${sedangBuka ? 'Hentikan antrian' : 'Aktifkan antrian'}</small></span></button>`;
     } else if (jenis === 'urutan') {
-        title.innerText = headers.urutan;
+        title.innerText = 'Manajemen Urutan';
         html = `
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAntriAdmin()"><span class="popup-btn-icon">${ICONS.tambahAntri}</span><span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahMasterSales()"><span class="popup-btn-icon">${ICONS.tambahSales}</span><span class="popup-btn-text">Tambah Nama Promotor Baru<small>Daftarkan promotor baru</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKeluarkanAntrian()"><span class="popup-btn-icon">${ICONS.keluarkan}</span><span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan aktif</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalHapusMasterSales()"><span class="popup-btn-icon">${ICONS.hapus}</span><span class="popup-btn-text">Hapus Nama Permanen<small>Hapus dari daftar promotor</small></span></button>
-        `;
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAntriAdmin()"><span class="popup-btn-icon">➕</span><span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKeluarkanAntrian()"><span class="popup-btn-icon">➖</span><span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan</small></span></button>`;
     } else if (jenis === 'darurat') {
-        title.innerText = headers.darurat;
+        title.innerText = 'Tindakan Darurat';
         html = `
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalPaksaBawaCustomer()"><span class="popup-btn-icon">${ICONS.paksa}</span><span class="popup-btn-text">Paksa Bawa Customer<small>Set promotor langsung melayani</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalLockPromotorAdmin()"><span class="popup-btn-icon">${ICONS.lock}</span><span class="popup-btn-text">Kontrol Hukuman / Lock Akun<small>Kunci/buka akun promotor</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetTotal()"><span class="popup-btn-icon">${ICONS.reset}</span><span class="popup-btn-text">Reset Seluruh Antrian Aktif<small>Hapus semua antrian hari ini</small></span></button>
-        `;
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalPaksaBawaCustomer()"><span class="popup-btn-icon">⚡</span><span class="popup-btn-text">Paksa Bawa Customer<small>Set langsung melayani</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalLockPromotorAdmin()"><span class="popup-btn-icon">🔒</span><span class="popup-btn-text">Kunci Akun Promotor<small>Hukuman/lock</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetTotal()"><span class="popup-btn-icon">🔄</span><span class="popup-btn-text">Reset Semua Antrian<small>Hapus antrian hari ini</small></span></button>`;
     } else if (jenis === 'gps') {
-        title.innerText = headers.gps;
+        title.innerText = 'Konfigurasi GPS Toko';
         const aktif = koordinatToko.lat && koordinatToko.lng;
-        const statusHtml = aktif
-            ? `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; background:rgba(5,150,105,0.15); color:#34d399;">📍 GPS Aktif — Radius ${koordinatToko.radius}m</div>`
-            : `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; background:rgba(220,38,38,0.15); color:#f87171;">❌ GPS Nonaktif — Check-in bebas</div>`;
-        html = `${statusHtml}
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(true)"><span class="popup-btn-icon">${ICONS.gpsOn}</span><span class="popup-btn-text">Aktifkan GPS Toko<small>Ambil koordinat HP sekarang</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(false)"><span class="popup-btn-icon">${ICONS.gpsOff}</span><span class="popup-btn-text">Matikan GPS Toko<small>Promotor bebas check-in</small></span></button>`;
+        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${aktif ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${aktif ? '📍 GPS Aktif - Radius ' + koordinatToko.radius + 'm' : '❌ GPS Nonaktif'}</div>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(true)"><span class="popup-btn-icon">📍</span><span class="popup-btn-text">Aktifkan GPS Toko<small>Ambil koordinat HP</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(false)"><span class="popup-btn-icon">🚫</span><span class="popup-btn-text">Matikan GPS Toko<small>Check-in bebas</small></span></button>`;
+    } else if (jenis === 'user') {
+        title.innerText = '👥 Kelola Promotor';
+        html = `
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahPromotor()"><span class="popup-btn-icon">➕</span><span class="popup-btn-text">Tambah Promotor Baru<small>Daftarkan promotor</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetPin()"><span class="popup-btn-icon">🔑</span><span class="popup-btn-text">Reset PIN ke Default<small>Kembalikan ke 123456</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalAktifNonaktif()"><span class="popup-btn-icon">👤</span><span class="popup-btn-text">Aktif / Nonaktifkan Promotor<small>Blokir atau buka akun</small></span></button>
+        <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalHapusPromotor()"><span class="popup-btn-icon">🗑</span><span class="popup-btn-text">Hapus Promotor Permanen<small>Hapus dari sistem</small></span></button>`;
     }
     body.innerHTML = html;
     popup.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 window.bukaPopupAdminAdmin = bukaPopupAdminAdmin;
 
+/* ========== KELOLA PROMOTOR (ADMIN) ========== */
+function bukaModalTambahPromotor() {
+    document.getElementById('modal-title').innerText = '➕ Tambah Promotor Baru';
+    document.getElementById('modal-desc').innerHTML = `
+        <label style="font-size:11px; font-weight:700;">Nama Lengkap:</label><br>
+        <input type="text" id="input-promotor-nama" placeholder="contoh: Budi Santoso" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
+        <label style="font-size:11px; font-weight:700;">Nama Sales (untuk data penjualan):</label><br>
+        <input type="text" id="input-promotor-sales" placeholder="contoh: BUDI" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
+        <label style="font-size:11px; font-weight:700;">Merk / Brand (opsional):</label><br>
+        <input type="text" id="input-promotor-merk" placeholder="contoh: LG" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
+        <div style="font-size:11px; color:#64748b; margin-top:10px;">PIN awal otomatis: <b>123456</b> (promotor wajib ganti saat login pertama)</div>
+    `;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahPromotor()">Simpan</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalTambahPromotor = bukaModalTambahPromotor;
+
+async function eksekusiTambahPromotor() {
+    const nama = document.getElementById('input-promotor-nama').value.trim();
+    const sales = document.getElementById('input-promotor-sales').value.trim().toUpperCase();
+    const merk = document.getElementById('input-promotor-merk').value.trim().toUpperCase();
+    if (!nama || !sales) { tampilkanModal("Perhatian", "Nama dan Nama Sales wajib diisi!"); return; }
+    const clean = sanitizeNama(nama);
+    const salt = generateSalt();
+    const hash = await hashPin(PIN_AWAL, salt);
+    try {
+        // Cek duplikat
+        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
+        if (cek.exists()) { tampilkanModal("Perhatian", "Promotor dengan nama ini sudah terdaftar!"); return; }
+        await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
+            namaAbsen: nama, namaSales: sales, merk: merk, aktif: true,
+            pinHash: hash, pinSalt: salt, wajibGantiPin: true
+        });
+        await window.dbPush(window.dbRef(window.db, 'data'), { record: { NAMA_PROMOTOR: nama } });
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `Promotor "${nama}" ditambahkan.\nPIN awal: 123456 (wajib ganti saat login pertama)`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiTambahPromotor = eksekusiTambahPromotor;
+
+function bukaModalResetPin() {
+    const promotorList = masterSalesGlobal.map(n => n.nama);
+    if (promotorList.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih Promotor --</option>';
+    promotorList.forEach(n => options += `<option value="${n}">${n}</option>`);
+    document.getElementById('modal-title').innerText = '🔑 Reset PIN ke Default';
+    document.getElementById('modal-desc').innerHTML = `
+        <label style="font-size:11px; font-weight:700;">Pilih Promotor:</label><br>
+        <select id="select-reset-pin" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">${options}</select>
+        <div style="font-size:11px; color:#64748b;">PIN akan dikembalikan ke <b>123456</b> dan promotor wajib ganti saat login berikutnya.</div>
+    `;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiResetPin()">Reset PIN</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalResetPin = bukaModalResetPin;
+
+async function eksekusiResetPin() {
+    const nama = document.getElementById('select-reset-pin').value;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    const salt = generateSalt();
+    const hash = await hashPin(PIN_AWAL, salt);
+    try {
+        await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
+            pinHash: hash, pinSalt: salt, wajibGantiPin: true
+        });
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `PIN ${nama} direset ke 123456.\nPromotor wajib ganti saat login.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiResetPin = eksekusiResetPin;
+
+function bukaModalAktifNonaktif() {
+    const promotorList = masterSalesGlobal.map(n => n.nama);
+    if (promotorList.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih Promotor --</option>';
+    promotorList.forEach(n => options += `<option value="${n}">${n}</option>`);
+    document.getElementById('modal-title').innerText = '👤 Aktif / Nonaktifkan';
+    document.getElementById('modal-desc').innerHTML = `
+        <label style="font-size:11px; font-weight:700;">Pilih Promotor:</label><br>
+        <select id="select-toggle-aktif" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">${options}</select>
+        <label style="font-size:11px; font-weight:700;">Status:</label><br>
+        <select id="select-status-toggle" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
+            <option value="true">Aktifkan</option>
+            <option value="false">Nonaktifkan</option>
+        </select>
+    `;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiToggleAktif()">Simpan</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalAktifNonaktif = bukaModalAktifNonaktif;
+
+async function eksekusiToggleAktif() {
+    const nama = document.getElementById('select-toggle-aktif').value;
+    const status = document.getElementById('select-status-toggle').value === 'true';
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    try {
+        await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), { aktif: status });
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `${nama} ${status ? 'diaktifkan' : 'dinonaktifkan'}.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiToggleAktif = eksekusiToggleAktif;
+
+function bukaModalHapusPromotor() {
+    const promotorList = masterSalesGlobal.map(n => n.nama);
+    if (promotorList.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih Promotor --</option>';
+    promotorList.forEach(n => options += `<option value="${n}">${n}</option>`);
+    document.getElementById('modal-title').innerText = '🗑 Hapus Promotor';
+    document.getElementById('modal-desc').innerHTML = `
+        <label style="font-size:11px; font-weight:700;">Pilih Promotor:</label><br>
+        <select id="select-hapus-promotor" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">${options}</select>
+        <div style="font-size:11px; color:#dc2626; margin-top:10px; font-weight:700;">⚠️ PERMANEN! Data user promotor akan dihapus.</div>
+    `;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" style="background:#dc2626 !important;" onclick="eksekusiHapusPromotor()">Hapus</button>`;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalHapusPromotor = bukaModalHapusPromotor;
+
+async function eksekusiHapusPromotor() {
+    const nama = document.getElementById('select-hapus-promotor').value;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    try {
+        await window.dbRemove(window.dbRef(window.db, 'users/promotor/' + clean));
+        // Hapus dari data (mastersales)
+        const snap = await window.dbGet(window.dbRef(window.db, 'data'));
+        if (snap.exists()) {
+            const all = snap.val();
+            for (const k of Object.keys(all)) {
+                const it = all[k];
+                const rec = it && it.record ? it.record : it;
+                const n = rec && (rec.NAMA_PROMOTOR || rec.nama) || "";
+                if (String(n).toLowerCase() === String(nama).toLowerCase()) {
+                    await window.dbRemove(window.dbRef(window.db, 'data/' + k));
+                }
+            }
+        }
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `${nama} dihapus permanen.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiHapusPromotor = eksekusiHapusPromotor;
+
+/* ========== OPERASIONAL ADMIN ========== */
 function bukaModalToggleSistem(target) {
-    tampilkanModalKonfirmasi(target === 'BUKA' ? 'Mulai Antrian' : 'Hentikan Antrian', `Ubah status sistem menjadi: ${target}?`, () => {
-        window.dbUpdate(window.dbRef(window.db, 'setting'), { statusAntrian: target }).then(() => tampilkanModal("Berhasil", `Sistem antrian: ${target}`));
+    tampilkanModalKonfirmasi(target === 'BUKA' ? 'Mulai Antrian' : 'Hentikan Antrian', `Ubah status menjadi: ${target}?`, () => {
+        window.dbUpdate(window.dbRef(window.db, 'setting'), { statusAntrian: target }).then(() => tampilkanModal("Berhasil", `Status: ${target}`));
     });
 }
 window.bukaModalToggleSistem = bukaModalToggleSistem;
-
-function bukaModalBranding() {
-    const s = window.settingGlobal || {};
-    document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding";
-    document.getElementById('modal-desc').innerHTML = `
-        <label style="font-size:11px; font-weight:700;">Nama Sistem:</label><br>
-        <input type="text" id="branding-nama-sistem" value="${(s.namaSistem||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
-        <label style="font-size:11px; font-weight:700;">Nama Toko:</label><br>
-        <input type="text" id="branding-nama-toko" value="${(s.namaToko||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
-        <label style="font-size:11px; font-weight:700;">URL Logo:</label><br>
-        <input type="url" id="branding-logo-url" value="${(s.logoUrl||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-    `;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="simpanBranding()">Simpan</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalBranding = bukaModalBranding;
-
-async function simpanBranding() {
-    const namaSistem = document.getElementById('branding-nama-sistem').value.trim();
-    const namaToko = document.getElementById('branding-nama-toko').value.trim();
-    const logoUrl = document.getElementById('branding-logo-url').value.trim();
-    if (!namaSistem || !namaToko) { tampilkanModal("Perhatian", "Nama tidak boleh kosong!"); return; }
-    try { await window.dbUpdate(window.dbRef(window.db, 'setting'), { namaSistem, namaToko, logoUrl }); tutupModal(); tampilkanModal("Berhasil", "Branding tersimpan."); }
-    catch (e) { tampilkanModal("Gagal", "Error: " + e.message); }
-}
-window.simpanBranding = simpanBranding;
 
 function bukaModalTambahAntriAdmin() {
     if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
     let options = '<option value="">-- Pilih --</option>';
     masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Masukkan Promotor ke Antrian";
+    document.getElementById('modal-title').innerText = "Masukkan ke Antrian";
     document.getElementById('modal-desc').innerHTML = `Kategori:<br><select id="admin-select-kategori" style="margin-bottom:10px;"><option value="HA">HA</option><option value="AV">AV</option></select><br>Promotor:<br><select id="admin-select-sales" style="margin-bottom:10px;">${options}</select>`;
     document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahAntri()">Proses</button>`;
     document.getElementById('custom-modal').classList.add('active');
@@ -2032,32 +2001,15 @@ async function eksekusiTambahAntri() {
     const now = waktuServer();
     try {
         await window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama, status: "Standby", waktuStandby: now, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 });
-        tutupModal();
-        tampilkanModal("Berhasil", `${nama} masuk antrian ${kat}.`);
+        tutupModal(); tampilkanModal("Berhasil", `${nama} masuk antrian ${kat}.`);
     } catch (e) { tampilkanModal("Gagal", e.message); }
 }
 window.eksekusiTambahAntri = eksekusiTambahAntri;
 
-function bukaModalTambahMasterSales() {
-    document.getElementById('modal-title').innerText = "Tambah Promotor Baru";
-    document.getElementById('modal-desc').innerHTML = `Nama Promotor:<br><input type="text" id="input-nama-baru" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahSales()">Simpan</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalTambahMasterSales = bukaModalTambahMasterSales;
-
-async function eksekusiTambahSales() {
-    const nama = document.getElementById('input-nama-baru').value.trim();
-    if (!nama) { tampilkanModal("Perhatian", "Nama kosong!"); return; }
-    try { await window.dbPush(window.dbRef(window.db, 'data'), { record: { NAMA_PROMOTOR: nama } }); tutupModal(); tampilkanModal("Berhasil", `Promotor ${nama} ditambahkan.`); }
-    catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiTambahSales = eksekusiTambahSales;
-
 function bukaModalKeluarkanAntrian() {
     if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
     let options = '<option value="">-- Pilih --</option>';
-    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama} (${n.status})</option>`);
+    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
     document.getElementById('modal-title').innerText = "Keluarkan dari Antrian";
     document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-keluar-sales">${options}</select>`;
     document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiKeluarAntrian()">Keluarkan</button>`;
@@ -2076,36 +2028,6 @@ async function eksekusiKeluarAntrian() {
     } catch (e) { tampilkanModal("Gagal", e.message); }
 }
 window.eksekusiKeluarAntrian = eksekusiKeluarAntrian;
-
-function bukaModalHapusMasterSales() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Hapus Promotor Permanen";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-hapus-sales">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiHapusSales()">Hapus Permanen</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalHapusMasterSales = bukaModalHapusMasterSales;
-
-async function eksekusiHapusSales() {
-    const nama = document.getElementById('select-hapus-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    try {
-        const snap = await window.dbGet(window.dbRef(window.db, 'data'));
-        if (!snap.exists()) { tutupModal(); return; }
-        const all = snap.val();
-        let key = null;
-        Object.keys(all).forEach(k => {
-            const it = all[k]; const rec = it && it.record ? it.record : it;
-            const n = rec && (rec.NAMA_PROMOTOR || rec.nama) || "";
-            if (String(n).toLowerCase() === String(nama).toLowerCase()) key = k;
-        });
-        if (key) await window.dbRemove(window.dbRef(window.db, 'data/' + key));
-        tutupModal(); tampilkanModal("Berhasil", `${nama} dihapus.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiHapusSales = eksekusiHapusSales;
 
 function bukaModalPaksaBawaCustomer() {
     if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
@@ -2135,43 +2057,36 @@ function bukaModalLockPromotorAdmin() {
     if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
     let options = '<option value="">-- Pilih --</option>';
     masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Kontrol Hukuman / Lock Akun";
+    document.getElementById('modal-title').innerText = "Kunci Akun Promotor";
     document.getElementById('modal-desc').innerHTML = `
         Promotor:<br><select id="admin-select-sales-lock" style="margin-bottom:10px;">${options}</select>
-        Aksi:<br><select id="admin-select-status-lock" style="margin-bottom:10px;"><option value="LOCK">🔒 Kunci Akun</option><option value="UNLOCK">🔓 Buka Akun</option></select>
         Alasan:<br><select id="admin-select-alasan" style="margin-bottom:10px;"><option>Pulang tanpa keluar antrian</option><option>Istirahat tanpa keluar antrian</option><option>Pelanggaran lain</option></select>
         Durasi (menit):<br><input type="number" id="admin-input-durasi-menit" value="60" min="1" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
     `;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiLock()">Proses</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiLock()">Kunci</button>`;
     document.getElementById('custom-modal').classList.add('active');
 }
 window.bukaModalLockPromotorAdmin = bukaModalLockPromotorAdmin;
 
 async function eksekusiLock() {
     const nama = document.getElementById('admin-select-sales-lock').value;
-    const aksi = document.getElementById('admin-select-status-lock').value;
     const alasan = document.getElementById('admin-select-alasan').value;
     const durasi = parseInt(document.getElementById('admin-input-durasi-menit').value) || 60;
     if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
     const clean = sanitizeNama(nama);
     try {
-        if (aksi === "LOCK") {
-            const now = waktuServer();
-            const selesai = now + (durasi * 60 * 1000);
-            await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { nama, locked: true, alasan, waktuMulaiLock: now, waktuSelesaiLock: selesai, waktuDibuat: now });
-            await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
-            tutupModal(); tampilkanModal("Berhasil", `${nama} dikunci ${durasi} menit.`);
-        } else {
-            await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0 });
-            tutupModal(); tampilkanModal("Berhasil", `${nama} dibuka.`);
-        }
+        const now = waktuServer();
+        const selesai = now + (durasi * 60 * 1000);
+        await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { nama, locked: true, alasan, waktuMulaiLock: now, waktuSelesaiLock: selesai });
+        await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
+        tutupModal(); tampilkanModal("Berhasil", `${nama} dikunci ${durasi} menit.`);
     } catch (e) { tampilkanModal("Gagal", e.message); }
 }
 window.eksekusiLock = eksekusiLock;
 
 function bukaModalResetTotal() {
     tampilkanModalKonfirmasi("Reset Semua Antrian", "⚠️ Semua antrian aktif akan dihapus. Lanjutkan?", async () => {
-        try { await window.dbRemove(window.dbRef(window.db, 'antrian')); tampilkanModal("Berhasil", "Semua antrian direset."); }
+        try { await window.dbRemove(window.dbRef(window.db, 'antrian')); tampilkanModal("Berhasil", "Antrian direset."); }
         catch (e) { tampilkanModal("Gagal", e.message); }
     });
 }
@@ -2187,13 +2102,31 @@ function toggleGPSAdmin(aktif) {
     if (!navigator.geolocation) { tampilkanModal("Gagal", "GPS tidak didukung."); return; }
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: pos.coords.latitude, lngToko: pos.coords.longitude, radiusToko: 50 }).then(() => tampilkanModal("Berhasil", `GPS aktif:\n${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}\nRadius: 50m`));
+            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: pos.coords.latitude, lngToko: pos.coords.longitude, radiusToko: 50 }).then(() => tampilkanModal("Berhasil", `GPS aktif:\n${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`));
         },
         (err) => tampilkanModal("Gagal", "Lokasi ditolak: " + err.message),
         { enableHighAccuracy: true, timeout: 15000 }
     );
 }
 window.toggleGPSAdmin = toggleGPSAdmin;
+
+/* ============================================================ */
+/* ========== INIT EVENT ======================================= */
+/* ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    const btnLogin = document.getElementById('btn-login-promotor');
+    if (btnLogin) btnLogin.onclick = window.prosesLogin;
+    const inputPin = document.getElementById('login-pin-input');
+    if (inputPin) {
+        inputPin.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+        inputPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.prosesLogin(); });
+    }
+    const inputPinBaru = document.getElementById('input-pin-baru');
+    const inputPinKonf = document.getElementById('input-pin-konfirmasi');
+    if (inputPinBaru) inputPinBaru.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+    if (inputPinKonf) inputPinKonf.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+});
 </script>
+
 </body>
 </html>

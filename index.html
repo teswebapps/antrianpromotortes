@@ -2243,6 +2243,346 @@ html body:not(.dark-mode) .login-tab.active {
 html body:not(.dark-mode) .login-tab:hover:not(.active) {
     color: #0284c7 !important;
 }
+  /* ============================================================ */
+/* ===== LOGIN ANTRIAN — PERSIS SEPERTI DASHBOARD ============ */
+/* ============================================================ */
+
+/* ---- Reset semua override lama di halaman login ---- */
+#login-screen {
+    position: fixed !important;
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    background: #050814 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 99999 !important;
+    box-sizing: border-box !important;
+}
+
+body:not(.dark-mode) #login-screen {
+    background: #f1f5f9 !important;
+}
+
+/* ---- Grid background ---- */
+#login-screen .fut-grid {
+    position: fixed !important;
+    inset: 0 !important;
+    background-image: 
+        linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important;
+    background-size: 40px 40px !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    display: block !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-grid {
+    background-image: 
+        linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important;
+}
+
+/* ---- Orb ---- */
+#login-screen .fut-orb {
+    position: fixed !important;
+    border-radius: 50% !important;
+    filter: blur(80px) !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    display: block !important;
+}
+#login-screen .fut-orb-1 { width: 400px !important; height: 400px !important; background: #0ea5e9 !important; top: -100px !important; left: -100px !important; }
+#login-screen .fut-orb-2 { width: 300px !important; height: 300px !important; background: #a855f7 !important; bottom: -80px !important; right: -80px !important; }
+#login-screen .fut-orb-3 { width: 350px !important; height: 350px !important; background: #06b6d4 !important; top: 40% !important; left: 45% !important; opacity: 0.4 !important; }
+
+body:not(.dark-mode) #login-screen .fut-orb { opacity: 0.25 !important; }
+
+/* ---- Container 2 kolom desktop ---- */
+#login-screen .fut-container {
+    position: relative !important;
+    z-index: 10 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px !important;
+    align-items: center !important;
+    max-width: 1100px !important;
+    width: 100% !important;
+    animation: none !important;
+}
+
+/* ---- Kolom KIRI (teks + tim 3D) ---- */
+#login-screen .fut-left {
+    color: #ffffff !important;
+    text-align: center !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-left { color: #0f172a !important; }
+
+/* Tagline */
+#login-screen .fut-tagline {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 6px 16px !important;
+    background: rgba(14,165,233,0.1) !important;
+    border: 1px solid rgba(14,165,233,0.3) !important;
+    border-radius: 100px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+    color: #22d3ee !important;
+    margin-bottom: 20px !important;
+    text-transform: uppercase !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-tagline {
+    background: rgba(14, 165, 233, 0.12) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    color: #0284c7 !important;
+}
+
+#login-screen .fut-dot {
+    width: 6px !important;
+    height: 6px !important;
+    background: #22d3ee !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px #22d3ee !important;
+    animation: none !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-dot {
+    background: #0284c7 !important;
+    box-shadow: 0 0 10px #0284c7 !important;
+}
+
+/* Headline */
+#login-screen .fut-headline {
+    font-size: 42px !important;
+    font-weight: 900 !important;
+    margin: 0 0 8px 0 !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 30px rgba(34,211,238,0.5) !important;
+    line-height: 1.1 !important;
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-headline {
+    color: #0c4a6e !important;
+    text-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important;
+}
+
+#login-screen .fut-subheadline {
+    font-size: 14px !important;
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    margin: 0 0 30px 0 !important;
+    letter-spacing: 1px !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-subheadline {
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+
+/* ===== TIM 3D — SAMA UKURAN DENGAN DASHBOARD ===== */
+#login-screen .fut-characters {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-bottom: 30px !important;
+    width: 100% !important;
+}
+
+#login-screen .fut-characters .team-3d-img {
+    display: block !important;
+    max-width: 100% !important;
+    max-height: 260px !important;   /* ← SAMA DENGAN DASHBOARD */
+    height: auto !important;
+    width: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)) !important;
+    animation: none !important;
+}
+
+/* Live status */
+#login-screen .fut-live-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 10px 20px !important;
+    background: rgba(5,8,20,0.6) !important;
+    border: 1px solid rgba(34,211,238,0.3) !important;
+    border-radius: 100px !important;
+    font-size: 12px !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-live-status {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    color: #075985 !important;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
+}
+
+#login-screen .fut-pulse-dot {
+    width: 8px !important;
+    height: 8px !important;
+    background: #22d3ee !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px #22d3ee !important;
+    animation: none !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-pulse-dot {
+    background: #0284c7 !important;
+    box-shadow: 0 0 10px #0284c7 !important;
+}
+
+/* ---- Kolom KANAN (card login) ---- */
+#login-screen .fut-right {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+#login-screen .fut-card {
+    width: 100% !important;
+    max-width: 400px !important;
+    background: rgba(15, 23, 42, 0.7) !important;
+    backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(34,211,238,0.2) !important;
+    border-radius: 24px !important;
+    padding: 40px 32px !important;
+    box-shadow: 0 0 60px rgba(14,165,233,0.15) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    margin: 0 auto !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(14, 165, 233, 0.25) !important;
+    box-shadow: 0 20px 50px rgba(14, 165, 233, 0.15), 0 8px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+#login-screen .fut-card::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0; left: 0; right: 0 !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, #22d3ee, transparent) !important;
+}
+
+/* Logo */
+#login-screen .fut-logo {
+    width: 110px !important;
+    height: 110px !important;
+    margin: 0 auto 20px !important;
+    background: rgba(14,165,233,0.15) !important;
+    border: 1px solid rgba(34,211,238,0.3) !important;
+    border-radius: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 14px !important;
+    box-shadow: 0 0 40px rgba(34,211,238,0.4) !important;
+}
+
+body:not(.dark-mode) #login-screen .fut-logo {
+    background: rgba(14, 165, 233, 0.1) !important;
+    border-color: rgba(14, 165, 233, 0.3) !important;
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.25) !important;
+}
+
+#login-screen .fut-logo img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+/* ---- RESPONSIVE — MOBILE = 1 KOLOM SEPERTI DASHBOARD ---- */
+@media (max-width: 900px) {
+    #login-screen {
+        padding: 12px !important;
+        align-items: flex-start !important;
+        padding-top: 20px !important;
+    }
+    
+    #login-screen .fut-container {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        max-width: 480px !important;
+        margin: 0 auto !important;
+    }
+    
+    #login-screen .fut-left {
+        padding: 8px !important;
+    }
+    
+    #login-screen .fut-headline { 
+        font-size: 26px !important; 
+        margin-bottom: 4px !important; 
+    }
+    
+    #login-screen .fut-subheadline { 
+        font-size: 12px !important; 
+        margin-bottom: 14px !important; 
+    }
+    
+    #login-screen .fut-tagline { 
+        font-size: 10px !important; 
+        padding: 5px 12px !important; 
+        margin-bottom: 12px !important; 
+    }
+    
+    /* Tim 3D — sama dengan Dashboard */
+    #login-screen .fut-characters .team-3d-img { 
+        max-height: 180px !important; 
+    }
+    
+    #login-screen .fut-live-status { 
+        font-size: 11px !important; 
+        padding: 7px 14px !important; 
+    }
+    
+    #login-screen .fut-card { 
+        padding: 24px 20px !important; 
+        border-radius: 20px !important; 
+    }
+    
+    #login-screen .fut-logo { 
+        width: 90px !important; 
+        height: 90px !important; 
+        margin-bottom: 14px !important; 
+        padding: 10px !important; 
+    }
+}
+
+/* HP kecil — sama dengan Dashboard */
+@media (max-width: 400px) {
+    #login-screen { padding: 8px !important; }
+    #login-screen .fut-container { gap: 12px !important; }
+    #login-screen .fut-headline { font-size: 22px !important; }
+    #login-screen .fut-subheadline { font-size: 11px !important; margin-bottom: 10px !important; }
+    #login-screen .fut-characters .team-3d-img { max-height: 140px !important; }
+    #login-screen .fut-card { padding: 20px 16px !important; border-radius: 16px !important; }
+    #login-screen .fut-logo { width: 80px !important; height: 80px !important; margin-bottom: 10px !important; padding: 8px !important; }
+}
 </style>
 </head>
 <body>

@@ -2700,6 +2700,88 @@ async function prosesLoginPromotor() {
             window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: namaPilih, aksi: "PIN_Salah", waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: "PIN Salah", kategori: "Keamanan", sumber: "Login" }).catch(() => {});
             btn.disabled = false; btn.innerHTML = asli; return;
         }
+       async function prosesLoginPromotor() {
+    const namaPilih = document.getElementById('login-pilih-sales').value;
+    const pin = document.getElementById('login-pin-input').value.trim();
+    const errEl = document.getElementById('login-error');
+    const btn = document.getElementById('btn-login-promotor');
+    errEl.style.color = '#f87171';
+    errEl.innerText = '';
+    if (loginModeGlobal === 'admin') return loginAdminInternal();
+    if (!namaPilih) { errEl.innerText = 'Silakan pilih nama Anda!'; return; }
+    if (!/^\d{6}$/.test(pin)) { errEl.innerText = 'PIN harus 6 digit angka'; return; }
+    const clean = sanitizeNama(namaPilih);
+    const asli = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
+    try {
+        // Cek lock promotor
+        const snapLock = await window.dbGet(window.dbRef(window.db, 'lockPromotor/' + clean));
+        if (snapLock.exists()) {
+            const lockData = snapLock.val();
+            if (lockData && lockData.locked) {
+                const sekarang = waktuServer();
+                const waktuMulai = Number(lockData.waktuMulaiLock) || 0;
+                const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
+                const sudahMulai = waktuMulai === 0 || sekarang >= waktuMulai;
+                const belumExpired = waktuExpired === 0 || sekarang < waktuExpired;
+                if (sudahMulai && belumExpired) {
+                    let sisaTeks = 'tanpa batas waktu';
+                    if (waktuExpired > 0) { const sisaMenit = Math.ceil((waktuExpired - sekarang) / 60000); sisaTeks = `${sisaMenit} menit lagi`; }
+                    errEl.innerText = `🔒 Akun dikunci: ${lockData.alasan || '-'} (${sisaTeks})`;
+                    btn.disabled = false; btn.innerHTML = asli; return;
+                }
+            }
+        }
+
+        // Cek users/promotor (sistem hash)
+        const snapAkun = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
+        let pakaiHash = false;
+        let pinHashDB = null, pinSaltDB = null, wajibGanti = false;
+        if (snapAkun.exists()) {
+            const akun = snapAkun.val();
+            if (akun.aktif === false) {
+                errEl.innerText = 'Akun dinonaktifkan. Hubungi admin.';
+                btn.disabled = false; btn.innerHTML = asli; return;
+            }
+            if (akun.pinHash && akun.pinSalt) {
+                pakaiHash = true;
+                pinHashDB = akun.pinHash;
+                pinSaltDB = akun.pinSalt;
+                wajibGanti = akun.wajibGantiPin === true;
+            }
+        }
+
+        if (pakaiHash) {
+            // Verifikasi pakai hash
+            const hashInput = await hashPin(pin, pinSaltDB);
+            if (hashInput !== pinHashDB) {
+                errEl.innerText = '❌ PIN salah. Coba lagi.';
+                document.getElementById('login-pin-input').value = '';
+                btn.disabled = false; btn.innerHTML = asli; return;
+            }
+        } else {
+            // Fallback: cek plaintext di pinPromotor
+            const snapPin = await window.dbGet(window.dbRef(window.db, 'pinPromotor/' + clean));
+            if (!snapPin.exists()) { errEl.innerText = 'PIN belum diatur. Hubungi admin.'; btn.disabled = false; btn.innerHTML = asli; return; }
+            const pinBenar = String(snapPin.val()).trim();
+            if (pin !== pinBenar) {
+                errEl.innerText = '❌ PIN salah. Coba lagi.';
+                document.getElementById('login-pin-input').value = '';
+                window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama: namaPilih, aksi: "PIN_Salah", waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: "PIN Salah", kategori: "Keamanan", sumber: "Login" }).catch(() => {});
+                btn.disabled = false; btn.innerHTML = asli; return;
+            }
+            // Auto-migrasi ke hash
+            const salt = generateSalt();
+            const pinHash = await hashPin(pin, salt);
+            await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
+                namaAbsen: namaPilih, namaSales: namaPilih, merk: '', aktif: true,
+                pinHash: pinHash, pinSalt: salt, wajibGantiPin: true
+            });
+            wajibGanti = true;
+        }
+
+        // ✓ Login berhasil
         namaSalesAktifGlobal = namaPilih;
         localStorage.setItem('ufo_nama_sales_aktif', namaPilih);
         localStorage.setItem('ufo_pin_verified', 'true');
@@ -2707,6 +2789,7 @@ async function prosesLoginPromotor() {
         document.getElementById('login-toast-name').innerText = namaPilih;
         const toast = document.getElementById('login-toast');
         toast.classList.add('active');
+        
         setTimeout(() => {
             tampilkanAplikasiUtama();
             document.getElementById('login-pin-input').value = '';
@@ -2714,6 +2797,18 @@ async function prosesLoginPromotor() {
             btn.disabled = false;
             btn.innerHTML = asli;
             setTimeout(() => { toast.classList.remove('active'); }, 800);
+            // Wajib ganti PIN saat login pertama
+            if (wajibGanti) {
+                setTimeout(() => {
+                    tampilkanModalKonfirmasi(
+                        "⚠️ WAJIB GANTI PIN",
+                        "Ini login pertama Anda. Silakan ganti PIN untuk keamanan.\n\nHubungi admin kalau tidak bisa ganti.",
+                        () => {
+                            // Sementara: cuma info
+                        }
+                    );
+                }, 500);
+            }
         }, 1400);
     } catch (e) {
         console.error('Error login:', e);

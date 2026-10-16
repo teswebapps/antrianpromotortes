@@ -2583,6 +2583,281 @@ body:not(.dark-mode) #login-screen .fut-logo {
     #login-screen .fut-card { padding: 20px 16px !important; border-radius: 16px !important; }
     #login-screen .fut-logo { width: 80px !important; height: 80px !important; margin-bottom: 10px !important; padding: 8px !important; }
 }
+  /* ============================================================ */
+/* ===== HALAMAN PROMOTOR ANTRIAN — TEMA GOLD/CYAN PREMIUM === */
+/* ===== Samakan dengan Dashboard Promotor (dark mode) ======== */
+/* ============================================================ */
+
+/* ---- APP CONTAINER: border gold + glow premium ---- */
+body.dark-mode .app-container,
+body.dark-mode .admin-container {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(15, 20, 35, 0.9)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    box-shadow: 
+        0 0 40px rgba(212, 175, 55, 0.15),
+        inset 0 0 15px rgba(212, 175, 55, 0.05),
+        0 20px 50px -10px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ---- USER BADGE: gold border ---- */
+body.dark-mode .user-badge {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2) !important;
+}
+body.dark-mode .user-badge strong,
+body.dark-mode #label-user-aktif {
+    color: #ffffff !important;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important;
+}
+
+/* ---- TIMER CARDS (Giliran HA/AV): gold ---- */
+body.dark-mode .timer-card-admin {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.6)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.15) !important;
+}
+body.dark-mode .timer-badge-title {
+    color: #d4af37 !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .promotor-nama-aktif {
+    color: #ffffff !important;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.6) !important;
+}
+
+/* ---- STATUS BADGE: gold ---- */
+body.dark-mode .status-badge-sistem {
+    border: 2px solid rgba(212, 175, 55, 0.6) !important;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3) !important;
+    color: #ffffff !important;
+}
+body.dark-mode .status-badge-sistem .dot {
+    box-shadow: 0 0 15px currentColor !important;
+}
+
+/* ---- TOMBOL UTAMA (btn-success, btn-customer): gold-cyan ---- */
+body.dark-mode .app-container .btn-success,
+body.dark-mode .app-container .btn-customer {
+    background: linear-gradient(135deg, #d4af37 0%, #0ea5e9 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(212, 175, 55, 0.8) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2) !important;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.3) !important;
+    font-weight: 800 !important;
+}
+
+/* Tombol sekunder (purple, indigo) → cyan premium */
+body.dark-mode .app-container .btn-purple,
+body.dark-mode .app-container .btn-indigo {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(14, 165, 233, 0.7) !important;
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.4) !important;
+    font-weight: 800 !important;
+}
+
+/* Tombol bahaya (merah) tetap, tapi border halus */
+body.dark-mode .app-container .btn-closing,
+body.dark-mode .app-container .btn-maroon {
+    border: 1px solid rgba(239, 68, 68, 0.6) !important;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ---- LIST ANTRIAN HA/AV: gold border ---- */
+body.dark-mode .list-antrian li {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.1) !important;
+}
+body.dark-mode .list-antrian li.saya-sendiri {
+    border: 2px solid #d4af37 !important;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(14, 165, 233, 0.08)) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4) !important;
+}
+
+/* ---- LIVE URUTAN TITLE: gold ---- */
+body.dark-mode .live-urutan-title {
+    color: #d4af37 !important;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5) !important;
+}
+
+/* ---- AKTIVITAS SECTION: gold ---- */
+body.dark-mode .aktivitas-header-toggle {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.7)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15) !important;
+}
+body.dark-mode .aktivitas-header-toggle .judul {
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .aktivitas-header-toggle .judul svg {
+    stroke: #d4af37 !important;
+}
+body.dark-mode .aktivitas-header-toggle .arrow {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .aktivitas-header-toggle .arrow svg {
+    stroke: #d4af37 !important;
+}
+
+body.dark-mode .aktivitas-title {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.1) !important;
+}
+body.dark-mode .aktivitas-title .judul-kategori {
+    color: #ffffff !important;
+}
+
+body.dark-mode .aktivitas-list li {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border-left: 3px solid #d4af37 !important;
+}
+
+/* ---- MENU ADMIN (grid button): gold ---- */
+body.dark-mode .aktivitas-menu-btn {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15) !important;
+}
+body.dark-mode .aktivitas-menu-btn:hover {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .aktivitas-menu-icon {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .aktivitas-menu-icon svg {
+    stroke: #d4af37 !important;
+}
+body.dark-mode .aktivitas-menu-count {
+    background: #d4af37 !important;
+    color: #111827 !important;
+}
+
+/* ---- ADMIN MENU GRID (Operasional/Urutan/Darurat/GPS): gold ---- */
+body.dark-mode .admin-menu-header {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(35, 28, 15, 0.85)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.6) !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.2) !important;
+}
+body.dark-mode .admin-menu-card {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.6)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.15) !important;
+}
+body.dark-mode .admin-menu-card:hover {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .admin-menu-card-icon {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode .admin-menu-card-icon.t-operasional svg { stroke: #d4af37 !important; }
+body.dark-mode .admin-menu-card-icon.t-urutan svg { stroke: #34d399 !important; }
+body.dark-mode .admin-menu-card-icon.t-darurat svg { stroke: #f87171 !important; }
+body.dark-mode .admin-menu-card-icon.t-gps svg { stroke: #c084fc !important; }
+
+/* ---- REKAP TABEL: header gold ---- */
+body.dark-mode .rekap-tabel th {
+    background: linear-gradient(135deg, rgba(35, 28, 15, 0.8), rgba(17, 24, 39, 0.9)) !important;
+    color: #d4af37 !important;
+    border-bottom: 2px solid #d4af37 !important;
+}
+body.dark-mode .rekap-tabel tr.total-row td {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(17, 24, 39, 0.9)) !important;
+    color: #d4af37 !important;
+    border-top: 2px solid #d4af37 !important;
+}
+
+/* ---- GPS BOX: gold ---- */
+body.dark-mode .gps-box {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(35, 28, 15, 0.5)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+body.dark-mode #map-promotor {
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+}
+
+/* ---- REKAP WRAPPER: gold ---- */
+body.dark-mode .rekap-wrapper {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(35, 28, 15, 0.4)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+}
+body.dark-mode .rekap-label {
+    color: #d4af37 !important;
+}
+
+/* ---- POPUP: gold ---- */
+body.dark-mode .popup-box {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .popup-header {
+    background: linear-gradient(135deg, rgba(35, 28, 15, 0.9), rgba(17, 24, 39, 0.95)) !important;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .popup-title {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6) !important;
+}
+body.dark-mode .popup-close {
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #d4af37 !important;
+}
+
+/* ---- MODAL: gold ---- */
+body.dark-mode .modal-box {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.98), rgba(35, 28, 15, 0.95)) !important;
+    border: 2px solid rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .modal-title {
+    color: #d4af37 !important;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.5) !important;
+}
+body.dark-mode .modal-actions button {
+    background: linear-gradient(135deg, #d4af37, #b8941f) !important;
+    color: #111827 !important;
+    border: 1px solid rgba(212, 175, 55, 0.8) !important;
+    font-weight: 800 !important;
+}
+body.dark-mode .modal-actions button.btn-cancel {
+    background: rgba(100, 116, 139, 0.2) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+}
+
+/* ---- INPUT GROUP & SELECT: gold focus ---- */
+body.dark-mode .app-container select:focus,
+body.dark-mode .app-container input:focus {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3) !important;
+}
+body.dark-mode .input-group label {
+    color: #d4af37 !important;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.4) !important;
+}
+
+/* ---- TOP CONTROLS: gold ---- */
+body.dark-mode .dark-mode-btn {
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%) !important;
+    color: #111827 !important;
+    border: 1px solid #d4af37 !important;
+    text-shadow: none !important;
+    font-weight: 800 !important;
+}
+body.dark-mode .dark-mode-btn:hover {
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.6) !important;
+}
 </style>
 </head>
 <body>

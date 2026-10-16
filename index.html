@@ -2134,13 +2134,10 @@ window.toggleGPSAdmin = toggleGPSAdmin;
 function bukaModalTambahPromotor() {
     document.getElementById('modal-title').innerText = '➕ Tambah Promotor Baru';
     document.getElementById('modal-desc').innerHTML = `
-        <label style="font-size:11px; font-weight:700;">Nama Lengkap:</label><br>
-        <input type="text" id="input-promotor-nama" placeholder="contoh: Budi Santoso" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
-        <label style="font-size:11px; font-weight:700;">Nama Sales (untuk data penjualan):</label><br>
-        <input type="text" id="input-promotor-sales" placeholder="contoh: BUDI" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
-        <label style="font-size:11px; font-weight:700;">Merk / Brand (opsional):</label><br>
-        <input type="text" id="input-promotor-merk" placeholder="contoh: LG" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-        <div style="font-size:11px; color:#64748b; margin-top:10px;">PIN awal otomatis: <b>123456</b> (promotor wajib ganti saat login pertama)</div>
+        <label style="font-size:11px; font-weight:700;">Nama Promotor (Nama + Merk):</label><br>
+        <input type="text" id="input-promotor-nama" placeholder="contoh: RONI AQUA" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:6px; box-sizing:border-box; text-transform:uppercase;" oninput="this.value = this.value.toUpperCase()">
+        <div style="font-size:11px; color:#64748b; margin-bottom:10px;">Format: <b>NAMA MERK</b> — contoh: RONI AQUA, RIZKA TOSHIBA, BUDI LG</div>
+        <div style="font-size:11px; color:#64748b;">PIN awal otomatis: <b>123456</b> (promotor wajib ganti saat login pertama)</div>
     `;
     document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahPromotor()">Simpan</button>`;
     document.getElementById('custom-modal').classList.add('active');
@@ -2148,10 +2145,16 @@ function bukaModalTambahPromotor() {
 window.bukaModalTambahPromotor = bukaModalTambahPromotor;
 
 async function eksekusiTambahPromotor() {
-    const nama = document.getElementById('input-promotor-nama').value.trim();
-    const sales = document.getElementById('input-promotor-sales').value.trim().toUpperCase();
-    const merk = document.getElementById('input-promotor-merk').value.trim().toUpperCase();
-    if (!nama || !sales) { tampilkanModal("Perhatian", "Nama dan Nama Sales wajib diisi!"); return; }
+    const nama = document.getElementById('input-promotor-nama').value.trim().toUpperCase();
+    if (!nama) { tampilkanModal("Perhatian", "Nama promotor wajib diisi!"); return; }
+    
+    // Extract merk otomatis (kata terakhir dianggap merk)
+    const parts = nama.split(/\s+/);
+    const merk = parts.length > 1 ? parts[parts.length - 1] : '';
+    
+    // Nama sales = nama lengkap
+    const sales = nama;
+    
     const clean = sanitizeNama(nama);
     const salt = generateSalt();
     const hash = await hashPin(PIN_AWAL, salt);

@@ -1666,6 +1666,154 @@ html body:not(.dark-mode) .login-theme-toggle:hover {
 html body:not(.dark-mode) .login-theme-toggle svg {
     stroke: currentColor !important;
 }
+  /* ============================================================ */
+/* ========== FITUR BARU: HASH PIN + KELOLA AKUN ============== */
+/* ============================================================ */
+
+async function hashPin(pin, salt) {
+    const data = new TextEncoder().encode(salt + ':' + pin);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function generateSalt() {
+    return crypto.randomUUID ? crypto.randomUUID() : 'salt_' + Math.random().toString(36).slice(2) + Date.now();
+}
+window.hashPin = hashPin;
+window.generateSalt = generateSalt;
+
+/* ===== ADMIN: TAMBAH AKUN PROMOTOR (bikin users/promotor) ===== */
+function bukaModalTambahAkunPromotor() {
+    document.getElementById('modal-title').innerText = "➕ Tambah Akun Promotor";
+    document.getElementById('modal-desc').innerHTML = `
+        <div style="font-size:12px; margin-bottom:10px; color:#64748b; padding:8px; background:#eff6ff; border-radius:8px; line-height:1.5;">
+            Buat akun login promotor + PIN awal <b>123456</b>.<br>
+            Promotor wajib ganti PIN saat login pertama.
+        </div>
+        <label style="font-size:11px; font-weight:700;">Nama Promotor (Nama + Merk):</label><br>
+        <input type="text" id="input-akun-nama" placeholder="contoh: RONI AQUA" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        <div style="font-size:11px; color:#64748b;">Format: <b>NAMA MERK</b></div>
+    `;
+    document.getElementById('modal-actions').innerHTML = `
+        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
+        <button type="button" onclick="eksekusiTambahAkunPromotor()">Simpan</button>
+    `;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalTambahAkunPromotor = bukaModalTambahAkunPromotor;
+
+async function eksekusiTambahAkunPromotor() {
+    const nama = document.getElementById('input-akun-nama').value.trim().toUpperCase();
+    if (!nama) { tampilkanModal("Perhatian", "Nama wajib diisi!"); return; }
+    const clean = sanitizeNama(nama);
+    const parts = nama.split(/\s+/);
+    const merk = parts.length > 1 ? parts[parts.length - 1] : '';
+    try {
+        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
+        if (cek.exists()) { tutupModal(); tampilkanModal("Perhatian", "Akun sudah ada!"); return; }
+        const salt = generateSalt();
+        const pinHash = await hashPin("123456", salt);
+        await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
+            namaAbsen: nama, namaSales: nama, merk: merk, aktif: true,
+            pinHash: pinHash, pinSalt: salt, wajibGantiPin: true
+        });
+        // Juga tambah ke daftar data (dropdown login)
+        const snapData = await window.dbGet(window.dbRef(window.db, 'data'));
+        let sudahAda = false;
+        if (snapData.exists()) {
+            const all = snapData.val();
+            Object.values(all).forEach(it => {
+                const rec = it && it.record ? it.record : it;
+                const n = rec && (rec.NAMA_PROMOTOR || rec.nama) || "";
+                if (String(n).trim().toUpperCase() === nama) sudahAda = true;
+            });
+        }
+        if (!sudahAda) {
+            await window.dbPush(window.dbRef(window.db, 'data'), { record: { NAMA_PROMOTOR: nama } });
+        }
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `Akun promotor "${nama}" dibuat.\n\nPIN awal: 123456\nWajib diganti saat login pertama.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiTambahAkunPromotor = eksekusiTambahAkunPromotor;
+
+/* ===== ADMIN: RESET PIN KE 123456 (hash) ===== */
+function bukaModalResetPinAkun() {
+    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih --</option>';
+    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
+    document.getElementById('modal-title').innerText = "🔑 Reset PIN ke 123456";
+    document.getElementById('modal-desc').innerHTML = `
+        Promotor:<br><select id="select-reset-pin-akun" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">${options}</select>
+        <div style="font-size:11px; color:#64748b; margin-top:8px;">PIN akan kembali ke <b>123456</b>. Promotor wajib ganti saat login.</div>
+    `;
+    document.getElementById('modal-actions').innerHTML = `
+        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
+        <button type="button" onclick="eksekusiResetPinAkun()">Reset</button>
+    `;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalResetPinAkun = bukaModalResetPinAkun;
+
+async function eksekusiResetPinAkun() {
+    const nama = document.getElementById('select-reset-pin-akun').value;
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    try {
+        const salt = generateSalt();
+        const pinHash = await hashPin("123456", salt);
+        // Update di users/promotor (untuk login yang pakai hash)
+        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
+        if (cek.exists()) {
+            await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
+                pinHash: pinHash, pinSalt: salt, wajibGantiPin: true
+            });
+        } else {
+            await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
+                namaAbsen: nama, namaSales: nama, merk: '', aktif: true,
+                pinHash: pinHash, pinSalt: salt, wajibGantiPin: true
+            });
+        }
+        // Update juga di pinPromotor (fallback plaintext)
+        await window.dbSet(window.dbRef(window.db, 'pinPromotor/' + clean), "123456");
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `PIN ${nama} direset ke 123456.\nPromotor wajib ganti PIN saat login.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiResetPinAkun = eksekusiResetPinAkun;
+
+/* ===== ADMIN: AKTIF / NONAKTIFKAN AKUN ===== */
+function bukaModalAktifNonaktifAkun() {
+    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
+    let options = '<option value="">-- Pilih --</option>';
+    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
+    document.getElementById('modal-title').innerText = "👤 Aktif / Nonaktifkan Akun";
+    document.getElementById('modal-desc').innerHTML = `
+        Promotor:<br><select id="select-aktif-akun" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">${options}</select>
+        Status:<br><select id="select-status-akun" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
+            <option value="true">Aktifkan</option>
+            <option value="false">Nonaktifkan</option>
+        </select>
+    `;
+    document.getElementById('modal-actions').innerHTML = `
+        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
+        <button type="button" onclick="eksekusiAktifNonaktifAkun()">Simpan</button>
+    `;
+    document.getElementById('custom-modal').classList.add('active');
+}
+window.bukaModalAktifNonaktifAkun = bukaModalAktifNonaktifAkun;
+
+async function eksekusiAktifNonaktifAkun() {
+    const nama = document.getElementById('select-aktif-akun').value;
+    const status = document.getElementById('select-status-akun').value === 'true';
+    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
+    const clean = sanitizeNama(nama);
+    try {
+        await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), { aktif: status });
+        tutupModal();
+        tampilkanModal("✅ Berhasil", `${nama} ${status ? 'diaktifkan' : 'dinonaktifkan'}.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
+}
+window.eksekusiAktifNonaktifAkun = eksekusiAktifNonaktifAkun;
 </style>
 </head>
 <body>
@@ -1874,7 +2022,18 @@ html body:not(.dark-mode) .login-theme-toggle svg {
                     </span>
                     <span class="admin-menu-card-label">Manajemen<br>Urutan</span>
                 </button>
-
+<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAkunPromotor()">
+    <span class="popup-btn-icon">➕</span>
+    <span class="popup-btn-text">Tambah Akun Promotor<small>Buat akun + PIN awal 123456</small></span>
+</button>
+<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetPinAkun()">
+    <span class="popup-btn-icon">🔑</span>
+    <span class="popup-btn-text">Reset PIN ke 123456<small>Untuk promotor lupa PIN</small></span>
+</button>
+<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalAktifNonaktifAkun()">
+    <span class="popup-btn-icon">👤</span>
+    <span class="popup-btn-text">Aktif/Nonaktifkan Akun<small>Blokir atau buka akun</small></span>
+</button>
                 <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('darurat')">
                     <span class="admin-menu-card-icon t-darurat">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3357,8 +3516,27 @@ async function eksekusiSimpanPIN() {
     if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
     if (!/^\d{6}$/.test(pin)) { tampilkanModal("Perhatian", "PIN harus 6 digit!"); return; }
     const clean = sanitizeNama(nama);
-    try { await window.dbSet(window.dbRef(window.db, 'pinPromotor/' + clean), pin); tutupModal(); tampilkanModal("Berhasil", `PIN ${nama}: ${pin}`); }
-    catch (e) { tampilkanModal("Gagal", e.message); }
+    try {
+        // Simpan plaintext (kompatibilitas lama)
+        await window.dbSet(window.dbRef(window.db, 'pinPromotor/' + clean), pin);
+        
+        // Simpan hash ke users/promotor (untuk sistem baru)
+        const salt = generateSalt();
+        const pinHash = await hashPin(pin, salt);
+        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
+        if (cek.exists()) {
+            await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), {
+                pinHash: pinHash, pinSalt: salt, wajibGantiPin: false
+            });
+        } else {
+            await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
+                namaAbsen: nama, namaSales: nama, merk: '', aktif: true,
+                pinHash: pinHash, pinSalt: salt, wajibGantiPin: false
+            });
+        }
+        tutupModal();
+        tampilkanModal("Berhasil", `PIN ${nama}: ${pin}\n\nPIN ini berlaku untuk login.`);
+    } catch (e) { tampilkanModal("Gagal", e.message); }
 }
 function bukaModalKeluarkanAntrian() {
     if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }

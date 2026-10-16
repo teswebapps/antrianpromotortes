@@ -2859,64 +2859,61 @@ body.dark-mode .dark-mode-btn:hover {
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.6) !important;
 }
 /* ============================================================ */
-/* ===== FIX DROPDOWN — SCROLL BISA, TAPI TIDAK MELEBAR ====== */
+/* ===== FIX DROPDOWN PROMOTOR — BISA SCROLL ================== */
 /* ============================================================ */
 
-/* RESET dulu — matikan fix yang salah */
-#login-screen,
-#login-screen .fut-container,
-#login-screen .fut-right,
-#login-screen .fut-card,
-#login-screen #form-promotor,
-#login-screen .fut-field {
-    overflow: visible !important;
-    max-height: none !important;
-}
-
-/* Kembalikan card login biar tidak tembus keluar */
-#login-screen .fut-card {
-    overflow: hidden !important;   /* ← penting: konten di dalam card */
-    max-height: 92vh !important;
-}
-
-#login-screen .fut-container {
-    overflow: visible !important;   /* container tetap visible */
-}
-
-/* Field dropdown - jangan dibatasi */
-#login-screen .fut-field {
-    position: relative !important;
-}
-
-/* Dropdown menu — scroll di dalam card */
 #custom-select-menu {
-    position: absolute !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: 100% !important;
-    margin-top: 6px !important;
-    max-height: 50vh !important;
+    max-height: 260px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    overscroll-behavior: contain !important;
     z-index: 99999 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    position: absolute !important;
 }
 
-/* Item dropdown */
+#custom-select-menu::-webkit-scrollbar {
+    width: 6px !important;
+}
+#custom-select-menu::-webkit-scrollbar-track {
+    background: rgba(2, 6, 23, 0.4) !important;
+    border-radius: 3px !important;
+}
+#custom-select-menu::-webkit-scrollbar-thumb {
+    background: #38bdf8 !important;
+    border-radius: 3px !important;
+}
+#custom-select-menu::-webkit-scrollbar-thumb:hover {
+    background: #0ea5e9 !important;
+}
+
+/* Menu option — compact biar lebih banyak yang muncul */
 #custom-select-menu .option {
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
     padding: 12px 14px !important;
     font-size: 14px !important;
-    cursor: pointer !important;
-    box-sizing: border-box !important;
-    white-space: normal !important;
-    word-break: break-word !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Pastikan card login tidak "kunci" scroll dropdown */
+#login-screen .fut-card {
+    overflow: visible !important;
+}
+
+/* Pastikan form-promotor tidak menahan */
+#form-promotor {
+    overflow: visible !important;
+}
+
+/* Field dropdown juga */
+#login-screen .fut-field {
+    overflow: visible !important;
+}
+
+/* Custom select trigger tetap di atas */
+#custom-select-trigger {
+    position: relative !important;
+    z-index: 10000 !important;
 }
 </style>
 </head>

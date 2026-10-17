@@ -12,7 +12,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDrrS4E_6e3G1DBfqkFbWoYLhdq6ZIzapg",
@@ -27,6 +27,10 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
+
+  // Simpan ke window agar bisa diakses script biasa
+  window.firebaseAuth = auth;
+  window.googleProvider = new GoogleAuthProvider();
 
   signInAnonymously(auth)
     .then(() => {
@@ -59,7 +63,6 @@
 /* ============================================================ */
 /* ========== TEMA DASHBOARD (LIGHT & DARK MODE) ============== */
 /* ============================================================ */
-
 :root {
     --bg-color: #f1f5f9;
     --card-bg: #ffffff;
@@ -72,7 +75,6 @@
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --gold: #d4af37;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
@@ -92,7 +94,6 @@ body {
     min-height: 100vh;
 }
 
-/* ===== DARK MODE OVERRIDES ===== */
 body.dark-mode {
     --bg-color: #030712;
     --card-bg: #111827;
@@ -104,7 +105,6 @@ body.dark-mode {
     --primary-dark: #0ea5e9;
 }
 
-/* ===== CONTAINER ===== */
 .app-container, .admin-container {
     width: 100%;
     max-width: 500px;
@@ -135,22 +135,14 @@ body.dark-mode {
 }
 .logout-btn:hover { background: rgba(239, 68, 68, 0.2); }
 
-.gradient-header, .header-admin {
-    background: var(--card-soft);
-    border: 1px solid var(--border);
-    border-radius: 14px; padding: 20px; color: var(--text-main); margin-bottom: 18px;
-}
-.gradient-header h2, .header-admin h2 { margin: 0; font-size: 20px; font-weight: 800; }
-.gradient-header p, .header-admin .header-sub-text { margin: 6px 0 0 0; font-size: 13px; font-weight: 500; color: var(--text-muted); }
-
-.status-badge-sistem, .status-badge {
+.status-badge-sistem {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 7px 16px 7px 12px; border-radius: 24px;
     font-size: 11px; font-weight: 800; text-transform: uppercase;
     margin-bottom: 16px; margin-top: 14px; letter-spacing: 0.6px;
     border: 1px solid var(--border);
 }
-.status-badge-sistem .dot, .status-badge .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+.status-badge-sistem .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 .status-open { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.3); }
 .status-open .dot { background: var(--success); }
 .status-closed { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
@@ -165,7 +157,6 @@ body.dark-mode {
 }
 .user-badge strong, #label-user-aktif { color: var(--text-main) !important; }
 
-/* ===== TIMER & LIST ===== */
 .timer-box-wrapper { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
 .timer-card-admin {
     background: var(--card-soft); border: 1px solid var(--border);
@@ -179,7 +170,7 @@ body.dark-mode {
 .input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
 select, input[type="text"], input[type="password"] {
     width: 100%; padding: 12px 14px; border-radius: 12px;
-    border: 1px solid var(--border); background: var(--card-bg);
+    border: 1px solid var(--border); background: var(--card-soft);
     font-size: 14px; font-weight: 600; color: var(--text-main); outline: none;
 }
 select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
@@ -220,7 +211,6 @@ button {
 
 /* ===== PETA & GPS ===== */
 .gps-box { background: var(--card-soft); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-.gps-box > div:first-child { color: var(--text-muted) !important; font-weight: 800; }
 #map-promotor { width: 100%; height: 160px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; z-index: 1; }
 .info-radius { font-size: 11px; color: var(--text-main); font-weight: 800; text-align: center; padding: 6px 8px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 6px; }
 .info-radius.ok { color: var(--success); background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
@@ -230,8 +220,8 @@ button {
 .aktivitas-header-toggle { display: flex; justify-content: center; align-items: center; cursor: pointer; padding: 12px 14px; border-radius: 12px; background: var(--card-soft); color: var(--text-main); border: 1px solid var(--border); position: relative; }
 .aktivitas-header-toggle .judul { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-main); width: 100%; }
 .aktivitas-header-toggle .arrow { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border); }
-.aktivitas-content { max-height: 0; overflow: hidden; opacity: 0; padding: 0; }
-.aktivitas-content.open { max-height: none; opacity: 1; padding-top: 12px; }
+.aktivitas-content { max-height: 0; overflow: hidden; opacity: 0; padding: 0; transition: all 0.3s; }
+.aktivitas-content.open { max-height: 2000px; opacity: 1; padding-top: 12px; }
 
 .aktivitas-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .aktivitas-menu-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 16px 10px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; color: var(--text-main); font-weight: 800; font-size: 11px; text-transform: uppercase; position: relative; width: 100%; min-height: 90px; }
@@ -239,7 +229,6 @@ button {
 .aktivitas-menu-label { font-size: 10.5px; font-weight: 800; text-align: center; color: var(--text-main); line-height: 1.2; }
 .aktivitas-menu-count { position: absolute; top: 6px; right: 6px; font-size: 10px; font-weight: 800; background: var(--primary); color: #ffffff; padding: 2px 7px; border-radius: 10px; min-width: 20px; text-align: center; }
 
-.aktivitas-title { font-size: 12px; font-weight: 800; text-transform: uppercase; padding: 10px 12px; border-radius: 8px; color: var(--text-main); display: flex; justify-content: center; align-items: center; margin-bottom: 6px; gap: 8px; background: var(--card-soft); border: 1px solid var(--border); position: relative; }
 .aktivitas-list { list-style: none; padding: 0; margin: 0 0 6px 0; }
 .aktivitas-list li { background: var(--card-soft); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin-bottom: 5px; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--text-main); }
 .aktivitas-list li .nama { flex: 1; font-weight: 800; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -271,7 +260,6 @@ button {
 
 /* ===== LAYAR LOGIN ===== */
 #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); overflow: hidden; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 12px; height: 100vh; height: 100dvh; }
-.fut-grid, .fut-orb { display: none; } /* Hilangkan efek cyber */
 .fut-container { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; max-width: 1100px; width: 100%; }
 .fut-left { color: var(--text-main); text-align: center; padding: 20px; }
 .fut-tagline { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 20px; text-transform: uppercase; }
@@ -284,7 +272,7 @@ button {
 .fut-field { margin-bottom: 14px; position: relative; }
 .fut-field label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
 .fut-select { width: 100%; padding: 11px 14px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.fut-menu { position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; max-height: 240px; overflow-y: auto; z-index: 999; padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-8px); }
+.fut-menu { position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; max-height: 240px; overflow-y: auto; z-index: 999; padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: all 0.2s; }
 .fut-menu.open { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
 .fut-menu .option { padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-main); cursor: pointer; }
 .fut-menu .option:hover { background: var(--card-soft); }
@@ -298,7 +286,6 @@ button {
 .login-tab.active { background: var(--primary); color: #ffffff; }
 .login-theme-toggle { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--card-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10; padding: 0; color: var(--text-main); }
 
-/* ===== NOTIF TOAST ===== */
 .login-toast-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); display: flex; justify-content: center; align-items: center; z-index: 999999; opacity: 0; visibility: hidden; padding: 16px; }
 .login-toast-overlay.active { opacity: 1; visibility: visible; }
 .login-toast-card { background: var(--card-bg); padding: 32px 40px; border-radius: 24px; text-align: center; border: 1px solid var(--border); min-width: 240px; box-shadow: var(--shadow-lg); }
@@ -328,130 +315,22 @@ button {
     .timer-box-wrapper { flex-direction: row; }
     .timer-card-admin { flex: 1; }
 }
-  /* ============================================================ */
-/* ===== SINKRONISASI FONT & MENU DENGAN DASHBOARD ============ */
-/* ============================================================ */
-
-/* 1. Standar Font & Ukuran Dasar */
-body, button, input, select, textarea {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* 2. Tombol Standar Dashboard (Sudut Melengkung, Font Tebal) */
-.app-container button, .fut-btn, .modal-actions button {
-    border-radius: 12px !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.5px !important;
-    text-transform: uppercase !important;
-    padding: 14px 16px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-    transition: all 0.2s ease !important;
-    border: none !important;
-}
-
-/* 3. Tombol Warna Spesifik (Sesuai Dashboard) */
-.app-container .btn-success, .app-container .btn-customer, .fut-btn { 
-    background: #2563eb !important; color: #ffffff !important; 
-}
-.app-container .btn-closing, .app-container .btn-maroon { 
-    background: #ef4444 !important; color: #ffffff !important; 
-}
-.app-container .btn-purple, .app-container .btn-indigo { 
-    background: #8b5cf6 !important; color: #ffffff !important; 
-}
-.app-container .btn-amber { 
-    background: #f59e0b !important; color: #ffffff !important; 
-}
-
-/* 4. Kotak Input & Dropdown (Abu-abu Lembut khas Dashboard) */
-select, input[type="text"], input[type="password"], .fut-select, .fut-input, .fut-input-admin {
-    border-radius: 12px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    padding: 14px 16px !important;
-    border: 1px solid #e2e8f0 !important;
-    background-color: #f8fafc !important;
-    box-shadow: none !important;
-}
-select:focus, input:focus, .fut-select:focus {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
-    background-color: #ffffff !important;
-}
-
-/* 5. Judul Menu & Header (Lebih Tegas & Bersih) */
-.live-urutan-title, .aktivitas-title, .admin-menu-header .judul, .popup-title {
-    font-size: 13px !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.5px !important;
-    text-transform: uppercase !important;
-    color: #0f172a !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-    padding-bottom: 10px !important;
-}
-
-/* 6. List Antrian & Item (Lebih Bersih) */
-.list-antrian li, .aktivitas-list li, .list-item {
-    border-radius: 12px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    padding: 14px 16px !important;
-    border: 1px solid #e2e8f0 !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
-}
-.list-antrian li b { font-weight: 700 !important; }
-
-/* 7. Dark Mode Overrides (Mengikuti Dashboard) */
-body.dark-mode .live-urutan-title, 
-body.dark-mode .aktivitas-title, 
-body.dark-mode .admin-menu-header .judul,
-body.dark-mode .popup-title {
-    color: #f3f4f6 !important;
-    border-bottom-color: #374151 !important;
-}
-body.dark-mode select, 
-body.dark-mode input, 
-body.dark-mode .fut-select,
-body.dark-mode .list-antrian li,
-body.dark-mode .aktivitas-list li {
-    background-color: #1f2937 !important;
-    border-color: #374151 !important;
-    color: #f3f4f6 !important;
-}
-body.dark-mode .list-antrian li b { color: #f3f4f6 !important; }
-body.dark-mode .fut-menu { background: #111827 !important; border-color: #374151 !important; }
-body.dark-mode .fut-menu .option { color: #f3f4f6 !important; }
-body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
 </style>
 </head>
 <body>
 
 <!-- ========== LAYAR LOGIN ========== -->
 <div id="login-screen">
-    <div class="fut-grid"></div>
-    <div class="fut-orb fut-orb-1"></div>
-    <div class="fut-orb fut-orb-2"></div>
-    <div class="fut-orb fut-orb-3"></div>
-    <div class="fut-particles" id="fut-particles"></div>
-
     <div class="fut-container">
         <div class="fut-left">
             <div class="fut-tagline">
-                <span class="fut-dot"></span>
                 <span>SISTEM ANTRIAN DIGITAL</span>
             </div>
             <h1 class="fut-headline" id="fut-headline" style="opacity: 0; transition: opacity 0.4s ease;">
                 <span id="fut-headline-text"></span>
             </h1>
             <p class="fut-subheadline" id="fut-subheadline">UFO Malang Kebonsari</p>
-            <div class="fut-characters">
-                <img src="team-3d.png" alt="Tim Promotor UFO" class="team-3d-img" />
-            </div>
             <div class="fut-live-status">
-                <span class="fut-pulse-dot"></span>
                 <span id="live-status-text">Memuat...</span>
             </div>
         </div>
@@ -471,6 +350,19 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
                 <div class="login-tabs">
                     <button type="button" class="login-tab active" id="tab-promotor" onclick="switchLoginTab('promotor')">PROMOTOR</button>
                     <button type="button" class="login-tab" id="tab-admin" onclick="switchLoginTab('admin')">ADMIN</button>
+                </div>
+
+                <!-- TOMBOL LOGIN GOOGLE -->
+                <button type="button" id="btn-login-google" class="fut-btn" onclick="loginDenganGoogle()" style="background: #ffffff; color: #333; border: 1px solid #ccc; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 20px; height: 20px; margin-right: 8px;">
+                    <span style="font-weight: 800; letter-spacing: 0.5px;">MASUK DENGAN GOOGLE</span>
+                </button>
+
+                <!-- PEMBATAS -->
+                <div style="display: flex; align-items: center; margin-bottom: 16px; opacity: 0.5;">
+                    <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                    <div style="padding: 0 10px; font-size: 11px; font-weight: 700; color: var(--text-muted);">ATAU PAKAI PIN</div>
+                    <div style="flex: 1; height: 1px; background: var(--border);"></div>
                 </div>
 
                 <div id="form-promotor">
@@ -499,7 +391,7 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
                     <input type="password" id="login-pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="off" class="fut-input">
                 </div>
 
-                <div id="login-error" class="fut-error"></div>
+                <div id="login-error" class="fut-error" style="color: #ef4444; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-bottom: 8px;"></div>
 
                 <button type="button" id="btn-login-promotor" class="fut-btn">
                     <span id="btn-login-text">MASUK</span>
@@ -543,7 +435,7 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
     <div id="panel-menu-utama" style="display: none;">
         <div class="user-badge">
             <div>
-                <span style="color: var(--cyber-text-muted);">Promotor:</span>
+                <span style="color: var(--text-muted);">Promotor:</span>
                 <strong id="label-user-aktif" style="font-size: 14px;">-</strong>
             </div>
         </div>
@@ -551,9 +443,9 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
         <div id="box-lock-timer" style="display:none; margin-bottom: 16px;">
             <div class="timer-card-admin">
                 <span class="timer-badge-title">🔒 AKUN DIKUNCI</span>
-                <div class="timer-display" id="lock-timer-display" style="font-size:26px; font-weight:800; color:#fbbf24; margin-top:6px; letter-spacing:1.5px;">--:--</div>
-                <div id="lock-reason-display" style="font-size:11px; color:#ffb3bc; margin-top:6px; font-weight:600;">Alasan: -</div>
-                <div style="font-size:10px; color:#ff8585; margin-top:4px;">Akun akan terbuka otomatis setelah timer habis</div>
+                <div class="timer-display" id="lock-timer-display" style="font-size:26px; font-weight:800; color:var(--warning); margin-top:6px; letter-spacing:1.5px;">--:--</div>
+                <div id="lock-reason-display" style="font-size:11px; color:var(--danger); margin-top:6px; font-weight:600;">Alasan: -</div>
+                <div style="font-size:10px; color:var(--danger); margin-top:4px;">Akun akan terbuka otomatis setelah timer habis</div>
             </div>
         </div>
 
@@ -568,7 +460,7 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
 
         <div id="section-checkin-awal" style="display: none;">
             <div class="gps-box">
-                <div style="font-size:11px; font-weight:800; color:var(--cyber-cyan); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.3px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
+                <div style="font-size:11px; font-weight:800; color:var(--primary); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.3px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
                 <div id="map-promotor"></div>
                 <div id="info-radius" class="info-radius">📡 Mendeteksi lokasi Anda...</div>
             </div>
@@ -598,10 +490,9 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
             <button type="button" id="btn-keluar-istirahat" class="btn-maroon" onclick="bukaModalKeluarIstirahat()" style="display: none; margin-top: 10px;">KELUAR ANTRIAN</button>
         </div>
 
-        <!-- ===== PANEL ADMIN ===== -->
-        <div class="admin-panel-wrapper" id="admin-panel-wrapper">
+        <div class="admin-panel-wrapper" id="admin-panel-wrapper" style="display:none;">
             <div class="admin-menu-header">
-                <span class="judul">
+                <span class="judul" style="font-size:12px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:8px;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
                         <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
                         <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
@@ -612,46 +503,22 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
                     Menu Admin
                 </span>
             </div>
-            <div class="admin-menu-grid">
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('operasional')">
-                    <span class="admin-menu-card-icon t-operasional">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Operasional<br>Sistem</span>
+            <div class="aktivitas-menu-grid">
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('operasional')">
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                    <span class="aktivitas-menu-label">Operasional<br>Sistem</span>
                 </button>
-
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('urutan')">
-                    <span class="admin-menu-card-icon t-urutan">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-                            <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
-                            <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Manajemen<br>Urutan</span>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('urutan')">
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+                    <span class="aktivitas-menu-label">Manajemen<br>Urutan</span>
                 </button>
-
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('darurat')">
-                    <span class="admin-menu-card-icon t-darurat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Tindakan<br>Darurat</span>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('darurat')">
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+                    <span class="aktivitas-menu-label">Tindakan<br>Darurat</span>
                 </button>
-
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdminAdmin('gps')">
-                    <span class="admin-menu-card-icon t-gps">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
-                    </span>
-                    <span class="admin-menu-card-label">Konfigurasi<br>GPS Toko</span>
+                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('gps')">
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                    <span class="aktivitas-menu-label">Konfigurasi<br>GPS Toko</span>
                 </button>
             </div>
         </div>
@@ -667,42 +534,42 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
     <div class="aktivitas-section">
         <div class="aktivitas-header-toggle" id="toggle-aktivitas" onclick="toggleAktivitasSection()">
             <span class="judul">
-                <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
                 Aktivitas Hari Ini
             </span>
             <span class="arrow" id="arrow-aktivitas">
-                <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
         </div>
 
         <div class="aktivitas-content" id="content-aktivitas">
             <div class="aktivitas-menu-grid">
                 <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bawa')">
-                    <span class="aktivitas-menu-icon t-bawa-customer"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
                     <span class="aktivitas-menu-label">Bawa Customer</span>
                     <span class="aktivitas-menu-count" id="count-bawa">0</span>
                 </button>
                 <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('ibadah')">
-                    <span class="aktivitas-menu-icon t-ibadah"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-4 7 4"/><path d="M5 16l7-4 7 4"/></svg></span>
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v18"/><path d="M5 8l7-4 7 4"/><path d="M5 16l7-4 7 4"/></svg></span>
                     <span class="aktivitas-menu-label">Ibadah</span>
                     <span class="aktivitas-menu-count" id="count-ibadah">0</span>
                 </button>
                 <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('keluar')">
-                    <span class="aktivitas-menu-icon t-keluar"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
                     <span class="aktivitas-menu-label">Keluar Antrian</span>
                     <span class="aktivitas-menu-count" id="count-keluar">0</span>
                 </button>
                 <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('autokick')">
-                    <span class="aktivitas-menu-icon t-autokick"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg></span>
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg></span>
                     <span class="aktivitas-menu-label">Autokick</span>
                     <span class="aktivitas-menu-count" id="count-autokick">0</span>
                 </button>
                 <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('rekap')">
-                    <span class="aktivitas-menu-icon t-rekap"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
                     <span class="aktivitas-menu-label">Rekap Promotor</span>
                 </button>
                 <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAktivitas('bulanan')">
-                    <span class="aktivitas-menu-icon t-rekap"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
                     <span class="aktivitas-menu-label">Total Bulanan</span>
                 </button>
             </div>
@@ -758,9 +625,6 @@ body.dark-mode .fut-menu .option:hover { background: #1f2937 !important; }
     </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- ============ SCRIPT UTAMA (SEMUA JS DI SINI) ============== -->
-<!-- ============================================================ -->
 <script>
 /* ============================================================ */
 /* ========== HASH PIN HELPER ================================= */
@@ -870,20 +734,64 @@ function applyBranding(setting) {
     if (headline) headline.style.opacity = '1';
 }
 
-(function() {
-    const container = document.getElementById('fut-particles');
-    if (!container) return;
-    for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div');
-        p.className = 'fut-particle';
-        p.style.left = Math.random() * 100 + '%';
-        const colors = ['#22d3ee', '#a855f7', '#3b82f6'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        p.style.background = color;
-        p.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
-        container.appendChild(p);
+/* ============================================================ */
+/* ========== LOGIN GOOGLE ==================================== */
+/* ============================================================ */
+async function loginDenganGoogle() {
+    const btn = document.getElementById('btn-login-google');
+    const errEl = document.getElementById('login-error');
+    const asli = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> MEMBUKA GOOGLE...';
+    errEl.innerText = '';
+
+    try {
+        const result = await signInWithPopup(window.firebaseAuth, window.googleProvider);
+        const user = result.user;
+        
+        if (!user.email) throw new Error("Akun Google tidak mengirimkan email.");
+
+        const emailKey = user.email.replace(/\./g, ',');
+        const snap = await window.dbGet(window.dbRef(window.db, 'users/whitelist/' + emailKey));
+        
+        if (!snap.exists()) {
+            await signOut(window.firebaseAuth);
+            throw new Error(`Email (${user.email}) belum didaftarkan sebagai promotor. Hubungi admin.`);
+        }
+
+        const wl = snap.val();
+        if (wl.role === 'ADMIN') {
+            await signOut(window.firebaseAuth);
+            throw new Error("Akun ini adalah Admin. Silakan login lewat tab Admin.");
+        }
+
+        const namaTampil = wl.nama || user.displayName || user.email;
+        namaSalesAktifGlobal = namaTampil;
+        
+        localStorage.setItem('ufo_nama_sales_aktif', namaTampil);
+        localStorage.setItem('ufo_pin_verified', 'true');
+        localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
+        localStorage.setItem('ufo_login_google', 'true'); 
+
+        document.getElementById('login-toast-name').innerText = namaTampil;
+        const toast = document.getElementById('login-toast');
+        toast.classList.add('active');
+        
+        setTimeout(() => {
+            tampilkanAplikasiUtama();
+            btn.disabled = false; btn.innerHTML = asli;
+            setTimeout(() => { toast.classList.remove('active'); }, 800);
+        }, 1400);
+
+    } catch (err) {
+        console.error('Login Google gagal:', err);
+        errEl.innerText = '❌ ' + err.message;
+        btn.disabled = false;
+        btn.innerHTML = asli;
     }
-})();
+}
+window.loginDenganGoogle = loginDenganGoogle;
 
 /* ============================================================ */
 /* ========== LOGIN TAB ======================================= */
@@ -895,17 +803,20 @@ function switchLoginTab(mode) {
     const formPromotor = document.getElementById('form-promotor');
     const formAdmin = document.getElementById('form-admin');
     const btnText = document.getElementById('btn-login-text');
+    const btnGoogle = document.getElementById('btn-login-google');
     if (mode === 'promotor') {
         tabPromotor.classList.add('active');
         tabAdmin.classList.remove('active');
         formPromotor.style.display = 'block';
         formAdmin.style.display = 'none';
+        btnGoogle.style.display = 'flex';
         if (btnText) btnText.innerText = 'MASUK';
     } else {
         tabAdmin.classList.add('active');
         tabPromotor.classList.remove('active');
         formPromotor.style.display = 'none';
         formAdmin.style.display = 'block';
+        btnGoogle.style.display = 'none';
         if (btnText) btnText.innerText = 'MASUK ADMIN';
     }
     const errEl = document.getElementById('login-error');
@@ -920,10 +831,11 @@ function tampilkanAplikasiUtamaAdmin(namaAdmin) {
     if (appContainer) appContainer.style.display = 'block';
     document.getElementById('panel-login').style.display = 'none';
     document.getElementById('panel-menu-utama').style.display = 'block';
-    document.getElementById('label-user-aktif').innerHTML = `<span style="color:#38bdf8;">● ADMIN</span> — ${namaAdmin}`;
+    document.getElementById('label-user-aktif').innerHTML = `<span style="color:var(--primary);">● ADMIN</span> — ${namaAdmin}`;
     const btnLogoutTop = document.getElementById('btn-logout-top');
     if (btnLogoutTop) btnLogoutTop.style.display = 'block';
     document.body.classList.add('admin-mode');
+    document.getElementById('admin-panel-wrapper').style.display = 'block';
     renderUI();
     renderAktivitas();
     renderRekapBawaCustomer();
@@ -996,14 +908,13 @@ async function loginAdminInternal() {
 }
 
 /* ============================================================ */
-/* ========== FUNGSI LOGIN PROMOTOR (VERSI FINAL) ============= */
+/* ========== FUNGSI LOGIN PROMOTOR (PIN) ===================== */
 /* ============================================================ */
 async function prosesLoginPromotor() {
     const errEl = document.getElementById('login-error');
     const btn = document.getElementById('btn-login-promotor');
     const asli = btn.innerHTML;
     
-    // Jika mode admin, redirect ke fungsi admin
     if (loginModeGlobal === 'admin') return loginAdminInternal();
     
     const namaPilih = document.getElementById('login-pilih-sales').value;
@@ -1019,7 +930,6 @@ async function prosesLoginPromotor() {
     btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
     
     try {
-        // 1) Cek lock promotor
         const snapLock = await window.dbGet(window.dbRef(window.db, 'lockPromotor/' + clean));
         if (snapLock.exists()) {
             const lockData = snapLock.val();
@@ -1041,7 +951,6 @@ async function prosesLoginPromotor() {
             }
         }
         
-        // 2) Cek users/promotor (sistem hash)
         const snapAkun = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
         let pakaiHash = false;
         let pinHashDB = null, pinSaltDB = null, wajibGanti = false;
@@ -1059,7 +968,6 @@ async function prosesLoginPromotor() {
             }
         }
         
-        // 3) Verifikasi PIN
         if (pakaiHash) {
             const hashInput = await hashPin(pin, pinSaltDB);
             if (hashInput !== pinHashDB) {
@@ -1068,7 +976,6 @@ async function prosesLoginPromotor() {
                 btn.disabled = false; btn.innerHTML = asli; return;
             }
         } else {
-            // Fallback: cek plaintext di pinPromotor
             const snapPin = await window.dbGet(window.dbRef(window.db, 'pinPromotor/' + clean));
             if (!snapPin.exists()) { errEl.innerText = 'PIN belum diatur. Hubungi admin.'; btn.disabled = false; btn.innerHTML = asli; return; }
             const pinBenar = String(snapPin.val()).trim();
@@ -1081,7 +988,6 @@ async function prosesLoginPromotor() {
                 }).catch(() => {});
                 btn.disabled = false; btn.innerHTML = asli; return;
             }
-            // Auto-migrasi ke hash
             const salt = generateSalt();
             const pinHash = await hashPin(pin, salt);
             await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
@@ -1091,11 +997,11 @@ async function prosesLoginPromotor() {
             wajibGanti = true;
         }
         
-        // 4) Login berhasil
         namaSalesAktifGlobal = namaPilih;
         localStorage.setItem('ufo_nama_sales_aktif', namaPilih);
         localStorage.setItem('ufo_pin_verified', 'true');
         localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
+        localStorage.setItem('ufo_login_google', 'false');
         document.getElementById('login-toast-name').innerText = namaPilih;
         const toast = document.getElementById('login-toast');
         toast.classList.add('active');
@@ -1470,11 +1376,13 @@ function logoutPromotor() {
         localStorage.removeItem('ufo_antrian_admin_session');
         adminSessionGlobal = null;
         document.body.classList.remove('admin-mode');
+        document.getElementById('admin-panel-wrapper').style.display = 'none';
         localStorage.removeItem('ufo_nama_sales_aktif');
         localStorage.removeItem('ufo_pin_verified');
         localStorage.removeItem('ufo_pin_verified_at');
         localStorage.removeItem('ufo_checkin_hari_ini');
         localStorage.removeItem('ufo_checkin_tanggal');
+        localStorage.removeItem('ufo_login_google');
         namaSalesAktifGlobal = '';
         document.getElementById('login-pin-input').value = '';
         document.getElementById('login-pilih-sales').value = '';
@@ -1797,7 +1705,7 @@ function renderAktivitas() {
     if (elCountIbadah) elCountIbadah.innerText = listIbadah.length;
     const elListIbadah = document.getElementById('list-ibadah');
     if (elListIbadah) elListIbadah.innerHTML = listIbadah.length === 0 ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
-        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#ffffff; font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
+        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--text-main); font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
     const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
     const elCountKeluar = document.getElementById('count-keluar');
     if (elCountKeluar) elCountKeluar.innerText = listKeluar.length;
@@ -1811,7 +1719,7 @@ function renderAktivitas() {
     if (elListAutokick) elListAutokick.innerHTML = listAutokick.length === 0 ? '<div class="aktivitas-empty">Tidak ada pelanggaran hari ini 👍</div>'
         : listAutokick.map(a => {
             const teksAlasan = a.alasan ? a.alasan : (a.kategori || "");
-            return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:#f43f5e; font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`;
+            return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--danger); font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`;
         }).join('');
 }
 

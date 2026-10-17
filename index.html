@@ -10,7 +10,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
-// ===== IMPORT FIREBASE LENGKAP =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { 
@@ -37,23 +36,50 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// ===== EKSPOS KE WINDOW AGAR BISA DIPAKAI DI SCRIPT GLOBAL =====
+// Ekspos ke window
 window.db = db;
 window.dbGet = get;
 window.dbRef = ref;
 window.dbOnValue = onValue;
 window.firebaseAuth = auth;
 window.firebaseSignOut = signOut;
-window.firebaseGoogleAuthProvider = GoogleAuthProvider;
-window.firebaseSignInWithPopup = signInWithPopup;
-window.firebaseSignInWithRedirect = signInWithRedirect;
-window.firebaseGetRedirectResult = getRedirectResult;
+
+// ===== FUNGSI LOGIN (DIDEFINISIKAN DI DALAM MODULE) =====
+async function loginDenganGoogle() {
+    const btn = document.getElementById('btn-login-google');
+    const txt = document.getElementById('btn-login-text');
+    const asli = txt.innerText;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    btn.disabled = true;
+    txt.innerText = 'MEMPROSES...';
+
+    try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        
+        if (isMobile) {
+            await signInWithRedirect(auth, provider);
+        } else {
+            await signInWithPopup(auth, provider);
+        }
+    } catch (err) {
+        console.error('Login gagal:', err);
+        if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+            if (window.showToast) window.showToast('Login gagal: ' + err.message, 'error');
+        }
+        btn.disabled = false;
+        txt.innerText = asli;
+    }
+}
+// Ekspos fungsi login ke window agar bisa dipanggil dari tombol HTML
+window.loginDenganGoogle = loginDenganGoogle;
 
 // ===== FUNGSI PROSES LOGIN =====
 async function prosesLoginBerhasil(user) {
   if (!user) return;
   if (!user.email) {
-    showToast('Akun Google Anda tidak mengirimkan email. Coba login dengan akun Google lain.', 'error');
+    if (window.showToast) window.showToast('Akun Google Anda tidak mengirimkan email.', 'error');
     await signOut(auth);
     return;
   }
@@ -61,7 +87,7 @@ async function prosesLoginBerhasil(user) {
     const emailKey = user.email.replace(/\./g, ',');
     const snap = await get(ref(db, 'users/whitelist/' + emailKey));
     if (!snap.exists()) {
-      showToast('Akun Google Anda (' + user.email + ') tidak terdaftar. Hubungi admin.', 'error');
+      if (window.showToast) window.showToast('Akun Google Anda (' + user.email + ') tidak terdaftar.', 'error');
       await signOut(auth);
       return;
     }
@@ -76,7 +102,7 @@ async function prosesLoginBerhasil(user) {
     window.dispatchEvent(new Event('firebase-ready'));
   } catch (err) {
     console.error('Gagal verifikasi whitelist:', err);
-    showToast('Gagal verifikasi akun: ' + err.message, 'error');
+    if (window.showToast) window.showToast('Gagal verifikasi akun: ' + err.message, 'error');
     await signOut(auth);
   }
 }
@@ -91,7 +117,7 @@ onAuthStateChanged(auth, async (user) => {
   await prosesLoginBerhasil(user);
 });
 
-// ===== CEK HASIL REDIRECT (UNTUK HP) =====
+// ===== CEK HASIL REDIRECT =====
 getRedirectResult(auth).then(async (result) => {
   if (result && result.user) {
     await prosesLoginBerhasil(result.user);
@@ -99,7 +125,7 @@ getRedirectResult(auth).then(async (result) => {
 }).catch((error) => {
   console.error('Redirect error:', error);
   if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-    if (window.showToast) showToast('Login gagal: ' + error.message, 'error');
+    if (window.showToast) window.showToast('Login gagal: ' + error.message, 'error');
   }
 });
 </script>
@@ -794,38 +820,6 @@ function applyBranding(setting) {
     if (headline) headline.style.opacity = '1';
 }
 
-/* ============================================================ */
-/* ========== LOGIN GOOGLE ==================================== */
-/* ============================================================ */
-async function loginDenganGoogle() {
-    const btn = document.getElementById('btn-login-google');
-    const txt = document.getElementById('btn-login-text');
-    const asli = txt.innerText;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    btn.disabled = true;
-    txt.innerText = 'MEMPROSES...';
-
-    try {
-        // ✅ GUNAKAN WINDOW.YANG SUDAH DIEKSPOS
-        const provider = new window.firebaseGoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        
-        if (isMobile) {
-            await window.firebaseSignInWithRedirect(window.firebaseAuth, provider);
-        } else {
-            await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
-        }
-    } catch (err) {
-        console.error('Login gagal:', err);
-        if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-            showToast('Login gagal: ' + err.message, 'error');
-        }
-        btn.disabled = false;
-        txt.innerText = asli;
-    }
-}
-window.loginDenganGoogle = loginDenganGoogle;
 
 /* ============================================================ */
 /* ========== LOGIN TAB ======================================= */

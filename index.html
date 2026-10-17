@@ -10,124 +10,52 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  signInWithRedirect, 
-  getRedirectResult, 
-  GoogleAuthProvider, 
-  signOut 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCNj8nRMP0ijH1GUXKeJlsE-EG5AYCkHBU",
-  authDomain: "dashboardpromotor.firebaseapp.com",
-  databaseURL: "https://dashboardpromotor-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "dashboardpromotor",
-  storageBucket: "dashboardpromotor.firebasestorage.app",
-  messagingSenderId: "474469951678",
-  appId: "1:474469951678:web:f769fed156a36505cbd6ef"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyDrrS4E_6e3G1DBfqkFbWoYLhdq6ZIzapg",
+    authDomain: "tes-webapps.firebaseapp.com",
+    databaseURL: "https://tes-webapps-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "tes-webapps",
+    storageBucket: "tes-webapps.firebasestorage.app",
+    messagingSenderId: "87638829660",
+    appId: "1:87638829660:web:5a04a73f02206803fa9499"
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-// Ekspos ke window
-window.db = db;
-window.dbGet = get;
-window.dbRef = ref;
-window.dbOnValue = onValue;
-window.firebaseAuth = auth;
-window.firebaseSignOut = signOut;
+  window.firebaseAuth = auth;
+  window.googleProvider = new GoogleAuthProvider();
 
-// ===== FUNGSI LOGIN (DIDEFINISIKAN DI DALAM MODULE) =====
-async function loginDenganGoogle() {
-    const btn = document.getElementById('btn-login-google');
-    const txt = document.getElementById('btn-login-text');
-    const asli = txt.innerText;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  signInAnonymously(auth)
+    .then(() => {
+      window.db = db;
+      window.dbRef = ref;
+      window.dbSet = set;
+      window.dbGet = get;
+      window.dbUpdate = update;
+      window.dbRemove = remove;
+      window.dbOnValue = onValue;
+      window.dbPush = push;
+      window.authUid = auth.currentUser.uid;
+      window.serverTimeOffset = 0;
+      window.dbOnValue(window.dbRef(db, '.info/serverTimeOffset'), (snap) => {
+        window.serverTimeOffset = snap.val() || 0;
+      });
+      window.dispatchEvent(new Event('firebase-ready'));
+    })
+    .catch((error) => {
+      console.error("Anonymous login gagal:", error);
+      alert("Gagal koneksi ke server. Cek koneksi internet dan refresh halaman.");
+    });
 
-    btn.disabled = true;
-    txt.innerText = 'MEMPROSES...';
-
-    try {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        
-        if (isMobile) {
-            await signInWithRedirect(auth, provider);
-        } else {
-            await signInWithPopup(auth, provider);
-        }
-    } catch (err) {
-        console.error('Login gagal:', err);
-        if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-            if (window.showToast) window.showToast('Login gagal: ' + err.message, 'error');
-        }
-        btn.disabled = false;
-        txt.innerText = asli;
-    }
-}
-// Ekspos fungsi login ke window agar bisa dipanggil dari tombol HTML
-window.loginDenganGoogle = loginDenganGoogle;
-
-// ===== FUNGSI PROSES LOGIN =====
-async function prosesLoginBerhasil(user) {
-  if (!user) return;
-  if (!user.email) {
-    if (window.showToast) window.showToast('Akun Google Anda tidak mengirimkan email.', 'error');
-    await signOut(auth);
-    return;
-  }
-  try {
-    const emailKey = user.email.replace(/\./g, ',');
-    const snap = await get(ref(db, 'users/whitelist/' + emailKey));
-    if (!snap.exists()) {
-      if (window.showToast) window.showToast('Akun Google Anda (' + user.email + ') tidak terdaftar.', 'error');
-      await signOut(auth);
-      return;
-    }
-    const wl = snap.val();
-    window.firebaseUser = {
-      email: user.email,
-      uid: user.uid,
-      namaTampil: wl.nama || user.displayName || user.email,
-      role: wl.role || 'PROMOTOR',
-      promotorKey: wl.promotorKey || null
-    };
-    window.dispatchEvent(new Event('firebase-ready'));
-  } catch (err) {
-    console.error('Gagal verifikasi whitelist:', err);
-    if (window.showToast) window.showToast('Gagal verifikasi akun: ' + err.message, 'error');
-    await signOut(auth);
-  }
-}
-
-// ===== CEK STATUS LOGIN =====
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.firebaseUser = null;
-    window.dispatchEvent(new Event('firebase-ready'));
-    return;
-  }
-  await prosesLoginBerhasil(user);
-});
-
-// ===== CEK HASIL REDIRECT =====
-getRedirectResult(auth).then(async (result) => {
-  if (result && result.user) {
-    await prosesLoginBerhasil(result.user);
-  }
-}).catch((error) => {
-  console.error('Redirect error:', error);
-  if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-    if (window.showToast) window.showToast('Login gagal: ' + error.message, 'error');
-  }
-});
+  onAuthStateChanged(auth, (user) => {
+    if (!user) setTimeout(() => location.reload(), 1000);
+  });
 </script>
 
 <style>
@@ -345,58 +273,474 @@ button {
 .popup-btn-text { flex: 1; line-height: 1.3; color: var(--text-main); }
 .popup-btn-text small { display: block; font-size: 10px; font-weight: 600; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
 
-/* ===== LAYAR LOGIN ===== */
-#login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); overflow: hidden; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 12px; height: 100vh; height: 100dvh; }
-.fut-container { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; max-width: 1100px; width: 100%; }
-.fut-left { color: var(--text-main); text-align: center; padding: 20px; }
-.fut-tagline { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 20px; text-transform: uppercase; }
-.fut-headline { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; color: var(--text-main); }
-.fut-subheadline { font-size: 14px; color: var(--text-muted); font-weight: 500; margin: 0 0 30px 0; letter-spacing: 1px; }
-.fut-live-status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 100px; font-size: 12px; color: var(--text-main); font-weight: 600; }
-.fut-card { width: 100%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 26px 26px 22px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; max-height: 92vh; overflow-y: auto; }
-.fut-logo { width: 80px; height: 80px; margin: 0 auto 14px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 18px; display: flex; align-items: center; justify-content: center; padding: 10px; }
-.fut-logo img { width: 100%; height: 100%; object-fit: contain; }
-.fut-field { margin-bottom: 14px; position: relative; }
-.fut-field label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-.fut-select { width: 100%; padding: 11px 14px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.fut-menu { position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; max-height: 240px; overflow-y: auto; z-index: 999; padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: all 0.2s; }
+/* ============================================================ */
+/* ========== LAYAR LOGIN — CYBERPUNK STYLE =================== */
+/* ============================================================ */
+#login-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #050814; overflow: hidden; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px; height: 100dvh;
+}
+body.light-mode #login-screen { background: #f1f5f9 !important; }
+
+.fut-grid {
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px);
+    background-size: 40px 40px; animation: futGridMove 20s linear infinite;
+    pointer-events: none; z-index: 1;
+}
+body.light-mode .fut-grid {
+    background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important;
+}
+@keyframes futGridMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+
+.fut-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.6;
+    animation: futOrbFloat 12s ease-in-out infinite; pointer-events: none; z-index: 1; }
+.fut-orb-1 { width: 400px; height: 400px; background: #0ea5e9; top: -100px; left: -100px; }
+.fut-orb-2 { width: 300px; height: 300px; background: #a855f7; bottom: -80px; right: -80px; animation-delay: -4s; }
+.fut-orb-3 { width: 350px; height: 350px; background: #06b6d4; top: 40%; left: 45%; animation-delay: -8s; opacity: 0.4; }
+@keyframes futOrbFloat {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(40px,-30px) scale(1.1); }
+    66% { transform: translate(-30px,40px) scale(0.9); }
+}
+body.light-mode .fut-orb { opacity: 0.25 !important; filter: blur(100px) !important; }
+
+.fut-particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.fut-particle { position: absolute; width: 2px; height: 2px; border-radius: 50%;
+    animation: futParticleFloat linear infinite; }
+@keyframes futParticleFloat {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; } 90% { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+}
+
+.fut-container { position: relative; z-index: 10; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    max-width: 1100px; width: 100%; animation: futFadeIn 0.8s ease-out; }
+@keyframes futFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fut-left { color: #ffffff; text-align: center; padding: 20px; }
+.fut-tagline { display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; background: rgba(14,165,233,0.1);
+    border: 1px solid rgba(14,165,233,0.3); border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #22d3ee;
+    margin-bottom: 20px; text-transform: uppercase; }
+body.light-mode .fut-tagline {
+    background: rgba(14, 165, 233, 0.12) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    color: #0284c7 !important;
+}
+.fut-dot { width: 6px; height: 6px; background: #22d3ee; border-radius: 50%;
+    box-shadow: 0 0 10px #22d3ee; animation: futDotPulse 1.5s infinite; }
+body.light-mode .fut-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
+@keyframes futDotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+}
+.fut-headline { font-size: 42px; font-weight: 900; margin: 0 0 8px 0;
+    color: #ffffff; text-shadow: 0 0 30px rgba(34,211,238,0.5); line-height: 1.1; }
+body.light-mode .fut-headline { color: #0c4a6e !important; text-shadow: 0 0 30px rgba(34,211,238,0.3) !important; }
+.fut-subheadline { font-size: 14px; color: #94a3b8; font-weight: 500;
+    margin: 0 0 30px 0; letter-spacing: 1px; }
+body.light-mode .fut-subheadline { color: #334155 !important; font-weight: 600 !important; }
+.fut-live-status { display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 20px; background: rgba(5,8,20,0.6);
+    border: 1px solid rgba(34,211,238,0.3); border-radius: 100px;
+    font-size: 12px; color: #e2e8f0; font-weight: 600; }
+body.light-mode .fut-live-status {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    color: #075985 !important; font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
+}
+.fut-pulse-dot { width: 8px; height: 8px; background: #22d3ee;
+    border-radius: 50%; animation: futDotPulse 1.5s infinite; }
+body.light-mode .fut-pulse-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
+
+.fut-right { display: flex; justify-content: center; position: relative; }
+
+/* ===== LOGIN CARD — MODERN CYBERPUNK ===== */
+.fut-card {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 24px;
+    padding: 32px 26px 24px;
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    box-shadow:
+        0 0 0 1px rgba(56, 189, 248, 0.08),
+        0 20px 60px -20px rgba(56, 189, 248, 0.3),
+        0 30px 80px -30px rgba(168, 85, 247, 0.25);
+    position: relative;
+    overflow: hidden;
+    animation: cardEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(24px);
+    max-height: 92vh;
+    overflow-y: auto;
+}
+.fut-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 0.15), transparent 30%);
+    animation: cardRotate 8s linear infinite;
+    pointer-events: none; z-index: 0;
+}
+.fut-card::after {
+    content: '';
+    position: absolute; inset: 1px;
+    border-radius: 23px;
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+    z-index: 1; pointer-events: none;
+}
+.fut-card > * { position: relative; z-index: 2; }
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cardRotate { to { transform: rotate(360deg); } }
+
+body.light-mode .fut-card {
+    background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+    box-shadow:
+        0 0 0 1px rgba(56, 189, 248, 0.08),
+        0 20px 60px -20px rgba(56, 189, 248, 0.25),
+        0 30px 80px -30px rgba(168, 85, 247, 0.15) !important;
+}
+body.light-mode .fut-card::after {
+    background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important;
+}
+
+/* Logo */
+.fut-logo {
+    width: 80px; height: 80px; margin: 0 auto 14px;
+    background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.08)) !important;
+    border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 10px;
+    box-shadow:
+        0 0 30px rgba(56, 189, 248, 0.35),
+        inset 0 0 20px rgba(56, 189, 248, 0.15) !important;
+    animation: logoPulse 3s ease-in-out infinite;
+    position: relative;
+}
+@keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15); }
+    50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25); }
+}
+.fut-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+body.light-mode .fut-logo {
+    background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.05)) !important;
+}
+
+/* Login Hero */
+.login-hero { text-align: center; margin-bottom: 18px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
+.login-hero-title {
+    font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+body.light-mode .login-hero-title {
+    background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.login-hero-sub { font-size: 12.5px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
+body.light-mode .login-hero-sub { color: #475569 !important; }
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Login Tabs */
+.login-tabs {
+    display: flex; gap: 6px; margin-bottom: 14px;
+    background: rgba(2, 6, 23, 0.5); padding: 5px; border-radius: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.2); width: 100%;
+    animation: fadeUp 0.6s ease-out 0.2s backwards;
+}
+body.light-mode .login-tabs { background: #f1f5f9 !important; border-color: rgba(56, 189, 248, 0.3) !important; }
+.login-tab {
+    flex: 1; padding: 9px 12px; background: transparent; border: none; border-radius: 8px;
+    color: #94a3b8; font-size: 11.5px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; cursor: pointer; font-family: inherit;
+    transition: all 0.25s ease;
+}
+.login-tab.active {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #ffffff;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+}
+body.light-mode .login-tab { color: #64748b !important; }
+body.light-mode .login-tab.active { background: linear-gradient(135deg, #38bdf8, #0ea5e9) !important; color: #ffffff !important; }
+
+/* Google Button */
+.btn-google {
+    width: 100%; padding: 14px 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    color: #111827; border: none; border-radius: 14px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    animation: fadeUp 0.6s ease-out 0.25s backwards;
+    margin-bottom: 14px;
+    text-transform: none;
+    letter-spacing: 0.2px;
+}
+.btn-google::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+.btn-google:hover::before { left: 100%; }
+.btn-google:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+.btn-google:active { transform: translateY(0) scale(0.98); }
+.btn-google:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.btn-google-icon {
+    width: 32px; height: 32px; background: #ffffff; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+.btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg); }
+.btn-google-text { flex: 1; text-align: left; font-size: 14px; font-weight: 700; }
+.btn-google-arrow {
+    display: flex; align-items: center; justify-content: center;
+    color: #64748b; transition: all 0.3s ease; flex-shrink: 0;
+}
+.btn-google:hover .btn-google-arrow { color: #0284c7; transform: translateX(4px); }
+
+/* Divider */
+.login-divider {
+    display: flex; align-items: center; margin-bottom: 14px; opacity: 0.5;
+}
+.login-divider > div:first-child,
+.login-divider > div:last-child {
+    flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4);
+}
+.login-divider > div:nth-child(2) {
+    padding: 0 10px; font-size: 10.5px; font-weight: 700; color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+body.light-mode .login-divider > div:nth-child(2) { color: #64748b !important; }
+
+/* Fields */
+.fut-field { margin-bottom: 12px; position: relative; animation: fadeUp 0.6s ease-out 0.3s backwards; }
+.fut-field label {
+    display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+body.light-mode .fut-field label { color: #64748b !important; }
+
+.fut-select {
+    width: 100%; padding: 11px 14px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    color: #ffffff; font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    transition: all 0.2s ease;
+}
+.fut-select:hover { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+body.light-mode .fut-select {
+    background: #f8fafc !important; border-color: rgba(56, 189, 248, 0.4) !important; color: #111827 !important;
+}
+
+.fut-menu {
+    position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px;
+    background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 12px; max-height: 240px; overflow-y: auto; z-index: 999;
+    padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: all 0.2s; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
 .fut-menu.open { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
-.fut-menu .option { padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-main); cursor: pointer; }
-.fut-menu .option:hover { background: var(--card-soft); }
-.fut-input { width: 100%; padding: 11px 14px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 18px; font-weight: 800; text-align: center; letter-spacing: 6px; outline: none; }
-.fut-input-admin { width: 100%; padding: 11px 14px; background: var(--card-soft); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 13px; font-weight: 600; outline: none; letter-spacing: 1px; text-align: left; }
-.fut-btn { width: 100%; padding: 13px; background: var(--primary); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 4px; }
-.fut-footer { text-align: center; font-size: 11.5px; color: var(--text-muted); margin: 14px 0 0 0; font-weight: 500; }
-.fut-footer span { color: var(--primary); font-weight: 700; }
-.login-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card-soft); padding: 5px; border-radius: 12px; border: 1px solid var(--border); width: 100%; }
-.login-tab { flex: 1; padding: 9px 12px; background: transparent; border: none; border-radius: 8px; color: var(--text-muted); font-size: 11.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-family: inherit; }
-.login-tab.active { background: var(--primary); color: #ffffff; }
-.login-theme-toggle { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--card-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10; padding: 0; color: var(--text-main); }
+.fut-menu .option {
+    padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    color: #e2e8f0; cursor: pointer;
+}
+.fut-menu .option:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+body.light-mode .fut-menu { background: #ffffff !important; border-color: rgba(56, 189, 248, 0.4) !important; }
+body.light-mode .fut-menu .option { color: #374151 !important; }
+body.light-mode .fut-menu .option:hover { background: rgba(56, 189, 248, 0.15) !important; color: #0284c7 !important; }
 
-.login-toast-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); display: flex; justify-content: center; align-items: center; z-index: 999999; opacity: 0; visibility: hidden; padding: 16px; }
-.login-toast-overlay.active { opacity: 1; visibility: visible; }
-.login-toast-card { background: var(--card-bg); padding: 32px 40px; border-radius: 24px; text-align: center; border: 1px solid var(--border); min-width: 240px; box-shadow: var(--shadow-lg); }
-.login-toast-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--success); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-.login-toast-icon svg { width: 40px; height: 40px; stroke: #ffffff; stroke-width: 3; fill: none; }
-.login-toast-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-.login-toast-subtitle { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-.login-toast-name { color: var(--primary); font-weight: 800; }
+.fut-input {
+    width: 100%; padding: 11px 14px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px; color: #ffffff;
+    font-size: 18px; font-weight: 800; text-align: center;
+    letter-spacing: 6px; outline: none; transition: all 0.2s ease;
+}
+.fut-input:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+body.light-mode .fut-input {
+    background: #f8fafc !important; border-color: rgba(56, 189, 248, 0.4) !important; color: #111827 !important;
+}
 
-.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s ease-in-out infinite; vertical-align: middle; margin-right: 6px; }
+.fut-input-admin {
+    width: 100%; padding: 11px 14px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px; color: #ffffff;
+    font-size: 13px; font-weight: 600; outline: none;
+    letter-spacing: 1px; text-align: left;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+.fut-input-admin:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+body.light-mode .fut-input-admin {
+    background: #f8fafc !important; border-color: rgba(56, 189, 248, 0.4) !important; color: #111827 !important;
+}
+
+/* Login Submit Button */
+.fut-btn {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #ffffff; border: none; border-radius: 12px;
+    font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 6px;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    transition: all 0.25s ease;
+    animation: fadeUp 0.6s ease-out 0.35s backwards;
+}
+.fut-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.6);
+}
+.fut-btn:active { transform: translateY(0) scale(0.98); }
+.fut-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.fut-footer {
+    text-align: center; font-size: 11.5px; color: #94a3b8;
+    margin: 14px 0 0 0; font-weight: 500;
+}
+.fut-footer span { color: #38bdf8; font-weight: 700; }
+body.light-mode .fut-footer { color: #64748b !important; }
+body.light-mode .fut-footer span { color: #0284c7 !important; }
+
+/* Theme toggle */
+.login-theme-toggle {
+    position: absolute !important;
+    top: 12px !important; right: 12px !important;
+    width: 38px !important; height: 38px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    background: rgba(2, 6, 23, 0.7) !important;
+    cursor: pointer !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    z-index: 20 !important; padding: 0 !important;
+    color: #38bdf8 !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+.login-theme-toggle svg {
+    width: 18px !important; height: 18px !important;
+    stroke: currentColor !important; stroke-width: 2 !important;
+    fill: none !important; stroke-linecap: round !important; stroke-linejoin: round !important;
+}
+.login-theme-toggle:hover {
+    background: rgba(56, 189, 248, 0.25) !important;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.7) !important;
+    transform: rotate(15deg) !important;
+}
+body.light-mode .login-theme-toggle {
+    background: #ffffff !important;
+    border-color: rgba(37, 99, 235, 0.35) !important;
+    color: #0284c7 !important;
+}
+body.light-mode .login-theme-toggle:hover {
+    background: #eff6ff !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Spinner */
+.spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
+    border-top-color: #fff; animation: spin 0.8s ease-in-out infinite;
+    vertical-align: middle; margin-right: 6px;
+}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-@media (max-width: 900px) {
-    .fut-container { grid-template-columns: 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
-    .fut-left { padding: 0; }
-    .fut-headline { font-size: 22px; margin-bottom: 4px; }
-    .fut-subheadline { font-size: 11.5px; margin-bottom: 10px; }
-    .fut-tagline { font-size: 9.5px; padding: 5px 12px; margin-bottom: 8px; }
-    .fut-characters { display: none; }
-    .fut-live-status { font-size: 10.5px; padding: 6px 12px; }
-    .fut-card { padding: 22px 18px; border-radius: 20px; }
-    .fut-logo { width: 70px; height: 70px; margin-bottom: 10px; padding: 8px; }
-    .login-tab { padding: 8px 10px; font-size: 11px; }
+/* Login Toast */
+.login-toast-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(6px);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 999999; opacity: 0; visibility: hidden; padding: 16px;
 }
+.login-toast-overlay.active { opacity: 1; visibility: visible; }
+.login-toast-card {
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+    padding: 32px 40px; border-radius: 24px; text-align: center;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    min-width: 240px;
+    box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
+}
+body.light-mode .login-toast-card {
+    background: #ffffff !important; border-color: rgba(56, 189, 248, 0.5) !important;
+}
+.login-toast-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+}
+.login-toast-icon svg { width: 40px; height: 40px; stroke: #ffffff; stroke-width: 3; fill: none; }
+.login-toast-title { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px; }
+body.light-mode .login-toast-title { color: #111827 !important; }
+.login-toast-subtitle { font-size: 13px; font-weight: 600; color: #94a3b8; }
+body.light-mode .login-toast-subtitle { color: #64748b !important; }
+.login-toast-name { color: #38bdf8; font-weight: 800; }
+body.light-mode .login-toast-name { color: #0284c7 !important; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    #login-screen { padding: 12px; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
+    .fut-container { grid-template-columns: 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
+    .fut-left { padding: 8px; }
+    .fut-headline { font-size: 24px; margin-bottom: 4px; }
+    .fut-subheadline { font-size: 12px; margin-bottom: 12px; }
+    .fut-tagline { font-size: 9.5px; padding: 5px 12px; margin-bottom: 10px; }
+    .fut-card { padding: 26px 20px 20px; border-radius: 20px; }
+    .fut-logo { width: 70px; height: 70px; margin-bottom: 12px; padding: 8px; }
+    .login-tab { padding: 8px 10px; font-size: 11px; }
+    .login-hero-title { font-size: 19px; }
+    .login-hero-sub { font-size: 12px; }
+    .fut-orb-1 { width: 250px; height: 250px; }
+    .fut-orb-2 { width: 200px; height: 200px; }
+    .fut-orb-3 { width: 220px; height: 220px; }
+}
+@media (max-width: 400px) {
+    .fut-card { padding: 22px 16px 18px; border-radius: 18px; }
+    .fut-headline { font-size: 22px; }
+    .login-hero-title { font-size: 18px; }
+    .btn-google { padding: 12px 14px; font-size: 13px; }
+    .btn-google-icon { width: 28px; height: 28px; }
+    .btn-google-text { font-size: 13px; }
+}
+
 @media (min-width: 768px) {
     .app-container { max-width: 720px; }
     .timer-box-wrapper { flex-direction: row; }
@@ -408,16 +752,24 @@ button {
 
 <!-- ========== LAYAR LOGIN ========== -->
 <div id="login-screen">
+    <div class="fut-grid"></div>
+    <div class="fut-orb fut-orb-1"></div>
+    <div class="fut-orb fut-orb-2"></div>
+    <div class="fut-orb fut-orb-3"></div>
+    <div class="fut-particles" id="fut-particles"></div>
+
     <div class="fut-container">
         <div class="fut-left">
             <div class="fut-tagline">
+                <span class="fut-dot"></span>
                 <span>SISTEM ANTRIAN DIGITAL</span>
             </div>
             <h1 class="fut-headline" id="fut-headline" style="opacity: 0; transition: opacity 0.4s ease;">
-                <span id="fut-headline-text"></span>
+                <span id="fut-headline-text">Antrian Walk-In Promotor</span>
             </h1>
             <p class="fut-subheadline" id="fut-subheadline">UFO Malang Kebonsari</p>
             <div class="fut-live-status">
+                <span class="fut-pulse-dot"></span>
                 <span id="live-status-text">Memuat...</span>
             </div>
         </div>
@@ -434,22 +786,40 @@ button {
                     <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='🛸';">
                 </div>
 
+                <div class="login-hero">
+                    <h1 class="login-hero-title">Selamat Datang</h1>
+                    <p class="login-hero-sub">Masuk untuk melanjutkan ke sistem antrian</p>
+                </div>
+
                 <div class="login-tabs">
                     <button type="button" class="login-tab active" id="tab-promotor" onclick="switchLoginTab('promotor')">PROMOTOR</button>
                     <button type="button" class="login-tab" id="tab-admin" onclick="switchLoginTab('admin')">ADMIN</button>
                 </div>
 
                 <!-- TOMBOL LOGIN GOOGLE -->
-                <button type="button" id="btn-login-google" class="fut-btn" onclick="loginDenganGoogle()" style="background: #ffffff; color: #333; border: 1px solid #ccc; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 20px; height: 20px; margin-right: 8px;">
-                    <span style="font-weight: 800; letter-spacing: 0.5px;">MASUK DENGAN GOOGLE</span>
+                <button type="button" id="btn-login-google" class="btn-google" onclick="loginDenganGoogle()">
+                    <span class="btn-google-icon">
+                        <svg viewBox="0 0 48 48" width="20" height="20">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                    </span>
+                    <span id="btn-login-google-text" class="btn-google-text">Lanjutkan dengan Google</span>
+                    <span class="btn-google-arrow">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
                 </button>
 
                 <!-- PEMBATAS -->
-                <div style="display: flex; align-items: center; margin-bottom: 16px; opacity: 0.5;">
-                    <div style="flex: 1; height: 1px; background: var(--border);"></div>
-                    <div style="padding: 0 10px; font-size: 11px; font-weight: 700; color: var(--text-muted);">ATAU PAKAI PIN</div>
-                    <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                <div class="login-divider">
+                    <div></div>
+                    <div>ATAU PAKAI PIN</div>
+                    <div></div>
                 </div>
 
                 <div id="form-promotor">
@@ -458,7 +828,7 @@ button {
                         <input type="hidden" id="login-pilih-sales" value="">
                         <div id="custom-select-trigger" onclick="toggleCustomSelect()" class="fut-select">
                             <span id="custom-select-label">-- Memuat daftar promotor --</span>
-                            <svg id="custom-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <svg id="custom-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;">
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </div>
@@ -478,7 +848,7 @@ button {
                     <input type="password" id="login-pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="off" class="fut-input">
                 </div>
 
-                <div id="login-error" class="fut-error" style="color: #ef4444; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-bottom: 8px;"></div>
+                <div id="login-error" class="fut-error" style="color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-bottom: 8px;"></div>
 
                 <button type="button" id="btn-login-promotor" class="fut-btn">
                     <span id="btn-login-text">MASUK</span>
@@ -820,6 +1190,86 @@ function applyBranding(setting) {
     if (headline) headline.style.opacity = '1';
 }
 
+/* ============================================================ */
+/* ========== PARTICLES (untuk login screen) ================== */
+/* ============================================================ */
+function initParticles() {
+    const container = document.getElementById('fut-particles');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < 25; i++) {
+        const p = document.createElement('div');
+        p.className = 'fut-particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (8 + Math.random() * 12) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        const colors = ['#22d3ee', '#a855f7', '#3b82f6'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = color;
+        p.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
+        container.appendChild(p);
+    }
+}
+
+/* ============================================================ */
+/* ========== LOGIN GOOGLE ==================================== */
+/* ============================================================ */
+async function loginDenganGoogle() {
+    const btn = document.getElementById('btn-login-google');
+    const txt = document.getElementById('btn-login-google-text');
+    const errEl = document.getElementById('login-error');
+    const asli = txt.innerText;
+    
+    btn.disabled = true;
+    txt.innerText = 'MEMPROSES...';
+    errEl.innerText = '';
+
+    try {
+        const result = await signInWithPopup(window.firebaseAuth, window.googleProvider);
+        const user = result.user;
+        
+        if (!user.email) throw new Error("Akun Google tidak mengirimkan email.");
+
+        const emailKey = user.email.replace(/\./g, ',');
+        const snap = await window.dbGet(window.dbRef(window.db, 'users/whitelist/' + emailKey));
+        
+        if (!snap.exists()) {
+            await signOut(window.firebaseAuth);
+            throw new Error(`Email (${user.email}) belum didaftarkan sebagai promotor. Hubungi admin.`);
+        }
+
+        const wl = snap.val();
+        if (wl.role === 'ADMIN') {
+            await signOut(window.firebaseAuth);
+            throw new Error("Akun ini adalah Admin. Silakan login lewat tab Admin.");
+        }
+
+        const namaTampil = wl.nama || user.displayName || user.email;
+        namaSalesAktifGlobal = namaTampil;
+        
+        localStorage.setItem('ufo_nama_sales_aktif', namaTampil);
+        localStorage.setItem('ufo_pin_verified', 'true');
+        localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
+        localStorage.setItem('ufo_login_google', 'true'); 
+
+        document.getElementById('login-toast-name').innerText = namaTampil;
+        const toast = document.getElementById('login-toast');
+        toast.classList.add('active');
+        
+        setTimeout(() => {
+            tampilkanAplikasiUtama();
+            btn.disabled = false; txt.innerText = asli;
+            setTimeout(() => { toast.classList.remove('active'); }, 800);
+        }, 1400);
+
+    } catch (err) {
+        console.error('Login Google gagal:', err);
+        errEl.innerText = '❌ ' + err.message;
+        btn.disabled = false;
+        txt.innerText = asli;
+    }
+}
+window.loginDenganGoogle = loginDenganGoogle;
 
 /* ============================================================ */
 /* ========== LOGIN TAB ======================================= */
@@ -1060,6 +1510,7 @@ window.prosesLoginPromotor = prosesLoginPromotor;
 /* ============================================================ */
 window.addEventListener('firebase-ready', () => {
     initDarkMode();
+    initParticles();
     resetCheckinHarianJikaPerlu();
     restoreAktivitasState();
     if (cekAdminSessionTersimpan()) {
@@ -2511,6 +2962,7 @@ window.eksekusiAktifNonaktifAkun = eksekusiAktifNonaktifAkun;
 /* ========== DOM CONTENT LOADED ============================== */
 /* ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
+    initParticles();
     const btnLogin = document.getElementById('btn-login-promotor');
     if (btnLogin) btnLogin.onclick = prosesLoginPromotor;
     const inputPin = document.getElementById('login-pin-input');

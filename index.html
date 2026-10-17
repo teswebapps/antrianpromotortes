@@ -12,7 +12,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update, remove, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDrrS4E_6e3G1DBfqkFbWoYLhdq6ZIzapg",
@@ -30,6 +30,9 @@
 
   window.firebaseAuth = auth;
   window.googleProvider = new GoogleAuthProvider();
+  window.firebaseSignOut = signOut;
+  window.firebaseSignInWithPopup = signInWithPopup;
+  window.firebaseSignInWithRedirect = signInWithRedirect;
 
   signInAnonymously(auth)
     .then(() => {
@@ -53,8 +56,50 @@
       alert("Gagal koneksi ke server. Cek koneksi internet dan refresh halaman.");
     });
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) setTimeout(() => location.reload(), 1000);
+  // Proses hasil login Google (setelah popup / redirect)
+  async function prosesLoginGoogle(user) {
+    if (!user) return;
+    try {
+      if (!user.email) {
+        await signOut(auth);
+        window.dispatchEvent(new CustomEvent('google-login-gagal', { detail: 'Akun Google tidak mengirimkan email.' }));
+        return;
+      }
+      const emailKey = user.email.replace(/\./g, ',');
+      const snap = await get(ref(db, 'users/whitelist/' + emailKey));
+      if (!snap.exists()) {
+        await signOut(auth);
+        window.dispatchEvent(new CustomEvent('google-login-gagal', { detail: `Email (${user.email}) belum didaftarkan sebagai promotor. Hubungi admin.` }));
+        return;
+      }
+      const wl = snap.val();
+      if (wl.role === 'ADMIN') {
+        await signOut(auth);
+        window.dispatchEvent(new CustomEvent('google-login-gagal', { detail: 'Akun ini adalah Admin. Silakan login lewat dashboard Admin.' }));
+        return;
+      }
+      const namaTampil = wl.nama || user.displayName || user.email;
+      window.dispatchEvent(new CustomEvent('google-login-sukses', { detail: { nama: namaTampil, email: user.email, uid: user.uid } }));
+    } catch (err) {
+      console.error('Verifikasi whitelist gagal:', err);
+      window.dispatchEvent(new CustomEvent('google-login-gagal', { detail: 'Gagal verifikasi akun: ' + err.message }));
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+    // Cek apakah user ini hasil login Google (bukan anonymous)
+    if (user.providerData && user.providerData.some(p => p.providerId === 'google.com')) {
+      await prosesLoginGoogle(user);
+    }
+  });
+
+  getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) await prosesLoginGoogle(result.user);
+  }).catch((err) => {
+    if (err.code !== 'auth/popup-closed-by-user') {
+      console.warn('Redirect result error:', err);
+    }
   });
 </script>
 
@@ -274,29 +319,27 @@ button {
 .popup-btn-text small { display: block; font-size: 10px; font-weight: 600; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
 
 /* ============================================================ */
-/* ========== LAYAR LOGIN — CYBERPUNK STYLE =================== */
+/* ========== LAYAR LOGIN — SAMA PERSIS DASHBOARD ============= */
 /* ============================================================ */
 #login-screen {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #050814; overflow: hidden; z-index: 99999;
+    background: #050814; z-index: 99999;
     display: flex; align-items: center; justify-content: center;
-    padding: 12px; height: 100dvh;
+    padding: 16px; overflow-y: auto;
 }
-body.light-mode #login-screen { background: #f1f5f9 !important; }
 
+/* Grid background */
 .fut-grid {
     position: fixed; inset: 0;
     background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px),
                       linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px);
-    background-size: 40px 40px; animation: futGridMove 20s linear infinite;
+    background-size: 40px 40px;
+    animation: futGridMove 20s linear infinite;
     pointer-events: none; z-index: 1;
-}
-body.light-mode .fut-grid {
-    background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important;
 }
 @keyframes futGridMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
 
+/* Orbs */
 .fut-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.6;
     animation: futOrbFloat 12s ease-in-out infinite; pointer-events: none; z-index: 1; }
 .fut-orb-1 { width: 400px; height: 400px; background: #0ea5e9; top: -100px; left: -100px; }
@@ -307,8 +350,8 @@ body.light-mode .fut-grid {
     33% { transform: translate(40px,-30px) scale(1.1); }
     66% { transform: translate(-30px,40px) scale(0.9); }
 }
-body.light-mode .fut-orb { opacity: 0.25 !important; filter: blur(100px) !important; }
 
+/* Particles */
 .fut-particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
 .fut-particle { position: absolute; width: 2px; height: 2px; border-radius: 50%;
     animation: futParticleFloat linear infinite; }
@@ -318,86 +361,73 @@ body.light-mode .fut-orb { opacity: 0.25 !important; filter: blur(100px) !import
     100% { transform: translateY(-100vh) scale(1); opacity: 0; }
 }
 
-.fut-container { position: relative; z-index: 10; display: grid;
-    grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
-    max-width: 1100px; width: 100%; animation: futFadeIn 0.8s ease-out; }
+/* Container */
+.fut-container {
+    position: relative; z-index: 10;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+    align-items: center; max-width: 1100px; width: 100%;
+    animation: futFadeIn 0.8s ease-out;
+}
 @keyframes futFadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Kiri */
 .fut-left { color: #ffffff; text-align: center; padding: 20px; }
-.fut-tagline { display: inline-flex; align-items: center; gap: 8px;
+.fut-tagline {
+    display: inline-flex; align-items: center; gap: 8px;
     padding: 6px 16px; background: rgba(14,165,233,0.1);
     border: 1px solid rgba(14,165,233,0.3); border-radius: 100px;
     font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #22d3ee;
-    margin-bottom: 20px; text-transform: uppercase; }
-body.light-mode .fut-tagline {
-    background: rgba(14, 165, 233, 0.12) !important;
-    border-color: rgba(14, 165, 233, 0.4) !important;
-    color: #0284c7 !important;
+    margin-bottom: 20px; text-transform: uppercase;
 }
 .fut-dot { width: 6px; height: 6px; background: #22d3ee; border-radius: 50%;
     box-shadow: 0 0 10px #22d3ee; animation: futDotPulse 1.5s infinite; }
-body.light-mode .fut-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
 @keyframes futDotPulse {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.5); opacity: 0.5; }
 }
 .fut-headline { font-size: 42px; font-weight: 900; margin: 0 0 8px 0;
     color: #ffffff; text-shadow: 0 0 30px rgba(34,211,238,0.5); line-height: 1.1; }
-body.light-mode .fut-headline { color: #0c4a6e !important; text-shadow: 0 0 30px rgba(34,211,238,0.3) !important; }
 .fut-subheadline { font-size: 14px; color: #94a3b8; font-weight: 500;
     margin: 0 0 30px 0; letter-spacing: 1px; }
-body.light-mode .fut-subheadline { color: #334155 !important; font-weight: 600 !important; }
-.fut-live-status { display: inline-flex; align-items: center; gap: 10px;
+.fut-characters { display: flex; justify-content: center; align-items: center; margin-bottom: 30px; }
+.fut-characters .team-3d-img { max-width: 100%; max-height: 260px; height: auto;
+    filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)); }
+.fut-live-status {
+    display: inline-flex; align-items: center; gap: 10px;
     padding: 10px 20px; background: rgba(5,8,20,0.6);
     border: 1px solid rgba(34,211,238,0.3); border-radius: 100px;
-    font-size: 12px; color: #e2e8f0; font-weight: 600; }
-body.light-mode .fut-live-status {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-color: rgba(14, 165, 233, 0.4) !important;
-    color: #075985 !important; font-weight: 700 !important;
-    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.15) !important;
+    font-size: 12px; color: #e2e8f0; font-weight: 600;
 }
-.fut-pulse-dot { width: 8px; height: 8px; background: #22d3ee;
-    border-radius: 50%; animation: futDotPulse 1.5s infinite; }
-body.light-mode .fut-pulse-dot { background: #0284c7 !important; box-shadow: 0 0 10px #0284c7 !important; }
+.fut-pulse-dot { width: 8px; height: 8px; background: #22d3ee; border-radius: 50%;
+    animation: futDotPulse 1.5s infinite; }
 
-.fut-right { display: flex; justify-content: center; position: relative; }
+/* Kanan */
+.fut-right { display: flex; justify-content: center; }
 
-/* ===== LOGIN CARD — MODERN CYBERPUNK ===== */
+/* Card login (persis dashboard) */
 .fut-card {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 24px;
-    padding: 32px 26px 24px;
+    width: 100%; max-width: 400px; border-radius: 24px; padding: 40px 32px;
     background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%);
     border: 1px solid rgba(56, 189, 248, 0.18);
     box-shadow:
         0 0 0 1px rgba(56, 189, 248, 0.08),
         0 20px 60px -20px rgba(56, 189, 248, 0.3),
         0 30px 80px -30px rgba(168, 85, 247, 0.25);
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
     animation: cardEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
     backdrop-filter: blur(24px);
-    max-height: 92vh;
-    overflow-y: auto;
 }
 .fut-card::before {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
+    content: ''; position: absolute; top: -50%; left: -50%;
     width: 200%; height: 200%;
     background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 0.15), transparent 30%);
-    animation: cardRotate 8s linear infinite;
-    pointer-events: none; z-index: 0;
+    animation: cardRotate 8s linear infinite; pointer-events: none; z-index: 0;
 }
 .fut-card::after {
-    content: '';
-    position: absolute; inset: 1px;
-    border-radius: 23px;
+    content: ''; position: absolute; inset: 1px; border-radius: 23px;
     background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
     z-index: 1; pointer-events: none;
 }
@@ -408,26 +438,14 @@ body.light-mode .fut-pulse-dot { background: #0284c7 !important; box-shadow: 0 0
 }
 @keyframes cardRotate { to { transform: rotate(360deg); } }
 
-body.light-mode .fut-card {
-    background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important;
-    border-color: rgba(56, 189, 248, 0.3) !important;
-    box-shadow:
-        0 0 0 1px rgba(56, 189, 248, 0.08),
-        0 20px 60px -20px rgba(56, 189, 248, 0.25),
-        0 30px 80px -30px rgba(168, 85, 247, 0.15) !important;
-}
-body.light-mode .fut-card::after {
-    background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important;
-}
-
-/* Logo */
+/* Logo (persis dashboard: pulse glow) */
 .fut-logo {
-    width: 80px; height: 80px; margin: 0 auto 14px;
+    width: 80px; height: 80px; margin: 0 auto 20px;
     background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.08)) !important;
     border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
-    border-radius: 18px;
+    border-radius: 22px;
     display: flex; align-items: center; justify-content: center;
-    padding: 10px;
+    padding: 12px;
     box-shadow:
         0 0 30px rgba(56, 189, 248, 0.35),
         inset 0 0 20px rgba(56, 189, 248, 0.15) !important;
@@ -439,64 +457,36 @@ body.light-mode .fut-card::after {
     50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25); }
 }
 .fut-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
-body.light-mode .fut-logo {
-    background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.05)) !important;
-}
 
-/* Login Hero */
-.login-hero { text-align: center; margin-bottom: 18px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
+/* Hero */
+.login-hero { text-align: center; margin-bottom: 22px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
 .login-hero-title {
-    font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0;
+    font-size: 24px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0;
     letter-spacing: -0.5px;
     background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-body.light-mode .login-hero-title {
-    background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.login-hero-sub { font-size: 12.5px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
-body.light-mode .login-hero-sub { color: #475569 !important; }
+.login-hero-sub { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Login Tabs */
-.login-tabs {
-    display: flex; gap: 6px; margin-bottom: 14px;
-    background: rgba(2, 6, 23, 0.5); padding: 5px; border-radius: 12px;
-    border: 1px solid rgba(56, 189, 248, 0.2); width: 100%;
-    animation: fadeUp 0.6s ease-out 0.2s backwards;
-}
-body.light-mode .login-tabs { background: #f1f5f9 !important; border-color: rgba(56, 189, 248, 0.3) !important; }
-.login-tab {
-    flex: 1; padding: 9px 12px; background: transparent; border: none; border-radius: 8px;
-    color: #94a3b8; font-size: 11.5px; font-weight: 800; letter-spacing: 1px;
-    text-transform: uppercase; cursor: pointer; font-family: inherit;
-    transition: all 0.25s ease;
-}
-.login-tab.active {
-    background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #ffffff;
-    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
-}
-body.light-mode .login-tab { color: #64748b !important; }
-body.light-mode .login-tab.active { background: linear-gradient(135deg, #38bdf8, #0ea5e9) !important; color: #ffffff !important; }
-
-/* Google Button */
+/* Tombol Google (persis dashboard) */
 .btn-google {
     width: 100%; padding: 14px 16px;
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     color: #111827; border: none; border-radius: 14px;
-    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-size: 14.5px; font-weight: 700; cursor: pointer;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     position: relative; overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
     animation: fadeUp 0.6s ease-out 0.25s backwards;
-    margin-bottom: 14px;
+    margin-top: 6px;
     text-transform: none;
     letter-spacing: 0.2px;
 }
@@ -509,139 +499,32 @@ body.light-mode .login-tab.active { background: linear-gradient(135deg, #38bdf8,
 .btn-google:hover::before { left: 100%; }
 .btn-google:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+    box-shadow:
+        0 12px 30px rgba(56, 189, 248, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.6) inset;
     background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
 }
 .btn-google:active { transform: translateY(0) scale(0.98); }
 .btn-google:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 .btn-google-icon {
-    width: 32px; height: 32px; background: #ffffff; border-radius: 10px;
+    width: 34px; height: 34px; background: #ffffff;
+    border-radius: 10px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease;
 }
 .btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg); }
-.btn-google-text { flex: 1; text-align: left; font-size: 14px; font-weight: 700; }
+.btn-google-text { flex: 1; text-align: left; font-size: 14.5px; font-weight: 700; letter-spacing: 0.2px; }
 .btn-google-arrow {
     display: flex; align-items: center; justify-content: center;
     color: #64748b; transition: all 0.3s ease; flex-shrink: 0;
 }
 .btn-google:hover .btn-google-arrow { color: #0284c7; transform: translateX(4px); }
 
-/* Divider */
-.login-divider {
-    display: flex; align-items: center; margin-bottom: 14px; opacity: 0.5;
-}
-.login-divider > div:first-child,
-.login-divider > div:last-child {
-    flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4);
-}
-.login-divider > div:nth-child(2) {
-    padding: 0 10px; font-size: 10.5px; font-weight: 700; color: #94a3b8;
-    letter-spacing: 0.5px;
-}
-body.light-mode .login-divider > div:nth-child(2) { color: #64748b !important; }
-
-/* Fields */
-.fut-field { margin-bottom: 12px; position: relative; animation: fadeUp 0.6s ease-out 0.3s backwards; }
-.fut-field label {
-    display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8;
-    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
-}
-body.light-mode .fut-field label { color: #64748b !important; }
-
-.fut-select {
-    width: 100%; padding: 11px 14px;
-    background: rgba(2, 6, 23, 0.6);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 12px;
-    color: #ffffff; font-size: 13px; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    transition: all 0.2s ease;
-}
-.fut-select:hover { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
-body.light-mode .fut-select {
-    background: #f8fafc !important; border-color: rgba(56, 189, 248, 0.4) !important; color: #111827 !important;
-}
-
-.fut-menu {
-    position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px;
-    background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    border-radius: 12px; max-height: 240px; overflow-y: auto; z-index: 999;
-    padding: 6px; opacity: 0; visibility: hidden; transform: translateY(-8px);
-    transition: all 0.2s; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-}
-.fut-menu.open { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
-.fut-menu .option {
-    padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600;
-    color: #e2e8f0; cursor: pointer;
-}
-.fut-menu .option:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-body.light-mode .fut-menu { background: #ffffff !important; border-color: rgba(56, 189, 248, 0.4) !important; }
-body.light-mode .fut-menu .option { color: #374151 !important; }
-body.light-mode .fut-menu .option:hover { background: rgba(56, 189, 248, 0.15) !important; color: #0284c7 !important; }
-
-.fut-input {
-    width: 100%; padding: 11px 14px;
-    background: rgba(2, 6, 23, 0.6);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 12px; color: #ffffff;
-    font-size: 18px; font-weight: 800; text-align: center;
-    letter-spacing: 6px; outline: none; transition: all 0.2s ease;
-}
-.fut-input:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
-body.light-mode .fut-input {
-    background: #f8fafc !important; border-color: rgba(56, 189, 248, 0.4) !important; color: #111827 !important;
-}
-
-.fut-input-admin {
-    width: 100%; padding: 11px 14px;
-    background: rgba(2, 6, 23, 0.6);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 12px; color: #ffffff;
-    font-size: 13px; font-weight: 600; outline: none;
-    letter-spacing: 1px; text-align: left;
-    text-transform: uppercase;
-    transition: all 0.2s ease;
-}
-.fut-input-admin:focus { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
-body.light-mode .fut-input-admin {
-    background: #f8fafc !important; border-color: rgba(56, 189, 248, 0.4) !important; color: #111827 !important;
-}
-
-/* Login Submit Button */
-.fut-btn {
-    width: 100%; padding: 13px;
-    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-    color: #ffffff; border: none; border-radius: 12px;
-    font-size: 13px; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 1.5px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-    margin-top: 6px;
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
-    transition: all 0.25s ease;
-    animation: fadeUp 0.6s ease-out 0.35s backwards;
-}
-.fut-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.6);
-}
-.fut-btn:active { transform: translateY(0) scale(0.98); }
-.fut-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-.fut-footer {
-    text-align: center; font-size: 11.5px; color: #94a3b8;
-    margin: 14px 0 0 0; font-weight: 500;
-}
-.fut-footer span { color: #38bdf8; font-weight: 700; }
-body.light-mode .fut-footer { color: #64748b !important; }
-body.light-mode .fut-footer span { color: #0284c7 !important; }
-
 /* Theme toggle */
 .login-theme-toggle {
     position: absolute !important;
-    top: 12px !important; right: 12px !important;
+    top: 14px !important; right: 14px !important;
     width: 38px !important; height: 38px !important;
     border-radius: 10px !important;
     border: 1px solid rgba(56, 189, 248, 0.4) !important;
@@ -662,15 +545,6 @@ body.light-mode .fut-footer span { color: #0284c7 !important; }
     background: rgba(56, 189, 248, 0.25) !important;
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.7) !important;
     transform: rotate(15deg) !important;
-}
-body.light-mode .login-theme-toggle {
-    background: #ffffff !important;
-    border-color: rgba(37, 99, 235, 0.35) !important;
-    color: #0284c7 !important;
-}
-body.light-mode .login-theme-toggle:hover {
-    background: #eff6ff !important;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
 }
 
 /* Spinner */
@@ -697,9 +571,6 @@ body.light-mode .login-theme-toggle:hover {
     min-width: 240px;
     box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
 }
-body.light-mode .login-toast-card {
-    background: #ffffff !important; border-color: rgba(56, 189, 248, 0.5) !important;
-}
 .login-toast-icon {
     width: 72px; height: 72px; border-radius: 50%;
     background: linear-gradient(135deg, #10b981, #059669);
@@ -709,38 +580,63 @@ body.light-mode .login-toast-card {
 }
 .login-toast-icon svg { width: 40px; height: 40px; stroke: #ffffff; stroke-width: 3; fill: none; }
 .login-toast-title { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px; }
-body.light-mode .login-toast-title { color: #111827 !important; }
 .login-toast-subtitle { font-size: 13px; font-weight: 600; color: #94a3b8; }
-body.light-mode .login-toast-subtitle { color: #64748b !important; }
 .login-toast-name { color: #38bdf8; font-weight: 800; }
-body.light-mode .login-toast-name { color: #0284c7 !important; }
 
-/* Responsive */
+/* ============================================================ */
+/* ========== RESPONSIVE — DI HP FULL SCREEN 1 KOLOM ========== */
+/* ============================================================ */
 @media (max-width: 900px) {
-    #login-screen { padding: 12px; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
-    .fut-container { grid-template-columns: 1fr; gap: 14px; max-width: 480px; margin: 0 auto; }
-    .fut-left { padding: 8px; }
-    .fut-headline { font-size: 24px; margin-bottom: 4px; }
-    .fut-subheadline { font-size: 12px; margin-bottom: 12px; }
-    .fut-tagline { font-size: 9.5px; padding: 5px 12px; margin-bottom: 10px; }
-    .fut-card { padding: 26px 20px 20px; border-radius: 20px; }
-    .fut-logo { width: 70px; height: 70px; margin-bottom: 12px; padding: 8px; }
-    .login-tab { padding: 8px 10px; font-size: 11px; }
-    .login-hero-title { font-size: 19px; }
+    #login-screen {
+        padding: 16px;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+    .fut-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+    .fut-left {
+        padding: 8px;
+    }
+    .fut-headline { font-size: 26px; margin-bottom: 4px; }
+    .fut-subheadline { font-size: 12px; margin-bottom: 14px; }
+    .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; }
+    .fut-characters { display: none; }
+    .fut-live-status { font-size: 11px; padding: 7px 14px; }
+    .fut-card { padding: 28px 22px; border-radius: 20px; }
+    .fut-logo { width: 70px; height: 70px; margin-bottom: 14px; padding: 10px; }
+    .login-hero-title { font-size: 20px; }
     .login-hero-sub { font-size: 12px; }
     .fut-orb-1 { width: 250px; height: 250px; }
     .fut-orb-2 { width: 200px; height: 200px; }
     .fut-orb-3 { width: 220px; height: 220px; }
 }
 @media (max-width: 400px) {
-    .fut-card { padding: 22px 16px 18px; border-radius: 18px; }
+    #login-screen { padding: 10px; }
+    .fut-container { gap: 12px; }
     .fut-headline { font-size: 22px; }
+    .fut-subheadline { font-size: 11px; margin-bottom: 10px; }
+    .fut-live-status { font-size: 10.5px; padding: 6px 12px; }
+    .fut-card { padding: 22px 18px; border-radius: 18px; }
+    .fut-logo { width: 60px; height: 60px; margin-bottom: 12px; padding: 8px; }
     .login-hero-title { font-size: 18px; }
+    .login-hero-sub { font-size: 11.5px; }
     .btn-google { padding: 12px 14px; font-size: 13px; }
-    .btn-google-icon { width: 28px; height: 28px; }
+    .btn-google-icon { width: 30px; height: 30px; }
     .btn-google-text { font-size: 13px; }
 }
 
+/* ============================================================ */
+/* ========== DARK MODE UNTUK LOGIN CARD ====================== */
+/* ============================================================ */
+body:not(.dark-mode) #login-screen {
+    background: #050814;
+}
+
+/* App container (halaman setelah login) */
 @media (min-width: 768px) {
     .app-container { max-width: 720px; }
     .timer-box-wrapper { flex-direction: row; }
@@ -748,9 +644,9 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
 }
 </style>
 </head>
-<body>
+<body class="login-active">
 
-<!-- ========== LAYAR LOGIN ========== -->
+<!-- ========== LAYAR LOGIN (GOOGLE ONLY) ========== -->
 <div id="login-screen">
     <div class="fut-grid"></div>
     <div class="fut-orb fut-orb-1"></div>
@@ -764,10 +660,15 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
                 <span class="fut-dot"></span>
                 <span>SISTEM ANTRIAN DIGITAL</span>
             </div>
-            <h1 class="fut-headline" id="fut-headline" style="opacity: 0; transition: opacity 0.4s ease;">
-                <span id="fut-headline-text">Antrian Walk-In Promotor</span>
+            <h1 class="fut-headline">
+                <span>Antrian Walk-In</span>
             </h1>
             <p class="fut-subheadline" id="fut-subheadline">UFO Malang Kebonsari</p>
+
+            <div class="fut-characters">
+                <img src="team-3d.png" alt="Tim Promotor UFO" class="team-3d-img" onerror="this.style.display='none';" />
+            </div>
+
             <div class="fut-live-status">
                 <span class="fut-pulse-dot"></span>
                 <span id="live-status-text">Memuat...</span>
@@ -776,14 +677,14 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
 
         <div class="fut-right">
             <div class="fut-card">
-                <button type="button" class="login-theme-toggle" id="btn-login-theme" onclick="toggleDarkMode()" title="Ganti tema">
-                    <svg id="login-theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="login-theme-toggle" onclick="toggleDarkMode()" title="Ganti tema">
+                    <svg viewBox="0 0 24 24">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
                 </button>
 
                 <div class="fut-logo">
-                    <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='🛸';">
+                    <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:32px;\'>🛸</span>';">
                 </div>
 
                 <div class="login-hero">
@@ -791,22 +692,16 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
                     <p class="login-hero-sub">Masuk untuk melanjutkan ke sistem antrian</p>
                 </div>
 
-                <div class="login-tabs">
-                    <button type="button" class="login-tab active" id="tab-promotor" onclick="switchLoginTab('promotor')">PROMOTOR</button>
-                    <button type="button" class="login-tab" id="tab-admin" onclick="switchLoginTab('admin')">ADMIN</button>
-                </div>
-
-                <!-- TOMBOL LOGIN GOOGLE -->
                 <button type="button" id="btn-login-google" class="btn-google" onclick="loginDenganGoogle()">
                     <span class="btn-google-icon">
-                        <svg viewBox="0 0 48 48" width="20" height="20">
+                        <svg viewBox="0 0 48 48" width="22" height="22">
                             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                             <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
                             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                         </svg>
                     </span>
-                    <span id="btn-login-google-text" class="btn-google-text">Lanjutkan dengan Google</span>
+                    <span id="btn-login-text" class="btn-google-text">Lanjutkan dengan Google</span>
                     <span class="btn-google-arrow">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12"/>
@@ -815,50 +710,7 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
                     </span>
                 </button>
 
-                <!-- PEMBATAS -->
-                <div class="login-divider">
-                    <div></div>
-                    <div>ATAU PAKAI PIN</div>
-                    <div></div>
-                </div>
-
-                <div id="form-promotor">
-                    <div class="fut-field">
-                        <label>Pilih Nama</label>
-                        <input type="hidden" id="login-pilih-sales" value="">
-                        <div id="custom-select-trigger" onclick="toggleCustomSelect()" class="fut-select">
-                            <span id="custom-select-label">-- Memuat daftar promotor --</span>
-                            <svg id="custom-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </div>
-                        <div id="custom-select-menu" class="fut-menu"></div>
-                    </div>
-                </div>
-
-                <div id="form-admin" style="display:none;">
-                    <div class="fut-field">
-                        <label>Username Admin</label>
-                        <input type="text" id="login-admin-username" class="fut-input-admin" placeholder="Masukkan username admin" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="fut-field">
-                    <label>Masukkan PIN</label>
-                    <input type="password" id="login-pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="off" class="fut-input">
-                </div>
-
-                <div id="login-error" class="fut-error" style="color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-bottom: 8px;"></div>
-
-                <button type="button" id="btn-login-promotor" class="fut-btn">
-                    <span id="btn-login-text">MASUK</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </button>
-
-                <p class="fut-footer">Belum punya PIN? <span>Hubungi admin</span></p>
+                <div id="login-error" style="color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-top: 12px;"></div>
             </div>
         </div>
     </div>
@@ -879,14 +731,6 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
     <div id="badge-status-sistem" class="status-badge-sistem status-open">
         <span class="dot"></span>
         <span id="badge-status-text">STATUS ANTRIAN: OPEN</span>
-    </div>
-
-    <div id="panel-login" style="display: none;">
-        <div class="input-group">
-            <label>Pilih Nama Anda (Kunci Perangkat)</label>
-            <select id="pilih-sales"><option value="">-- Pilih Nama Anda --</option></select>
-        </div>
-        <button type="button" class="btn-customer" onclick="simpanAkunHP()">Simpan & Kunci di HP Ini</button>
     </div>
 
     <div id="panel-menu-utama" style="display: none;">
@@ -946,39 +790,6 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
             <button type="button" id="btn-utama-ibadah" class="btn-indigo" onclick="aksiToggleIbadah()" style="display: none; margin-top: 10px;">SEDANG IBADAH</button>
             <button type="button" id="btn-keluar-istirahat" class="btn-maroon" onclick="bukaModalKeluarIstirahat()" style="display: none; margin-top: 10px;">KELUAR ANTRIAN</button>
         </div>
-
-        <div class="admin-panel-wrapper" id="admin-panel-wrapper" style="display:none;">
-            <div class="admin-menu-header">
-                <span class="judul" style="font-size:12px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:8px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
-                        <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-                        <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-                        <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
-                        <line x1="17" y1="16" x2="23" y2="16"/>
-                    </svg>
-                    Menu Admin
-                </span>
-            </div>
-            <div class="aktivitas-menu-grid">
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('operasional')">
-                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-                    <span class="aktivitas-menu-label">Operasional<br>Sistem</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('urutan')">
-                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
-                    <span class="aktivitas-menu-label">Manajemen<br>Urutan</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('darurat')">
-                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-                    <span class="aktivitas-menu-label">Tindakan<br>Darurat</span>
-                </button>
-                <button type="button" class="aktivitas-menu-btn" onclick="bukaPopupAdminAdmin('gps')">
-                    <span class="aktivitas-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-                    <span class="aktivitas-menu-label">Konfigurasi<br>GPS Toko</span>
-                </button>
-            </div>
-        </div>
     </div>
 
     <div style="margin-top: 20px; text-align: left;">
@@ -990,9 +801,7 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
 
     <div class="aktivitas-section">
         <div class="aktivitas-header-toggle" id="toggle-aktivitas" onclick="toggleAktivitasSection()">
-            <span class="judul">
-                Aktivitas Hari Ini
-            </span>
+            <span class="judul">Aktivitas Hari Ini</span>
             <span class="arrow" id="arrow-aktivitas">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px;"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
@@ -1029,7 +838,6 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
                     <span class="aktivitas-menu-label">Total Bulanan</span>
                 </button>
             </div>
-
             <div style="display:none;">
                 <ul id="list-bawa" class="aktivitas-list"></ul>
                 <ul id="list-ibadah" class="aktivitas-list"></ul>
@@ -1083,20 +891,6 @@ body.light-mode .login-toast-name { color: #0284c7 !important; }
 
 <script>
 /* ============================================================ */
-/* ========== HASH PIN HELPER ================================= */
-/* ============================================================ */
-async function hashPin(pin, salt) {
-    const data = new TextEncoder().encode(salt + ':' + pin);
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-function generateSalt() {
-    return crypto.randomUUID ? crypto.randomUUID() : 'salt_' + Math.random().toString(36).slice(2) + Date.now();
-}
-window.hashPin = hashPin;
-window.generateSalt = generateSalt;
-
-/* ============================================================ */
 /* ========== GLOBAL STATE ==================================== */
 /* ============================================================ */
 let daftarAntrianGlobal = [];
@@ -1118,11 +912,6 @@ let geolocationWatchId = null;
 let lockTimerInterval = null;
 let lockDataGlobal = null;
 let autoCleanupInterval = null;
-let loginModeGlobal = 'promotor';
-let adminSessionGlobal = null;
-let adminPinPromotorGlobal = {};
-let listenerAdminSiap = false;
-let customSelectOptions = [];
 const DURASI_PIN_VALID = 12 * 60 * 60 * 1000;
 
 const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -1170,13 +959,10 @@ function updateLiveStatus() {
 function applyBranding(setting) {
     if (!setting) return;
     const namaToko = setting.namaToko || "Nama Toko";
-    const namaSistem = setting.namaSistem || "Antrian Walk-In Promotor";
     const alamat = setting.alamat || "";
     const logoUrl = setting.logoUrl || "";
     const titleEl = document.getElementById('page-title');
-    if (titleEl) titleEl.innerText = `${namaSistem} - ${namaToko}`;
-    const headlineEl = document.getElementById('fut-headline-text');
-    if (headlineEl) headlineEl.innerText = namaSistem;
+    if (titleEl) titleEl.innerText = `Antrian Walk-In Promotor - ${namaToko}`;
     const subheadlineEl = document.getElementById('fut-subheadline');
     if (subheadlineEl) subheadlineEl.innerText = alamat ? `${namaToko} · ${alamat}` : namaToko;
     if (logoUrl) {
@@ -1186,12 +972,10 @@ function applyBranding(setting) {
             logoEl.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = '🛸'; };
         }
     }
-    const headline = document.getElementById('fut-headline');
-    if (headline) headline.style.opacity = '1';
 }
 
 /* ============================================================ */
-/* ========== PARTICLES (untuk login screen) ================== */
+/* ========== PARTICLES ======================================= */
 /* ============================================================ */
 function initParticles() {
     const container = document.getElementById('fut-particles');
@@ -1216,294 +1000,62 @@ function initParticles() {
 /* ============================================================ */
 async function loginDenganGoogle() {
     const btn = document.getElementById('btn-login-google');
-    const txt = document.getElementById('btn-login-google-text');
+    const txt = document.getElementById('btn-login-text');
     const errEl = document.getElementById('login-error');
     const asli = txt.innerText;
-    
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     btn.disabled = true;
     txt.innerText = 'MEMPROSES...';
     errEl.innerText = '';
 
     try {
-        const result = await signInWithPopup(window.firebaseAuth, window.googleProvider);
-        const user = result.user;
-        
-        if (!user.email) throw new Error("Akun Google tidak mengirimkan email.");
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
-        const emailKey = user.email.replace(/\./g, ',');
-        const snap = await window.dbGet(window.dbRef(window.db, 'users/whitelist/' + emailKey));
-        
-        if (!snap.exists()) {
-            await signOut(window.firebaseAuth);
-            throw new Error(`Email (${user.email}) belum didaftarkan sebagai promotor. Hubungi admin.`);
+        if (isMobile) {
+            await signInWithRedirect(window.firebaseAuth, provider);
+        } else {
+            await signInWithPopup(window.firebaseAuth, provider);
         }
-
-        const wl = snap.val();
-        if (wl.role === 'ADMIN') {
-            await signOut(window.firebaseAuth);
-            throw new Error("Akun ini adalah Admin. Silakan login lewat tab Admin.");
-        }
-
-        const namaTampil = wl.nama || user.displayName || user.email;
-        namaSalesAktifGlobal = namaTampil;
-        
-        localStorage.setItem('ufo_nama_sales_aktif', namaTampil);
-        localStorage.setItem('ufo_pin_verified', 'true');
-        localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
-        localStorage.setItem('ufo_login_google', 'true'); 
-
-        document.getElementById('login-toast-name').innerText = namaTampil;
-        const toast = document.getElementById('login-toast');
-        toast.classList.add('active');
-        
-        setTimeout(() => {
-            tampilkanAplikasiUtama();
-            btn.disabled = false; txt.innerText = asli;
-            setTimeout(() => { toast.classList.remove('active'); }, 800);
-        }, 1400);
-
     } catch (err) {
-        console.error('Login Google gagal:', err);
-        errEl.innerText = '❌ ' + err.message;
+        console.error('Login gagal:', err);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            errEl.innerText = '❌ ' + err.message;
+        }
         btn.disabled = false;
         txt.innerText = asli;
     }
 }
 window.loginDenganGoogle = loginDenganGoogle;
 
-/* ============================================================ */
-/* ========== LOGIN TAB ======================================= */
-/* ============================================================ */
-function switchLoginTab(mode) {
-    loginModeGlobal = mode;
-    const tabPromotor = document.getElementById('tab-promotor');
-    const tabAdmin = document.getElementById('tab-admin');
-    const formPromotor = document.getElementById('form-promotor');
-    const formAdmin = document.getElementById('form-admin');
-    const btnText = document.getElementById('btn-login-text');
-    const btnGoogle = document.getElementById('btn-login-google');
-    if (mode === 'promotor') {
-        tabPromotor.classList.add('active');
-        tabAdmin.classList.remove('active');
-        formPromotor.style.display = 'block';
-        formAdmin.style.display = 'none';
-        btnGoogle.style.display = 'flex';
-        if (btnText) btnText.innerText = 'MASUK';
-    } else {
-        tabAdmin.classList.add('active');
-        tabPromotor.classList.remove('active');
-        formPromotor.style.display = 'none';
-        formAdmin.style.display = 'block';
-        btnGoogle.style.display = 'none';
-        if (btnText) btnText.innerText = 'MASUK ADMIN';
-    }
+/* Event listener hasil Google login */
+window.addEventListener('google-login-sukses', (e) => {
+    const data = e.detail;
+    namaSalesAktifGlobal = data.nama;
+    localStorage.setItem('ufo_nama_sales_aktif', data.nama);
+    localStorage.setItem('ufo_pin_verified', 'true');
+    localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
+    localStorage.setItem('ufo_login_google', 'true');
+
+    document.getElementById('login-toast-name').innerText = data.nama;
+    const toast = document.getElementById('login-toast');
+    toast.classList.add('active');
+
+    setTimeout(() => {
+        tampilkanAplikasiUtama();
+        setTimeout(() => { toast.classList.remove('active'); }, 800);
+    }, 1200);
+});
+
+window.addEventListener('google-login-gagal', (e) => {
     const errEl = document.getElementById('login-error');
-    if (errEl) errEl.innerText = '';
-}
-window.switchLoginTab = switchLoginTab;
-
-function tampilkanAplikasiUtamaAdmin(namaAdmin) {
-    const loginScreen = document.getElementById('login-screen');
-    const appContainer = document.getElementById('app-container');
-    if (loginScreen) loginScreen.style.display = 'none';
-    if (appContainer) appContainer.style.display = 'block';
-    document.getElementById('panel-login').style.display = 'none';
-    document.getElementById('panel-menu-utama').style.display = 'block';
-    document.getElementById('label-user-aktif').innerHTML = `<span style="color:var(--primary);">● ADMIN</span> — ${namaAdmin}`;
-    const btnLogoutTop = document.getElementById('btn-logout-top');
-    if (btnLogoutTop) btnLogoutTop.style.display = 'block';
-    document.body.classList.add('admin-mode');
-    document.getElementById('admin-panel-wrapper').style.display = 'block';
-    renderUI();
-    renderAktivitas();
-    renderRekapBawaCustomer();
-    if (typeof mulaiListenerFirebaseAdmin === 'function') mulaiListenerFirebaseAdmin();
-}
-
-function cekAdminSessionTersimpan() {
-    const saved = localStorage.getItem('ufo_antrian_admin_session');
-    if (!saved) return false;
-    try {
-        const data = JSON.parse(saved);
-        if (data && data.role === 'ADMIN') {
-            adminSessionGlobal = data;
-            tampilkanAplikasiUtamaAdmin(data.nama || data.username);
-            return true;
-        }
-    } catch (e) {}
-    return false;
-}
-window.cekAdminSessionTersimpan = cekAdminSessionTersimpan;
-window.tampilkanAplikasiUtamaAdmin = tampilkanAplikasiUtamaAdmin;
-
-async function loginAdminInternal() {
-    const errEl = document.getElementById('login-error');
-    const btn = document.getElementById('btn-login-promotor');
-    const pin = document.getElementById('login-pin-input').value.trim();
-    const username = document.getElementById('login-admin-username').value.trim().toUpperCase();
-    errEl.style.color = '#f87171';
-    errEl.innerText = '';
-    if (!username) { errEl.innerText = 'Masukkan username admin!'; return; }
-    if (!/^\d{6}$/.test(pin)) { errEl.innerText = 'PIN harus 6 digit angka'; return; }
-    const asli = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
-    try {
-        const snap = await window.dbGet(window.dbRef(window.db, 'users/admin'));
-        if (!snap.exists()) { errEl.innerText = 'Belum ada admin terdaftar.'; btn.disabled = false; btn.innerHTML = asli; return; }
-        const admins = snap.val();
-        let foundKey = null, foundData = null;
-        Object.keys(admins).forEach(k => {
-            const a = admins[k];
-            if (a && String(a.username || '').toUpperCase() === username) { foundKey = k; foundData = a; }
-        });
-        if (!foundKey) { errEl.innerText = 'Username admin tidak ditemukan.'; btn.disabled = false; btn.innerHTML = asli; return; }
-        if (String(foundData.pin) !== pin) {
-            errEl.innerText = 'PIN admin salah!';
-            document.getElementById('login-pin-input').value = '';
-            btn.disabled = false; btn.innerHTML = asli; return;
-        }
-        if (foundData.aktif === false) { errEl.innerText = 'Akun admin ini tidak aktif.'; btn.disabled = false; btn.innerHTML = asli; return; }
-        const adminSession = { key: foundKey, username: foundData.username, nama: foundData.nama || foundData.username, role: 'ADMIN' };
-        localStorage.setItem('ufo_antrian_admin_session', JSON.stringify(adminSession));
-        adminSessionGlobal = adminSession;
-        document.getElementById('login-toast-name').innerText = foundData.nama || foundData.username;
-        const toast = document.getElementById('login-toast');
-        toast.classList.add('active');
-        setTimeout(() => {
-            tampilkanAplikasiUtamaAdmin(foundData.nama || foundData.username);
-            document.getElementById('login-pin-input').value = '';
-            document.getElementById('login-admin-username').value = '';
-            errEl.innerText = '';
-            btn.disabled = false; btn.innerHTML = asli;
-            setTimeout(() => { toast.classList.remove('active'); }, 800);
-        }, 1400);
-    } catch (e) {
-        console.error('Error login admin:', e);
-        errEl.innerText = 'Gagal koneksi. Coba lagi.';
-        btn.disabled = false; btn.innerHTML = asli;
-    }
-}
-
-/* ============================================================ */
-/* ========== FUNGSI LOGIN PROMOTOR (PIN) ===================== */
-/* ============================================================ */
-async function prosesLoginPromotor() {
-    const errEl = document.getElementById('login-error');
-    const btn = document.getElementById('btn-login-promotor');
-    const asli = btn.innerHTML;
-    
-    if (loginModeGlobal === 'admin') return loginAdminInternal();
-    
-    const namaPilih = document.getElementById('login-pilih-sales').value;
-    const pin = document.getElementById('login-pin-input').value.trim();
-    errEl.style.color = '#f87171';
-    errEl.innerText = '';
-    
-    if (!namaPilih) { errEl.innerText = 'Silakan pilih nama Anda!'; return; }
-    if (!/^\d{6}$/.test(pin)) { errEl.innerText = 'PIN harus 6 digit angka'; return; }
-    
-    const clean = sanitizeNama(namaPilih);
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Memeriksa...';
-    
-    try {
-        const snapLock = await window.dbGet(window.dbRef(window.db, 'lockPromotor/' + clean));
-        if (snapLock.exists()) {
-            const lockData = snapLock.val();
-            if (lockData && lockData.locked) {
-                const sekarang = waktuServer();
-                const waktuMulai = Number(lockData.waktuMulaiLock) || 0;
-                const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
-                const sudahMulai = waktuMulai === 0 || sekarang >= waktuMulai;
-                const belumExpired = waktuExpired === 0 || sekarang < waktuExpired;
-                if (sudahMulai && belumExpired) {
-                    let sisaTeks = 'tanpa batas waktu';
-                    if (waktuExpired > 0) {
-                        const sisaMenit = Math.ceil((waktuExpired - sekarang) / 60000);
-                        sisaTeks = `${sisaMenit} menit lagi`;
-                    }
-                    errEl.innerText = `🔒 Akun dikunci: ${lockData.alasan || '-'} (${sisaTeks})`;
-                    btn.disabled = false; btn.innerHTML = asli; return;
-                }
-            }
-        }
-        
-        const snapAkun = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
-        let pakaiHash = false;
-        let pinHashDB = null, pinSaltDB = null, wajibGanti = false;
-        if (snapAkun.exists()) {
-            const akun = snapAkun.val();
-            if (akun.aktif === false) {
-                errEl.innerText = 'Akun dinonaktifkan. Hubungi admin.';
-                btn.disabled = false; btn.innerHTML = asli; return;
-            }
-            if (akun.pinHash && akun.pinSalt) {
-                pakaiHash = true;
-                pinHashDB = akun.pinHash;
-                pinSaltDB = akun.pinSalt;
-                wajibGanti = akun.wajibGantiPin === true;
-            }
-        }
-        
-        if (pakaiHash) {
-            const hashInput = await hashPin(pin, pinSaltDB);
-            if (hashInput !== pinHashDB) {
-                errEl.innerText = '❌ PIN salah. Coba lagi.';
-                document.getElementById('login-pin-input').value = '';
-                btn.disabled = false; btn.innerHTML = asli; return;
-            }
-        } else {
-            const snapPin = await window.dbGet(window.dbRef(window.db, 'pinPromotor/' + clean));
-            if (!snapPin.exists()) { errEl.innerText = 'PIN belum diatur. Hubungi admin.'; btn.disabled = false; btn.innerHTML = asli; return; }
-            const pinBenar = String(snapPin.val()).trim();
-            if (pin !== pinBenar) {
-                errEl.innerText = '❌ PIN salah. Coba lagi.';
-                document.getElementById('login-pin-input').value = '';
-                window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), {
-                    nama: namaPilih, aksi: "PIN_Salah", waktu: waktuServer(),
-                    tanggal: getTanggalIndo(), hasil: "PIN Salah", kategori: "Keamanan", sumber: "Login"
-                }).catch(() => {});
-                btn.disabled = false; btn.innerHTML = asli; return;
-            }
-            const salt = generateSalt();
-            const pinHash = await hashPin(pin, salt);
-            await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
-                namaAbsen: namaPilih, namaSales: namaPilih, merk: '', aktif: true,
-                pinHash: pinHash, pinSalt: salt, wajibGantiPin: true
-            });
-            wajibGanti = true;
-        }
-        
-        namaSalesAktifGlobal = namaPilih;
-        localStorage.setItem('ufo_nama_sales_aktif', namaPilih);
-        localStorage.setItem('ufo_pin_verified', 'true');
-        localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
-        localStorage.setItem('ufo_login_google', 'false');
-        document.getElementById('login-toast-name').innerText = namaPilih;
-        const toast = document.getElementById('login-toast');
-        toast.classList.add('active');
-        
-        setTimeout(() => {
-            tampilkanAplikasiUtama();
-            document.getElementById('login-pin-input').value = '';
-            errEl.innerText = '';
-            btn.disabled = false; btn.innerHTML = asli;
-            setTimeout(() => { toast.classList.remove('active'); }, 800);
-            if (wajibGanti) {
-                setTimeout(() => {
-                    tampilkanModal("⚠️ WAJIB GANTI PIN",
-                        "Ini login pertama Anda. Silakan ganti PIN untuk keamanan.\n\nHubungi admin kalau tidak bisa ganti.");
-                }, 500);
-            }
-        }, 1400);
-    } catch (e) {
-        console.error('Error login:', e);
-        errEl.innerText = 'Gagal koneksi. Coba lagi.';
-        btn.disabled = false; btn.innerHTML = asli;
-    }
-}
-window.prosesLoginPromotor = prosesLoginPromotor;
+    if (errEl) errEl.innerText = '❌ ' + e.detail;
+    const btn = document.getElementById('btn-login-google');
+    const txt = document.getElementById('btn-login-text');
+    if (btn) btn.disabled = false;
+    if (txt) txt.innerText = 'Lanjutkan dengan Google';
+});
 
 /* ============================================================ */
 /* ========== FIREBASE READY ================================== */
@@ -1513,11 +1065,7 @@ window.addEventListener('firebase-ready', () => {
     initParticles();
     resetCheckinHarianJikaPerlu();
     restoreAktivitasState();
-    if (cekAdminSessionTersimpan()) {
-        inisialisasiRealtimeFirebase();
-        cekPINVerification();
-        return;
-    }
+
     const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
     const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
     const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
@@ -1536,12 +1084,12 @@ window.addEventListener('firebase-ready', () => {
 });
 
 function tampilkanAplikasiUtama() {
+    document.body.classList.remove('login-active');
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
     if (loginScreen) loginScreen.style.display = 'none';
     if (appContainer) appContainer.style.display = 'block';
     const cachedNama = getAkunAktif();
-    document.getElementById('panel-login').style.display = 'none';
     document.getElementById('panel-menu-utama').style.display = 'block';
     document.getElementById('label-user-aktif').innerText = cachedNama;
     const btnLogoutTop = document.getElementById('btn-logout-top');
@@ -1552,6 +1100,7 @@ function tampilkanAplikasiUtama() {
 }
 
 function tampilkanLayarLogin() {
+    document.body.classList.add('login-active');
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
     if (loginScreen) loginScreen.style.display = 'flex';
@@ -1772,7 +1321,6 @@ function sembunyikanLockTimer() {
 }
 
 function prosesMasterSales(dataRaw) {
-    let selectHtml = '<option value="">-- Pilih Nama Anda --</option>';
     let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw);
     let names = [];
     listSales.forEach(item => {
@@ -1782,11 +1330,7 @@ function prosesMasterSales(dataRaw) {
         if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim());
     });
     names = [...new Set(names)].sort();
-    names.forEach(n => { selectHtml += `<option value="${n}">${n}</option>`; });
-    const selectEl = document.getElementById('pilih-sales');
-    if (selectEl) selectEl.innerHTML = selectHtml;
     masterSalesGlobal = names.map(n => ({ nama: n }));
-    renderCustomSelectOptions(names);
 }
 
 function getAkunAktif() {
@@ -1795,67 +1339,10 @@ function getAkunAktif() {
 }
 
 /* ============================================================ */
-/* ========== CUSTOM SELECT =================================== */
-/* ============================================================ */
-function toggleCustomSelect() {
-    const menu = document.getElementById('custom-select-menu');
-    const trigger = document.getElementById('custom-select-trigger');
-    if (!menu || !trigger) return;
-    const isOpen = menu.classList.contains('open');
-    if (isOpen) { menu.classList.remove('open'); trigger.classList.remove('open'); }
-    else { menu.classList.add('open'); trigger.classList.add('open'); }
-}
-window.toggleCustomSelect = toggleCustomSelect;
-
-function pilihOpsiCustom(value, label) {
-    const hidden = document.getElementById('login-pilih-sales');
-    const labelEl = document.getElementById('custom-select-label');
-    const menu = document.getElementById('custom-select-menu');
-    const trigger = document.getElementById('custom-select-trigger');
-    if (!hidden || !labelEl) return;
-    hidden.value = value;
-    labelEl.innerText = label;
-    menu.querySelectorAll('.option').forEach(opt => { opt.classList.toggle('selected', opt.dataset.value === value); });
-    menu.classList.remove('open');
-    trigger.classList.remove('open');
-}
-window.pilihOpsiCustom = pilihOpsiCustom;
-
-function renderCustomSelectOptions(names) {
-    const menu = document.getElementById('custom-select-menu');
-    const labelEl = document.getElementById('custom-select-label');
-    if (!menu || !labelEl) return;
-    customSelectOptions = names;
-    if (!names || names.length === 0) {
-        menu.innerHTML = '<div class="option empty">-- Belum ada promotor --</div>';
-        labelEl.innerText = '-- Memuat daftar promotor --';
-        return;
-    }
-    labelEl.innerText = '-- Pilih Nama Anda --';
-    menu.innerHTML = names.map(n => {
-        const safe = String(n).replace(/"/g, '&quot;');
-        const safeJs = safe.replace(/'/g, "\\'");
-        return `<div class="option" data-value="${safe}" onclick="pilihOpsiCustom('${safeJs}', '${safeJs}')">${n}</div>`;
-    }).join('');
-}
-document.addEventListener('click', (e) => {
-    const wrap = document.getElementById('custom-select-trigger');
-    const menu = document.getElementById('custom-select-menu');
-    if (!wrap || !menu) return;
-    if (!wrap.contains(e.target) && !menu.contains(e.target)) { menu.classList.remove('open'); wrap.classList.remove('open'); }
-});
-
-/* ============================================================ */
 /* ========== LOGOUT ========================================== */
 /* ============================================================ */
 function logoutPromotor() {
-    const isAdmin = document.body.classList.contains('admin-mode');
-    const pesan = isAdmin ? 'Yakin logout dari akun ADMIN?' : 'Yakin ingin logout dari akun ini?\n\nAnda harus memasukkan PIN lagi untuk masuk.';
-    tampilkanModalKonfirmasi("Logout", pesan, () => {
-        localStorage.removeItem('ufo_antrian_admin_session');
-        adminSessionGlobal = null;
-        document.body.classList.remove('admin-mode');
-        document.getElementById('admin-panel-wrapper').style.display = 'none';
+    tampilkanModalKonfirmasi("Logout", "Yakin ingin logout dari akun ini?\n\nAnda harus login Google lagi untuk masuk.", async () => {
         localStorage.removeItem('ufo_nama_sales_aktif');
         localStorage.removeItem('ufo_pin_verified');
         localStorage.removeItem('ufo_pin_verified_at');
@@ -1863,23 +1350,11 @@ function logoutPromotor() {
         localStorage.removeItem('ufo_checkin_tanggal');
         localStorage.removeItem('ufo_login_google');
         namaSalesAktifGlobal = '';
-        document.getElementById('login-pin-input').value = '';
-        document.getElementById('login-pilih-sales').value = '';
-        const admU = document.getElementById('login-admin-username');
-        if (admU) admU.value = '';
-        const labelEl = document.getElementById('custom-select-label');
-        if (labelEl) labelEl.innerText = '-- Pilih Nama Anda --';
-        const menuEl = document.getElementById('custom-select-menu');
-        if (menuEl) menuEl.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-        document.getElementById('login-error').innerText = '';
-        switchLoginTab('promotor');
+        try { await window.firebaseSignOut(window.firebaseAuth); } catch(e) {}
         tampilkanLayarLogin();
     });
 }
 window.logoutPromotor = logoutPromotor;
-
-function simpanAkunHP() { tampilkanLayarLogin(); }
-window.simpanAkunHP = simpanAkunHP;
 
 /* ============================================================ */
 /* ========== GPS & PETA ====================================== */
@@ -2404,8 +1879,6 @@ const SVG_ICON_MOON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
 const SVG_ICON_SUN = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
 
 function updateThemeIcons(isDark) {
-    const loginIcon = document.getElementById('login-theme-icon');
-    if (loginIcon) loginIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
     const btnIcon = document.getElementById('btn-toggle-dark-icon');
     const btnText = document.getElementById('btn-toggle-dark-text');
     if (btnIcon) btnIcon.innerHTML = isDark ? SVG_ICON_SUN : SVG_ICON_MOON;
@@ -2504,472 +1977,10 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupPopupAktivitas(); });
 
 /* ============================================================ */
-/* ========== MENU ADMIN ====================================== */
-/* ============================================================ */
-function mulaiListenerFirebaseAdmin() {
-    if (listenerAdminSiap) return;
-    listenerAdminSiap = true;
-    const db = window.db;
-    window.dbOnValue(window.dbRef(db, 'pinPromotor'), (snap) => { adminPinPromotorGlobal = snap.val() || {}; });
-}
-
-function bukaPopupAdminAdmin(jenis) {
-    const popup = document.getElementById('popup-aktivitas');
-    const title = document.getElementById('popup-aktivitas-title');
-    const body = document.getElementById('popup-aktivitas-body');
-    if (!popup || !title || !body) return;
-    const ICONS = {
-        buka: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`,
-        tutup: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
-        branding: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
-        tambahAntri: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
-        tambahSales: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
-        pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-        hapus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
-        keluarkan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-        paksa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-        lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-        reset: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
-        gpsOn: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-        gpsOff: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`,
-        userPlus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
-        key: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
-        userCog: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><circle cx="19" cy="11" r="2"/><path d="M19 8v1"/><path d="M19 13v1"/><path d="M22 11h-1"/><path d="M16 11h-1"/></svg>`
-    };
-    const headers = { operasional: 'Operasional Sistem', urutan: 'Manajemen Urutan', darurat: 'Tindakan Darurat', gps: 'Konfigurasi GPS Toko' };
-    let html = '';
-    if (jenis === 'operasional') {
-        title.innerText = headers.operasional;
-        const sedangBuka = statusSistemGlobal === "BUKA";
-        let tombolUtama = sedangBuka
-            ? `<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('TUTUP')"><span class="popup-btn-icon">${ICONS.tutup}</span><span class="popup-btn-text">Tutup Sistem Antrian<small>Hentikan sementara antrian</small></span></button>`
-            : `<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalToggleSistem('BUKA')"><span class="popup-btn-icon">${ICONS.buka}</span><span class="popup-btn-text">Buka Sistem Antrian<small>Aktifkan kembali antrian</small></span></button>`;
-        html = `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; ${sedangBuka ? 'background:rgba(5,150,105,0.15); color:#34d399;' : 'background:rgba(220,38,38,0.15); color:#f87171;'}">${sedangBuka ? '✅ Sistem Sedang BUKA' : '❌ Sistem Sedang TUTUP'}</div>${tombolUtama}<button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalBranding()"><span class="popup-btn-icon">${ICONS.branding}</span><span class="popup-btn-text">Pengaturan Branding<small>Nama, logo & lokasi toko</small></span></button>`;
-    } else if (jenis === 'urutan') {
-        title.innerText = headers.urutan;
-        html = `
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAntriAdmin()"><span class="popup-btn-icon">${ICONS.tambahAntri}</span><span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahMasterSales()"><span class="popup-btn-icon">${ICONS.tambahSales}</span><span class="popup-btn-text">Tambah Nama Promotor Baru<small>Daftarkan promotor baru</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKelolaPIN()"><span class="popup-btn-icon">${ICONS.pin}</span><span class="popup-btn-text">Buat PIN Promotor<small>Atur kode akses login</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalKeluarkanAntrian()"><span class="popup-btn-icon">${ICONS.keluarkan}</span><span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan aktif</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalHapusMasterSales()"><span class="popup-btn-icon">${ICONS.hapus}</span><span class="popup-btn-text">Hapus Nama Permanen<small>Hapus dari daftar promotor</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalTambahAkunPromotor()"><span class="popup-btn-icon">${ICONS.userPlus}</span><span class="popup-btn-text">Tambah Akun Promotor<small>Buat akun + PIN awal 123456</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetPinAkun()"><span class="popup-btn-icon">${ICONS.key}</span><span class="popup-btn-text">Reset PIN ke 123456<small>Untuk promotor lupa PIN</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalAktifNonaktifAkun()"><span class="popup-btn-icon">${ICONS.userCog}</span><span class="popup-btn-text">Aktif/Nonaktifkan Akun<small>Blokir atau buka akun</small></span></button>
-        `;
-    } else if (jenis === 'darurat') {
-        title.innerText = headers.darurat;
-        html = `
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalPaksaBawaCustomer()"><span class="popup-btn-icon">${ICONS.paksa}</span><span class="popup-btn-text">Paksa Bawa Customer<small>Set promotor langsung melayani</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalLockPromotorAdmin()"><span class="popup-btn-icon">${ICONS.lock}</span><span class="popup-btn-text">Kontrol Hukuman / Lock Akun<small>Kunci/buka akun promotor</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); bukaModalResetTotal()"><span class="popup-btn-icon">${ICONS.reset}</span><span class="popup-btn-text">Reset Seluruh Antrian Aktif<small>Hapus semua antrian hari ini</small></span></button>
-        `;
-    } else if (jenis === 'gps') {
-        title.innerText = headers.gps;
-        const aktif = koordinatToko.lat && koordinatToko.lng;
-        const statusHtml = aktif
-            ? `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; background:rgba(5,150,105,0.15); color:#34d399;">📍 GPS Aktif — Radius ${koordinatToko.radius}m</div>`
-            : `<div style="padding:10px; margin-bottom:12px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; background:rgba(220,38,38,0.15); color:#f87171;">❌ GPS Nonaktif — Check-in bebas</div>`;
-        html = `${statusHtml}
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(true)"><span class="popup-btn-icon">${ICONS.gpsOn}</span><span class="popup-btn-text">Aktifkan GPS Toko<small>Ambil koordinat HP sekarang</small></span></button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitas(); toggleGPSAdmin(false)"><span class="popup-btn-icon">${ICONS.gpsOff}</span><span class="popup-btn-text">Matikan GPS Toko<small>Promotor bebas check-in</small></span></button>`;
-    }
-    body.innerHTML = html;
-    popup.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-window.bukaPopupAdminAdmin = bukaPopupAdminAdmin;
-
-/* ============================================================ */
-/* ========== MODAL ADMIN ===================================== */
-/* ============================================================ */
-function bukaModalToggleSistem(target) {
-    tampilkanModalKonfirmasi(target === 'BUKA' ? 'Mulai Antrian' : 'Hentikan Antrian', `Ubah status sistem menjadi: ${target}?`, () => {
-        window.dbUpdate(window.dbRef(window.db, 'setting'), { statusAntrian: target }).then(() => tampilkanModal("Berhasil", `Sistem antrian: ${target}`));
-    });
-}
-window.bukaModalToggleSistem = bukaModalToggleSistem;
-
-function bukaModalBranding() {
-    const s = window.settingGlobal || {};
-    document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding";
-    document.getElementById('modal-desc').innerHTML = `
-        <label style="font-size:11px; font-weight:700;">Nama Sistem:</label><br>
-        <input type="text" id="branding-nama-sistem" value="${(s.namaSistem||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
-        <label style="font-size:11px; font-weight:700;">Nama Toko:</label><br>
-        <input type="text" id="branding-nama-toko" value="${(s.namaToko||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">
-        <label style="font-size:11px; font-weight:700;">URL Logo:</label><br>
-        <input type="url" id="branding-logo-url" value="${(s.logoUrl||'').replace(/"/g,'&quot;')}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-    `;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="simpanBranding()">Simpan</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalBranding = bukaModalBranding;
-
-async function simpanBranding() {
-    const namaSistem = document.getElementById('branding-nama-sistem').value.trim();
-    const namaToko = document.getElementById('branding-nama-toko').value.trim();
-    const logoUrl = document.getElementById('branding-logo-url').value.trim();
-    if (!namaSistem || !namaToko) { tampilkanModal("Perhatian", "Nama tidak boleh kosong!"); return; }
-    try { await window.dbUpdate(window.dbRef(window.db, 'setting'), { namaSistem, namaToko, logoUrl }); tutupModal(); tampilkanModal("Berhasil", "Branding tersimpan."); }
-    catch (e) { tampilkanModal("Gagal", "Error: " + e.message); }
-}
-window.simpanBranding = simpanBranding;
-
-function bukaModalTambahAntriAdmin() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Masukkan Promotor ke Antrian";
-    document.getElementById('modal-desc').innerHTML = `Kategori:<br><select id="admin-select-kategori" style="margin-bottom:10px;"><option value="HA">HA</option><option value="AV">AV</option></select><br>Promotor:<br><select id="admin-select-sales" style="margin-bottom:10px;">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahAntri()">Proses</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalTambahAntriAdmin = bukaModalTambahAntriAdmin;
-
-async function eksekusiTambahAntri() {
-    const kat = document.getElementById('admin-select-kategori').value;
-    const nama = document.getElementById('admin-select-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    const now = waktuServer();
-    try {
-        await window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama, status: "Standby", waktuStandby: now, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 });
-        tutupModal();
-        tampilkanModal("Berhasil", `${nama} masuk antrian ${kat}.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiTambahAntri = eksekusiTambahAntri;
-
-function bukaModalTambahMasterSales() {
-    document.getElementById('modal-title').innerText = "Tambah Promotor Baru";
-    document.getElementById('modal-desc').innerHTML = `Nama Promotor:<br><input type="text" id="input-nama-baru" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiTambahSales()">Simpan</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalTambahMasterSales = bukaModalTambahMasterSales;
-
-async function eksekusiTambahSales() {
-    const nama = document.getElementById('input-nama-baru').value.trim();
-    if (!nama) { tampilkanModal("Perhatian", "Nama kosong!"); return; }
-    try { await window.dbPush(window.dbRef(window.db, 'data'), { record: { NAMA_PROMOTOR: nama } }); tutupModal(); tampilkanModal("Berhasil", `Promotor ${nama} ditambahkan.`); }
-    catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiTambahSales = eksekusiTambahSales;
-
-function bukaModalKelolaPIN() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => { const clean = sanitizeNama(n.nama); const ada = adminPinPromotorGlobal[clean] ? " ✅" : " ⚠️"; options += `<option value="${n.nama}">${n.nama}${ada}</option>`; });
-    document.getElementById('modal-title').innerText = "🔑 Buat/Atur PIN Promotor";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="admin-select-pin-sales" style="margin-bottom:10px;">${options}</select>PIN Baru (6 digit):<br><input type="text" id="admin-input-pin-baru" maxlength="6" inputmode="numeric" style="width:100%; padding:12px; border-radius:10px; font-size:18px; font-weight:800; text-align:center; letter-spacing:6px; box-sizing:border-box;">`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiSimpanPIN()">Simpan PIN</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-    setTimeout(() => { const inp = document.getElementById('admin-input-pin-baru'); if (inp) inp.addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g,'').slice(0,6); }); }, 100);
-}
-window.bukaModalKelolaPIN = bukaModalKelolaPIN;
-
-async function eksekusiSimpanPIN() {
-    const nama = document.getElementById('admin-select-pin-sales').value;
-    const pin = document.getElementById('admin-input-pin-baru').value.trim();
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    if (!/^\d{6}$/.test(pin)) { tampilkanModal("Perhatian", "PIN harus 6 digit!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        await window.dbSet(window.dbRef(window.db, 'pinPromotor/' + clean), pin);
-        const salt = generateSalt();
-        const pinHash = await hashPin(pin, salt);
-        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
-        if (cek.exists()) {
-            await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), { pinHash: pinHash, pinSalt: salt, wajibGantiPin: false });
-        } else {
-            await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), { namaAbsen: nama, namaSales: nama, merk: '', aktif: true, pinHash: pinHash, pinSalt: salt, wajibGantiPin: false });
-        }
-        tutupModal();
-        tampilkanModal("Berhasil", `PIN ${nama}: ${pin}\n\nPIN ini berlaku untuk login.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiSimpanPIN = eksekusiSimpanPIN;
-
-function bukaModalKeluarkanAntrian() {
-    if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama} (${n.status})</option>`);
-    document.getElementById('modal-title').innerText = "Keluarkan dari Antrian";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-keluar-sales">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiKeluarAntrian()">Keluarkan</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalKeluarkanAntrian = bukaModalKeluarkanAntrian;
-
-async function eksekusiKeluarAntrian() {
-    const nama = document.getElementById('select-keluar-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
-        await window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama, aksi: "KeluarAntrian", waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: "Admin" });
-        tutupModal(); tampilkanModal("Berhasil", `${nama} dikeluarkan.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiKeluarAntrian = eksekusiKeluarAntrian;
-
-function bukaModalHapusMasterSales() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Hapus Promotor Permanen";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-hapus-sales">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiHapusSales()">Hapus Permanen</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalHapusMasterSales = bukaModalHapusMasterSales;
-
-async function eksekusiHapusSales() {
-    const nama = document.getElementById('select-hapus-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    try {
-        const snap = await window.dbGet(window.dbRef(window.db, 'data'));
-        if (!snap.exists()) { tutupModal(); return; }
-        const all = snap.val();
-        let key = null;
-        Object.keys(all).forEach(k => {
-            const it = all[k]; const rec = it && it.record ? it.record : it;
-            const n = rec && (rec.NAMA_PROMOTOR || rec.nama) || "";
-            if (String(n).toLowerCase() === String(nama).toLowerCase()) key = k;
-        });
-        if (key) await window.dbRemove(window.dbRef(window.db, 'data/' + key));
-        tutupModal(); tampilkanModal("Berhasil", `${nama} dihapus.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiHapusSales = eksekusiHapusSales;
-
-function bukaModalPaksaBawaCustomer() {
-    if (daftarAntrianGlobal.length === 0) { tampilkanModal("Info", "Antrian kosong."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    daftarAntrianGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama} (${n.status})</option>`);
-    document.getElementById('modal-title').innerText = "Paksa Bawa Customer";
-    document.getElementById('modal-desc').innerHTML = `Promotor:<br><select id="select-paksa-sales">${options}</select>`;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiPaksa()">Proses</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalPaksaBawaCustomer = bukaModalPaksaBawaCustomer;
-
-async function eksekusiPaksa() {
-    const nama = document.getElementById('select-paksa-sales').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    const now = waktuServer();
-    try {
-        await window.dbUpdate(window.dbRef(window.db, 'antrian/' + clean), { status: "Melayani", waktuMulaiMelayani: now, timerMulai: 0 });
-        await window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), { nama, aksi: "BawaCustomer", waktu: now, tanggal: getTanggalIndo(), hasil: "", waktuMulai: now, keterangan: "Dipaksa Admin" });
-        tutupModal(); tampilkanModal("Berhasil", `${nama} diset melayani.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiPaksa = eksekusiPaksa;
-
-function bukaModalLockPromotorAdmin() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "Kontrol Hukuman / Lock Akun";
-    document.getElementById('modal-desc').innerHTML = `
-        Promotor:<br><select id="admin-select-sales-lock" style="margin-bottom:10px;">${options}</select>
-        Aksi:<br><select id="admin-select-status-lock" style="margin-bottom:10px;"><option value="LOCK">🔒 Kunci Akun</option><option value="UNLOCK">🔓 Buka Akun</option></select>
-        Alasan:<br><select id="admin-select-alasan" style="margin-bottom:10px;"><option>Pulang tanpa keluar antrian</option><option>Istirahat tanpa keluar antrian</option><option>Pelanggaran lain</option></select>
-        Durasi (menit):<br><input type="number" id="admin-input-durasi-menit" value="60" min="1" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-    `;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button><button type="button" onclick="eksekusiLock()">Proses</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalLockPromotorAdmin = bukaModalLockPromotorAdmin;
-
-async function eksekusiLock() {
-    const nama = document.getElementById('admin-select-sales-lock').value;
-    const aksi = document.getElementById('admin-select-status-lock').value;
-    const alasan = document.getElementById('admin-select-alasan').value;
-    const durasi = parseInt(document.getElementById('admin-input-durasi-menit').value) || 60;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        if (aksi === "LOCK") {
-            const now = waktuServer();
-            const selesai = now + (durasi * 60 * 1000);
-            await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { nama, locked: true, alasan, waktuMulaiLock: now, waktuSelesaiLock: selesai, waktuDibuat: now });
-            await window.dbRemove(window.dbRef(window.db, 'antrian/' + clean));
-            tutupModal(); tampilkanModal("Berhasil", `${nama} dikunci ${durasi} menit.`);
-        } else {
-            await window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), { locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0 });
-            tutupModal(); tampilkanModal("Berhasil", `${nama} dibuka.`);
-        }
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiLock = eksekusiLock;
-
-function bukaModalResetTotal() {
-    tampilkanModalKonfirmasi("Reset Semua Antrian", "⚠️ Semua antrian aktif akan dihapus. Lanjutkan?", async () => {
-        try { await window.dbRemove(window.dbRef(window.db, 'antrian')); tampilkanModal("Berhasil", "Semua antrian direset."); }
-        catch (e) { tampilkanModal("Gagal", e.message); }
-    });
-}
-window.bukaModalResetTotal = bukaModalResetTotal;
-
-function toggleGPSAdmin(aktif) {
-    if (!aktif) {
-        tampilkanModalKonfirmasi("Matikan GPS", "Promotor bebas check-in?", () => {
-            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: "", lngToko: "", radiusToko: 50 }).then(() => tampilkanModal("Berhasil", "GPS dimatikan."));
-        });
-        return;
-    }
-    if (!navigator.geolocation) { tampilkanModal("Gagal", "GPS tidak didukung."); return; }
-    navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            window.dbUpdate(window.dbRef(window.db, 'setting'), { latToko: pos.coords.latitude, lngToko: pos.coords.longitude, radiusToko: 50 }).then(() => tampilkanModal("Berhasil", `GPS aktif:\n${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}\nRadius: 50m`));
-        },
-        (err) => tampilkanModal("Gagal", "Lokasi ditolak: " + err.message),
-        { enableHighAccuracy: true, timeout: 15000 }
-    );
-}
-window.toggleGPSAdmin = toggleGPSAdmin;
-
-/* ============================================================ */
-/* ========== KELOLA AKUN PROMOTOR (ADMIN) ==================== */
-/* ============================================================ */
-function bukaModalTambahAkunPromotor() {
-    document.getElementById('modal-title').innerText = "➕ Tambah Akun Promotor";
-    document.getElementById('modal-desc').innerHTML = `
-        <div style="font-size:12px; margin-bottom:10px; color:#64748b; padding:8px; background:#eff6ff; border-radius:8px; line-height:1.5;">
-            Buat akun login promotor + PIN awal <b>123456</b>.<br>
-            Promotor wajib ganti PIN saat login pertama.
-        </div>
-        <label style="font-size:11px; font-weight:700;">Nama Promotor (Nama + Merk):</label><br>
-        <input type="text" id="input-akun-nama" placeholder="contoh: RONI AQUA" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box; text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
-        <div style="font-size:11px; color:#64748b;">Format: <b>NAMA MERK</b></div>
-    `;
-    document.getElementById('modal-actions').innerHTML = `
-        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
-        <button type="button" onclick="eksekusiTambahAkunPromotor()">Simpan</button>
-    `;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalTambahAkunPromotor = bukaModalTambahAkunPromotor;
-
-async function eksekusiTambahAkunPromotor() {
-    const nama = document.getElementById('input-akun-nama').value.trim().toUpperCase();
-    if (!nama) { tampilkanModal("Perhatian", "Nama wajib diisi!"); return; }
-    const clean = sanitizeNama(nama);
-    const parts = nama.split(/\s+/);
-    const merk = parts.length > 1 ? parts[parts.length - 1] : '';
-    try {
-        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
-        if (cek.exists()) { tutupModal(); tampilkanModal("Perhatian", "Akun sudah ada!"); return; }
-        const salt = generateSalt();
-        const pinHash = await hashPin("123456", salt);
-        await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), {
-            namaAbsen: nama, namaSales: nama, merk: merk, aktif: true,
-            pinHash: pinHash, pinSalt: salt, wajibGantiPin: true
-        });
-        const snapData = await window.dbGet(window.dbRef(window.db, 'data'));
-        let sudahAda = false;
-        if (snapData.exists()) {
-            const all = snapData.val();
-            Object.values(all).forEach(it => {
-                const rec = it && it.record ? it.record : it;
-                const n = rec && (rec.NAMA_PROMOTOR || rec.nama) || "";
-                if (String(n).trim().toUpperCase() === nama) sudahAda = true;
-            });
-        }
-        if (!sudahAda) {
-            await window.dbPush(window.dbRef(window.db, 'data'), { record: { NAMA_PROMOTOR: nama } });
-        }
-        tutupModal();
-        tampilkanModal("✅ Berhasil", `Akun promotor "${nama}" dibuat.\n\nPIN awal: 123456\nWajib diganti saat login pertama.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiTambahAkunPromotor = eksekusiTambahAkunPromotor;
-
-function bukaModalResetPinAkun() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "🔑 Reset PIN ke 123456";
-    document.getElementById('modal-desc').innerHTML = `
-        Promotor:<br><select id="select-reset-pin-akun" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">${options}</select>
-        <div style="font-size:11px; color:#64748b; margin-top:8px;">PIN akan kembali ke <b>123456</b>. Promotor wajib ganti saat login.</div>
-    `;
-    document.getElementById('modal-actions').innerHTML = `
-        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
-        <button type="button" onclick="eksekusiResetPinAkun()">Reset</button>
-    `;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalResetPinAkun = bukaModalResetPinAkun;
-
-async function eksekusiResetPinAkun() {
-    const nama = document.getElementById('select-reset-pin-akun').value;
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        const salt = generateSalt();
-        const pinHash = await hashPin("123456", salt);
-        const cek = await window.dbGet(window.dbRef(window.db, 'users/promotor/' + clean));
-        if (cek.exists()) {
-            await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), { pinHash: pinHash, pinSalt: salt, wajibGantiPin: true });
-        } else {
-            await window.dbSet(window.dbRef(window.db, 'users/promotor/' + clean), { namaAbsen: nama, namaSales: nama, merk: '', aktif: true, pinHash: pinHash, pinSalt: salt, wajibGantiPin: true });
-        }
-        await window.dbSet(window.dbRef(window.db, 'pinPromotor/' + clean), "123456");
-        tutupModal();
-        tampilkanModal("✅ Berhasil", `PIN ${nama} direset ke 123456.\nPromotor wajib ganti PIN saat login.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiResetPinAkun = eksekusiResetPinAkun;
-
-function bukaModalAktifNonaktifAkun() {
-    if (masterSalesGlobal.length === 0) { tampilkanModal("Info", "Belum ada promotor."); return; }
-    let options = '<option value="">-- Pilih --</option>';
-    masterSalesGlobal.forEach(n => options += `<option value="${n.nama}">${n.nama}</option>`);
-    document.getElementById('modal-title').innerText = "👤 Aktif / Nonaktifkan Akun";
-    document.getElementById('modal-desc').innerHTML = `
-        Promotor:<br><select id="select-aktif-akun" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px; box-sizing:border-box;">${options}</select>
-        Status:<br><select id="select-status-akun" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box;">
-            <option value="true">Aktifkan</option>
-            <option value="false">Nonaktifkan</option>
-        </select>
-    `;
-    document.getElementById('modal-actions').innerHTML = `
-        <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
-        <button type="button" onclick="eksekusiAktifNonaktifAkun()">Simpan</button>
-    `;
-    document.getElementById('custom-modal').classList.add('active');
-}
-window.bukaModalAktifNonaktifAkun = bukaModalAktifNonaktifAkun;
-
-async function eksekusiAktifNonaktifAkun() {
-    const nama = document.getElementById('select-aktif-akun').value;
-    const status = document.getElementById('select-status-akun').value === 'true';
-    if (!nama) { tampilkanModal("Perhatian", "Pilih promotor!"); return; }
-    const clean = sanitizeNama(nama);
-    try {
-        await window.dbUpdate(window.dbRef(window.db, 'users/promotor/' + clean), { aktif: status });
-        tutupModal();
-        tampilkanModal("✅ Berhasil", `${nama} ${status ? 'diaktifkan' : 'dinonaktifkan'}.`);
-    } catch (e) { tampilkanModal("Gagal", e.message); }
-}
-window.eksekusiAktifNonaktifAkun = eksekusiAktifNonaktifAkun;
-
-/* ============================================================ */
 /* ========== DOM CONTENT LOADED ============================== */
 /* ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
     initParticles();
-    const btnLogin = document.getElementById('btn-login-promotor');
-    if (btnLogin) btnLogin.onclick = prosesLoginPromotor;
-    const inputPin = document.getElementById('login-pin-input');
-    if (inputPin) {
-        inputPin.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
-        inputPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') prosesLoginPromotor(); });
-    }
 });
 </script>
 </body>

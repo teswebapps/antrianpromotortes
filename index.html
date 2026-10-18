@@ -568,14 +568,8 @@ body:not(.dark-mode) .login-theme-toggle { background: #ffffff !important; borde
 
 <!-- ========== APLIKASI UTAMA ========== -->
 <div class="app-container" id="app-container" style="display: none; visibility: hidden;">
-    <div class="top-controls">
-        <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">
-            <svg id="btn-toggle-dark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <span id="btn-toggle-dark-text">Gelap</span>
-        </button>
-        <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutPromotor()" style="display: none;">Logout</button>
+        <div class="top-controls" style="justify-content: flex-end;">
+        <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutPromotor()" style="display: none; width: 100%;">Logout</button>
     </div>
 
     <div id="badge-status-sistem" class="status-badge-sistem status-open">

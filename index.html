@@ -29,7 +29,7 @@
   const auth = getAuth(app);
 
   window.firebaseAuth = auth;
-  window.googleProvider = new GoogleAuthProvider();
+ window.GoogleAuthProvider = GoogleAuthProvider;
   window.firebaseSignOut = signOut;
   window.firebaseSignInWithPopup = signInWithPopup;
   window.firebaseSignInWithRedirect = signInWithRedirect;
@@ -800,8 +800,8 @@ async function loginDenganGoogle() {
     errEl.innerText = '';
 
     try {
-        // GANTI BAGIAN INI:
-        const provider = new window.googleProvider; 
+        // Gunakan class GoogleAuthProvider yang sudah kita ekspos
+        const provider = new window.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
         if (isMobile) {

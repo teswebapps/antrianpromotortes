@@ -884,7 +884,96 @@ body {
 }
 .login-hero-sub { 
     color: #475569 !important; 
-}                                                                                                                                                              
+}  
+  /* ============================================================ */
+/* ========== 18. FIX TOTAL MODE TERANG & GELAP (LOGIN) ======= */
+/* ============================================================ */
+
+/* ===== 1. PENGATURAN DASAR (MODE GELAP / DEFAULT) ===== */
+body {
+    background-color: #030712 !important; 
+    color: #f3f4f6 !important; 
+}
+#login-screen { 
+    background: #050814 !important; 
+}
+.fut-headline { 
+    color: #ffffff !important; 
+    text-shadow: 0 0 30px rgba(34, 211, 238, 0.5) !important; 
+}
+.fut-subheadline { 
+    color: #cbd5e1 !important; 
+}
+.fut-tagline { 
+    color: #22d3ee !important; 
+    background: rgba(14, 165, 233, 0.15) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+}
+.fut-card { 
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%) !important; 
+    border: 1px solid rgba(56, 189, 248, 0.18) !important; 
+}
+.fut-card::after { 
+    background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%) !important; 
+}
+.login-hero-title { 
+    color: #ffffff !important; 
+    -webkit-text-fill-color: #ffffff !important; 
+}
+.login-hero-sub { 
+    color: #94a3b8 !important; 
+}
+.fut-live-status { 
+    background: rgba(5,8,20,0.6) !important; 
+    border-color: rgba(34,211,238,0.3) !important; 
+    color: #e2e8f0 !important; 
+}
+.fut-grid { 
+    background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px) !important; 
+}
+
+/* ===== 2. PENGATURAN MODE TERANG (SAAT TOMBOL DIKLIK) ===== */
+body:not(.dark-mode) {
+    background-color: #f1f5f9 !important; 
+    color: #0f172a !important;
+}
+body:not(.dark-mode) #login-screen { 
+    background: #f1f5f9 !important; /* Background jadi putih/abu terang */
+}
+body:not(.dark-mode) .fut-headline { 
+    color: #0f172a !important; /* Teks jadi hitam */
+    text-shadow: none !important; 
+}
+body:not(.dark-mode) .fut-subheadline { 
+    color: #475569 !important; 
+}
+body:not(.dark-mode) .fut-tagline { 
+    color: #0284c7 !important; 
+    background: rgba(14, 165, 233, 0.12) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+}
+body:not(.dark-mode) .fut-card { 
+    background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; 
+    border-color: rgba(56, 189, 248, 0.3) !important; 
+}
+body:not(.dark-mode) .fut-card::after { 
+    background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; 
+}
+body:not(.dark-mode) .login-hero-title { 
+    color: #0f172a !important; 
+    -webkit-text-fill-color: #0f172a !important; 
+}
+body:not(.dark-mode) .login-hero-sub { 
+    color: #475569 !important; 
+}
+body:not(.dark-mode) .fut-live-status { 
+    background: #ffffff !important; 
+    border-color: rgba(14, 165, 233, 0.4) !important; 
+    color: #075985 !important; 
+}
+body:not(.dark-mode) .fut-grid { 
+    background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important; 
+}
 </style>
 </head>
 <body class="login-active">

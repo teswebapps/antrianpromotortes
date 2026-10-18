@@ -533,6 +533,40 @@ button {
     margin-bottom: 8px;
     font-size: 13px;
 }
+  /* ============================================================ */
+/* ========== 15. WARNA ANGKA TABEL REKAP ===================== */
+/* ============================================================ */
+
+/* 1. Angka DEAL (Hijau) */
+.rekap-tabel td.angka-deal { 
+    color: #10b981 !important; 
+    font-weight: 900 !important; 
+}
+
+/* 2. Angka LIHAT (Kuning) */
+.rekap-tabel td.angka-lihat { 
+    color: #f59e0b !important; 
+    font-weight: 900 !important; 
+}
+
+/* 3. Angka NO SALE (Merah) */
+.rekap-tabel td.angka-nosale { 
+    color: #ef4444 !important; 
+    font-weight: 900 !important; 
+}
+
+/* 4. Angka HARI (Abu-abu/Keterangan) */
+.rekap-tabel td.angka-hari { 
+    color: var(--text-muted) !important; 
+    font-weight: 800 !important; 
+}
+
+/* Agar baris TOTAL di bawahnya juga tegas */
+.rekap-tabel tr.total-row td { 
+    background: var(--card-soft) !important; 
+    font-weight: 900 !important; 
+    border-top: 2px solid var(--border) !important; 
+}
 </style>
 </head>
 <body class="login-active">

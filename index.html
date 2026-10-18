@@ -606,6 +606,78 @@ button {
     font-weight: 900 !important; 
     border-top: 2px solid var(--border) !important; 
 }
+  /* ============================================================ */
+/* ========== PERBAIKAN TABEL REKAP DI POPUP ================== */
+/* ============================================================ */
+
+.rekap-wrapper {
+    background: var(--card-soft);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 8px; /* Padding dikurangi agar tabel lebih lebar */
+    margin-bottom: 12px;
+    overflow-x: auto; /* Jaga-jaga jika layar sangat kecil */
+}
+
+.rekap-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-main);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.rekap-tabel { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 11.5px; /* Font sedikit dikecilkan agar muat */
+    table-layout: fixed; /* MEMAKSA lebar kolom agar rata */
+}
+
+.rekap-tabel th { 
+    background: transparent; 
+    color: var(--text-muted); 
+    font-weight: 800; 
+    text-transform: uppercase; 
+    font-size: 9.5px; 
+    padding: 8px 2px; /* Jarak antar kolom dirapatkan */
+    text-align: center; 
+    border-bottom: 2px solid var(--border); 
+    white-space: nowrap; /* Judul tidak boleh turun baris */
+}
+
+.rekap-tabel td { 
+    padding: 10px 2px; 
+    text-align: center; 
+    font-weight: 800; 
+    font-size: 12px;
+    border-bottom: 1px solid var(--border); 
+}
+
+/* Kolom Nama dibuat rata kiri dan dipotong jika kepanjangan */
+.rekap-tabel td.kolom-nama { 
+    text-align: left; 
+    padding-left: 4px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+/* Lebar kolom yang proporsional */
+.rekap-tabel th:nth-child(1) { width: 40%; } /* Nama */
+.rekap-tabel th:nth-child(2) { width: 15%; } /* Deal */
+.rekap-tabel th:nth-child(3) { width: 15%; } /* Lihat */
+.rekap-tabel th:nth-child(4) { width: 18%; } /* No Sale */
+.rekap-tabel th:nth-child(5) { width: 12%; } /* Hari */
+
+/* Baris Total */
+.rekap-tabel tr.total-row td { 
+    background: var(--card-bg); 
+    border-top: 2px solid var(--border); 
+    border-bottom: none; 
+    font-weight: 900; 
+    color: var(--text-main); 
+}
 </style>
 </head>
 <body class="login-active">

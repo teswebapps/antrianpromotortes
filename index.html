@@ -85,8 +85,17 @@
     }
   }
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+   onAuthStateChanged(auth, async (user) => {
+    // Jika user tidak ada (proses redirect belum selesai), kita beri jeda cek localStorage
+    if (!user) {
+      const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
+      if (!cachedNama) {
+        window.dispatchEvent(new Event('firebase-ready'));
+      }
+      return;
+    }
+    
+    // Jika sudah login Google, verifikasi datanya
     if (user.providerData && user.providerData.some(p => p.providerId === 'google.com')) {
       await prosesLoginGoogle(user);
     }
@@ -702,7 +711,7 @@ let geolocationWatchId = null;
 let lockTimerInterval = null;
 let lockDataGlobal = null;
 let autoCleanupInterval = null;
-const DURASI_PIN_VALID = 12 * 60 * 60 * 1000;
+const DURASI_PIN_VALID = 365 * 24 * 60 * 60 * 1000; // Sesi berlaku 1 tahun
 
 const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="#059669"/><path d="M7 12.5L10.5 16L17 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const SVG_ICON_LIHAT = `👀`;
@@ -922,7 +931,7 @@ function cekPINVerification() {
         tampilkanLayarLogin();
     }
 }
-setInterval(cekPINVerification, 30 * 60 * 1000);
+
 
 function toggleAktivitasSection() {
     const header = document.getElementById('toggle-aktivitas');

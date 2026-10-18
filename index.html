@@ -856,7 +856,9 @@ window.addEventListener('google-login-gagal', (e) => {
 /* ============================================================ */
 /* ========== FIREBASE READY ================================== */
 /* ============================================================ */
-window.addEventListener('firebase-ready', () => {
+/* ============================================================ */
+/* ========== FIREBASE READY ================================== */
+/* ============================================================ */
 window.addEventListener('firebase-ready', () => {
     initDarkMode();
     initParticles();
@@ -879,7 +881,7 @@ window.addEventListener('firebase-ready', () => {
     cekPINVerification();
 });
 
-// Fungsi bantuan untuk cek sesi
+// Fungsi bantuan untuk cek sesi (Diletakkan di LUAR event listener)
 function cekSesiDanTampilkan() {
     const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
     const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
@@ -896,7 +898,6 @@ function cekSesiDanTampilkan() {
         tampilkanLayarLogin();
     }
 }
-
 function tampilkanAplikasiUtama() {
     document.body.classList.remove('login-active');
     const loginScreen = document.getElementById('login-screen');

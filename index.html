@@ -1694,7 +1694,7 @@ function renderAktivitas() {
         if (semuaBawa.length === 0) { totalBox.innerHTML = ''; totalBox.style.display = 'none'; }
         else {
             totalBox.style.display = 'block';
-            totalBox.innerHTML = `TOTAL: <span class="total-lihat">👀 ${totalLihat} Lihat</span> &nbsp;│&nbsp; <span class="total-deal">✓ ${totalDeal} Deal</span>`;
+                       totalBox.innerHTML = `TOTAL: <span style="color: #f59e0b; font-weight: 900;">👀 ${totalLihat} Lihat</span> &nbsp;│&nbsp; <span style="color: #10b981; font-weight: 900;">✓ ${totalDeal} Deal</span>`;
         }
     }
     const elListBawa = document.getElementById('list-bawa');

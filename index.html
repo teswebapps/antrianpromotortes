@@ -2007,7 +2007,7 @@ function bukaPopupAktivitas(jenis) {
     else if (jenis === 'keluar') { title.innerText = 'Keluar Antrian'; const el = document.getElementById('list-keluar'); kontenAsli = el ? el.outerHTML : ''; }
     else if (jenis === 'autokick') { title.innerText = 'Autokick (Pelanggaran)'; const el = document.getElementById('list-autokick'); kontenAsli = el ? el.outerHTML : ''; }
     else if (jenis === 'rekap') {
-        title.innerText = 'Rekap Bawa Customer per Promotor';
+        title.innerText = 'List Bawa Customer Promotor';
         const wrappers = document.querySelectorAll('#content-aktivitas .rekap-wrapper');
         kontenAsli = wrappers[0] ? wrappers[0].outerHTML : '';
     } else if (jenis === 'bulanan') {

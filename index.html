@@ -802,22 +802,18 @@ async function loginDenganGoogle() {
     const txt = document.getElementById('btn-login-text');
     const errEl = document.getElementById('login-error');
     const asli = txt.innerText;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     btn.disabled = true;
     txt.innerText = 'MEMPROSES...';
     errEl.innerText = '';
 
     try {
-        // Gunakan class GoogleAuthProvider yang sudah kita ekspos
         const provider = new window.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
-        if (isMobile) {
-            await window.firebaseSignInWithRedirect(window.firebaseAuth, provider);
-        } else {
-            await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
-        }
+        // PAKSA PAKAI POPUP UNTUK SEMUA PERANGKAT (Lebih stabil di HP)
+        await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
+        
     } catch (err) {
         console.error('Login gagal:', err);
         if (err.code !== 'auth/popup-closed-by-user') {
@@ -861,15 +857,35 @@ window.addEventListener('google-login-gagal', (e) => {
 /* ========== FIREBASE READY ================================== */
 /* ============================================================ */
 window.addEventListener('firebase-ready', () => {
+window.addEventListener('firebase-ready', () => {
     initDarkMode();
     initParticles();
     resetCheckinHarianJikaPerlu();
     restoreAktivitasState();
 
+    // Tampilkan layar loading sebentar (khusus HP)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Beri waktu 1.5 detik untuk Firebase mengecek sesi login yang tersimpan
+        setTimeout(() => {
+            cekSesiDanTampilkan();
+        }, 1500);
+    } else {
+        cekSesiDanTampilkan();
+    }
+    
+    inisialisasiRealtimeFirebase();
+    cekPINVerification();
+});
+
+// Fungsi bantuan untuk cek sesi
+function cekSesiDanTampilkan() {
     const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
     const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
     const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
     const pinKadaluarsa = (Date.now() - verifiedAt) > DURASI_PIN_VALID;
+    
     if (cachedNama && pinVerified && !pinKadaluarsa) {
         namaSalesAktifGlobal = cachedNama;
         tampilkanAplikasiUtama();
@@ -879,9 +895,7 @@ window.addEventListener('firebase-ready', () => {
         localStorage.removeItem('ufo_pin_verified_at');
         tampilkanLayarLogin();
     }
-    inisialisasiRealtimeFirebase();
-    cekPINVerification();
-});
+}
 
 function tampilkanAplikasiUtama() {
     document.body.classList.remove('login-active');

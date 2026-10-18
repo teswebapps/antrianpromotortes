@@ -437,8 +437,8 @@ button {
     body { padding: 12px; }
     .app-container { padding: 16px; border-radius: 16px; }
 }
-  /* ============================================================ */
-/* ========== 14. POPUP AKTIVITAS (MODERN) ==================== */
+ /* ============================================================ */
+/* ========== 14. POPUP AKTIVITAS (MODERN & RAPI) ============= */
 /* ============================================================ */
 .popup-overlay { 
     position: fixed; 
@@ -470,19 +470,19 @@ button {
     max-height: 85vh; 
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .popup-overlay.active .popup-box {
-    transform: translateY(0);
+    transform: scale(1);
 }
 
 .popup-header { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 16px 20px; 
+    padding: 18px 20px; 
     border-bottom: 2px solid var(--border); 
     flex-shrink: 0; 
 }
@@ -493,17 +493,18 @@ button {
     text-transform: uppercase; 
     color: var(--text-main); 
     letter-spacing: 0.5px; 
+    margin: 0;
 }
 
 .popup-close { 
     background: var(--card-soft); 
     border: 2px solid var(--border); 
     color: var(--text-main); 
-    width: 34px; 
-    height: 34px; 
-    border-radius: 10px; 
-    font-size: 16px; 
-    font-weight: 800; 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    font-weight: 900; 
     cursor: pointer; 
     display: flex; 
     align-items: center; 
@@ -512,26 +513,64 @@ button {
     transition: all 0.2s;
 }
 .popup-close:hover { 
-    background: #ef4444; 
+    background: var(--danger); 
     color: #ffffff;
-    border-color: #ef4444;
+    border-color: var(--danger);
 }
 
 .popup-body { 
-    padding: 16px 20px; 
+    padding: 20px; 
     overflow-y: auto; 
     flex: 1; 
 }
 
-/* Memperbaiki tampilan list di dalam popup */
-.popup-body .aktivitas-list { margin-top: 10px; }
-.popup-body .aktivitas-list li {
+/* --- MERAPIKAN TOTAL BWA CUSTOMER --- */
+#total-bawa-box {
     background: var(--card-soft);
     border: 2px solid var(--border);
     border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
+    padding: 12px;
+    text-align: center; /* Bikin tulisan totalnya ke tengah */
     font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- MERAPIKAN LIST DI DALAM POPUP --- */
+.popup-body .aktivitas-list { 
+    margin-top: 0; 
+    padding: 0;
+}
+.popup-body .aktivitas-list li {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.popup-body .aktivitas-list li .nama {
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.popup-body .aktivitas-list li .waktu {
+    font-weight: 800;
+    color: var(--text-muted);
+    font-size: 12px;
+    background: var(--card-soft);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
   /* ============================================================ */
 /* ========== 15. WARNA ANGKA TABEL REKAP ===================== */

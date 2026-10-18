@@ -684,6 +684,118 @@ button {
     font-weight: 900; 
     color: var(--text-main); 
 }
+  /* ============================================================ */
+/* ========== 16. PERBAIKAN LAYAR LOGIN (FIX) ================= */
+/* ============================================================ */
+#login-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #050814; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; overflow-y: auto;
+}
+.fut-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px); background-size: 40px 40px; animation: futGridMove 20s linear infinite; pointer-events: none; z-index: 1; }
+@keyframes futGridMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+.fut-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.6; animation: futOrbFloat 12s ease-in-out infinite; pointer-events: none; z-index: 1; }
+.fut-orb-1 { width: 400px; height: 400px; background: #0ea5e9; top: -100px; left: -100px; }
+.fut-orb-2 { width: 300px; height: 300px; background: #a855f7; bottom: -80px; right: -80px; animation-delay: -4s; }
+.fut-orb-3 { width: 350px; height: 350px; background: #06b6d4; top: 40%; left: 45%; animation-delay: -8s; opacity: 0.4; }
+@keyframes futOrbFloat { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-30px) scale(1.1); } 66% { transform: translate(-30px,40px) scale(0.9); } }
+.fut-particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.fut-particle { position: absolute; width: 2px; height: 2px; border-radius: 50%; animation: futParticleFloat linear infinite; }
+@keyframes futParticleFloat { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) scale(1); opacity: 0; } }
+
+/* TATA LETAK KIRI-KANAN (DESKTOP) */
+.fut-container { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; max-width: 1100px; width: 100%; animation: futFadeIn 0.8s ease-out; }
+@keyframes futFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.fut-left { color: #ffffff; text-align: center; padding: 20px; }
+.fut-tagline { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.3); border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #22d3ee; margin-bottom: 20px; text-transform: uppercase; }
+.fut-dot { width: 6px; height: 6px; background: #22d3ee; border-radius: 50%; box-shadow: 0 0 10px #22d3ee; animation: futDotPulse 1.5s infinite; }
+@keyframes futDotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+.fut-headline { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; color: #ffffff; text-shadow: 0 0 30px rgba(34,211,238,0.5); line-height: 1.1; }
+.fut-subheadline { font-size: 14px; color: #94a3b8; font-weight: 500; margin: 0 0 30px 0; letter-spacing: 1px; }
+.fut-characters { display: flex; justify-content: center; align-items: center; margin-bottom: 30px; }
+.fut-characters .team-3d-img { max-width: 100%; max-height: 260px; height: auto; filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)); }
+.fut-live-status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: rgba(5,8,20,0.6); border: 1px solid rgba(34,211,238,0.3); border-radius: 100px; font-size: 12px; color: #e2e8f0; font-weight: 600; }
+.fut-pulse-dot { width: 8px; height: 8px; background: #22d3ee; border-radius: 50%; animation: futDotPulse 1.5s infinite; }
+.fut-right { display: flex; justify-content: center; }
+
+/* KARTU LOGIN */
+.fut-card { width: 100%; max-width: 400px; border-radius: 24px; padding: 40px 32px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid rgba(56, 189, 248, 0.18); box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08), 0 20px 60px -20px rgba(56, 189, 248, 0.3), 0 30px 80px -30px rgba(168, 85, 247, 0.25); position: relative; overflow: hidden; animation: cardEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); backdrop-filter: blur(24px); }
+.fut-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 0.15), transparent 30%); animation: cardRotate 8s linear infinite; pointer-events: none; z-index: 0; }
+.fut-card::after { content: ''; position: absolute; inset: 1px; border-radius: 23px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%); z-index: 1; pointer-events: none; }
+.fut-card > * { position: relative; z-index: 2; }
+@keyframes cardEnter { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes cardRotate { to { transform: rotate(360deg); } }
+
+.fut-logo { width: 80px; height: 80px; margin: 0 auto 20px; background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.08)) !important; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; border-radius: 22px; display: flex; align-items: center; justify-content: center; padding: 12px; box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15) !important; animation: logoPulse 3s ease-in-out infinite; position: relative; }
+@keyframes logoPulse { 0%, 100% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15); } 50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25); } }
+.fut-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.login-hero { text-align: center; margin-bottom: 22px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
+.login-hero-title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.login-hero-sub { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.btn-google { width: 100%; padding: 14px 16px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); color: #111827; border: none; border-radius: 14px; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset; animation: fadeUp 0.6s ease-out 0.25s backwards; margin-top: 6px; text-transform: none; letter-spacing: 0.2px; }
+.btn-google::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent); transition: left 0.6s ease; }
+.btn-google:hover::before { left: 100%; }
+.btn-google:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset; background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%); }
+.btn-google:active { transform: translateY(0) scale(0.98); }
+.btn-google:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.btn-google-icon { width: 34px; height: 34px; background: #ffffff; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease; }
+.btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg); }
+.btn-google-text { flex: 1; text-align: left; font-size: 14.5px; font-weight: 700; letter-spacing: 0.2px; }
+.btn-google-arrow { display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.3s ease; flex-shrink: 0; }
+.btn-google:hover .btn-google-arrow { color: #0284c7; transform: translateX(4px); }
+
+/* ============================================================ */
+/* ========== RESPONSIVE LAYAR LOGIN (UNTUK HP) =============== */
+/* ============================================================ */
+@media (max-width: 900px) {
+    #login-screen { padding: 16px; align-items: flex-start; overflow-y: auto; }
+    .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 480px; margin: 0 auto; }
+    .fut-left { padding: 8px; }
+    .fut-headline { font-size: 26px; margin-bottom: 4px; }
+    .fut-subheadline { font-size: 12px; margin-bottom: 14px; }
+    .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; }
+    .fut-characters { display: flex; margin-bottom: 15px; }
+    .fut-characters .team-3d-img { max-height: 140px; }
+    .fut-live-status { font-size: 11px; padding: 7px 14px; }
+    .fut-card { padding: 28px 22px; border-radius: 20px; }
+    .fut-logo { width: 70px; height: 70px; margin-bottom: 14px; padding: 10px; }
+    .login-hero-title { font-size: 20px; }
+    .login-hero-sub { font-size: 12px; }
+    .fut-orb-1 { width: 250px; height: 250px; }
+    .fut-orb-2 { width: 200px; height: 200px; }
+    .fut-orb-3 { width: 220px; height: 220px; }
+}
+@media (max-width: 400px) {
+    #login-screen { padding: 10px; }
+    .fut-container { gap: 12px; }
+    .fut-headline { font-size: 22px; }
+    .fut-subheadline { font-size: 11px; margin-bottom: 10px; }
+    .fut-live-status { font-size: 10.5px; padding: 6px 12px; }
+    .fut-card { padding: 22px 18px; border-radius: 18px; }
+    .fut-logo { width: 60px; height: 60px; margin-bottom: 12px; padding: 8px; }
+    .login-hero-title { font-size: 18px; }
+    .login-hero-sub { font-size: 11.5px; }
+    .btn-google { padding: 12px 14px; font-size: 13px; }
+    .btn-google-icon { width: 30px; height: 30px; }
+    .btn-google-text { font-size: 13px; }
+}
+
+/* ============================================================ */
+/* ========== TEMA TERANG UNTUK LOGIN ========================= */
+/* ============================================================ */
+body:not(.dark-mode) #login-screen { background: #f1f5f9; }
+body:not(.dark-mode) .fut-card { background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important; }
+body:not(.dark-mode) .fut-card::after { background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; }
+body:not(.dark-mode) .login-hero-title { background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+body:not(.dark-mode) .login-hero-sub { color: #475569 !important; }
+body:not(.dark-mode) .fut-headline { color: #0f172a !important; text-shadow: none !important; }
+body:not(.dark-mode) .fut-subheadline { color: #475569 !important; }
+body:not(.dark-mode) .fut-tagline { color: #0284c7 !important; border-color: rgba(14, 165, 233, 0.4) !important; background: rgba(14, 165, 233, 0.12) !important; }
+body:not(.dark-mode) .fut-live-status { background: #ffffff !important; border-color: rgba(14, 165, 233, 0.4) !important; color: #075985 !important; }
+body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important; }
 </style>
 </head>
 <body class="login-active">

@@ -800,13 +800,14 @@ async function loginDenganGoogle() {
     errEl.innerText = '';
 
     try {
-        const provider = new GoogleAuthProvider();
+        // GANTI BAGIAN INI:
+        const provider = new window.googleProvider; 
         provider.setCustomParameters({ prompt: 'select_account' });
 
         if (isMobile) {
-            await signInWithRedirect(window.firebaseAuth, provider);
+            await window.firebaseSignInWithRedirect(window.firebaseAuth, provider);
         } else {
-            await signInWithPopup(window.firebaseAuth, provider);
+            await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
         }
     } catch (err) {
         console.error('Login gagal:', err);

@@ -515,16 +515,15 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
     body { padding: 12px; }
     .app-container { padding: 16px; border-radius: 16px; }
 }
-  /* ============================================================ */
-/* ========== 20. STYLING TOMBOL AKTIVITAS (TERANG & GELAP) === */
+ /* ============================================================ */
+/* ========== 20. FINAL FIX TOMBOL AKTIVITAS ================== */
 /* ============================================================ */
 
 /* --- 1. MODE TERANG (Light Mode) --- */
 html body:not(.dark-mode) .aktivitas-header-toggle {
-    background: #ffffff !important;
-    border: 2px solid var(--border) !important;
-    color: #0f172a !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+    background: #ffffff !important; 
+    border: 2px solid #cbd5e1 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
 }
 html body:not(.dark-mode) .aktivitas-header-toggle .judul {
     color: #0f172a !important;
@@ -534,7 +533,7 @@ html body:not(.dark-mode) .aktivitas-header-toggle .judul svg {
 }
 html body:not(.dark-mode) .aktivitas-header-toggle .arrow {
     background: #f1f5f9 !important;
-    border: 1px solid var(--border) !important;
+    border: 1px solid #cbd5e1 !important;
 }
 html body:not(.dark-mode) .aktivitas-header-toggle .arrow svg {
     stroke: #0f172a !important;
@@ -542,19 +541,19 @@ html body:not(.dark-mode) .aktivitas-header-toggle .arrow svg {
 
 /* --- 2. MODE GELAP (Dark Mode) --- */
 body.dark-mode .aktivitas-header-toggle {
-    background: #0f172a !important; /* Warna biru gelap / hitam elegan */
+    background: #0f172a !important; /* Latar Gelap Elegan */
     border: 2px solid #1e293b !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
 }
 body.dark-mode .aktivitas-header-toggle .judul {
-    color: #ffffff !important; /* Teks Putih Bersih */
+    color: #ffffff !important; /* Teks Putih */
 }
 body.dark-mode .aktivitas-header-toggle .judul svg {
-    stroke: #ffffff !important; /* Ikon Putih Bersih */
+    stroke: #ffffff !important; /* Ikon Putih */
 }
 body.dark-mode .aktivitas-header-toggle .arrow {
-    background: rgba(255,255,255,0.1) !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 body.dark-mode .aktivitas-header-toggle .arrow svg {
     stroke: #ffffff !important;

@@ -28,7 +28,6 @@
 
       signInAnonymously(auth)
         .then(() => {
-          console.log("✅ Anonymous login sukses:", auth.currentUser.uid);
           window.db = db;
           window.dbRef = ref;
           window.dbSet = set;
@@ -47,13 +46,12 @@
           window.dispatchEvent(new Event('firebase-ready'));
         })
         .catch((error) => {
-          console.error("❌ Anonymous login gagal:", error);
+          console.error("Anonymous login gagal:", error);
           alert("Gagal koneksi ke server. Cek koneksi internet dan refresh halaman.");
         });
 
       onAuthStateChanged(auth, (user) => {
         if (!user) {
-          console.warn("⚠️ User logout, reload halaman...");
           setTimeout(() => location.reload(), 1000);
         }
       });
@@ -132,7 +130,11 @@
             letter-spacing: 0.3px;
             width: auto;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        .logout-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; fill: none; }
         body.dark-mode .logout-btn {
             background: linear-gradient(135deg, #ff1f3d 0%, #99001f 100%) !important;
             border: 2px solid #ff1f3d !important;
@@ -148,7 +150,11 @@
             cursor: pointer;
             font-size: 12px;
             width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        .dark-mode-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; fill: none; }
         body.dark-mode .dark-mode-btn {
             background: linear-gradient(135deg, #ff1f3d 0%, #99001f 100%) !important;
             border: 2px solid #ff1f3d !important;
@@ -581,51 +587,6 @@
         
         /* ===== AKTIVITAS SECTION ===== */
         .aktivitas-section { margin-top: 20px; text-align: left; }
-        .aktivitas-title {
-            font-size: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            padding: 10px 12px;
-            border-radius: 8px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-            gap: 8px;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-        }
-        .aktivitas-title .count {
-            font-size: 10px;
-            background: rgba(255,255,255,0.25);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-        .aktivitas-title .judul-kategori {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-        }
-        .aktivitas-icon {
-            width: 22px;
-            height: 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            flex-shrink: 0;
-            background: rgba(255,255,255,0.2);
-        }
-        .aktivitas-icon svg {
-            width: 13px;
-            height: 13px;
-            stroke: currentColor;
-            stroke-width: 2.4;
-            fill: none;
-        }
-        
         .aktivitas-header-toggle {
             display: flex;
             justify-content: space-between;
@@ -1006,26 +967,14 @@
             stroke-width: 2.2;
             fill: none;
         }
-        .admin-menu-card-icon.t-operasional {
-            background: rgba(37, 99, 235, 0.12);
-            border-color: rgba(37, 99, 235, 0.35);
-        }
+        .admin-menu-card-icon.t-operasional { background: rgba(37, 99, 235, 0.12); border-color: rgba(37, 99, 235, 0.35); }
         .admin-menu-card-icon.t-operasional svg { stroke: #2563eb; }
-        .admin-menu-card-icon.t-urutan {
-            background: rgba(5, 150, 105, 0.12);
-            border-color: rgba(5, 150, 105, 0.35);
-        }
+        .admin-menu-card-icon.t-urutan { background: rgba(5, 150, 105, 0.12); border-color: rgba(5, 150, 105, 0.35); }
         .admin-menu-card-icon.t-urutan svg { stroke: #059669; }
-        .admin-menu-card-icon.t-darurat {
-            background: rgba(220, 38, 38, 0.12);
-            border-color: rgba(220, 38, 38, 0.35);
-        }
+        .admin-menu-card-icon.t-darurat { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.35); }
         .admin-menu-card-icon.t-darurat svg { stroke: #dc2626; }
-        .admin-menu-card-icon.t-gps {
-            background: rgba(124, 58, 237, 0.12);
-            border-color: rgba(124, 58, 237, 0.35);
-        }
-        .admin-menu-card-icon.t-gps svg { stroke: #7c3aed; }
+        .admin-menu-card-icon.t-whitelist { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); }
+        .admin-menu-card-icon.t-whitelist svg { stroke: #10b981; }
         .admin-menu-card-label {
             font-size: 10.5px;
             font-weight: 800;
@@ -1184,77 +1133,28 @@
         }
 
         /* Warna icon per kategori */
-        .popup-btn-icon.t-buka {
-            background: rgba(5, 150, 105, 0.12);
-            border-color: rgba(5, 150, 105, 0.3);
-        }
+        .popup-btn-icon.t-buka { background: rgba(5, 150, 105, 0.12); border-color: rgba(5, 150, 105, 0.3); }
         .popup-btn-icon.t-buka svg { stroke: #059669; }
-
-        .popup-btn-icon.t-tutup {
-            background: rgba(220, 38, 38, 0.12);
-            border-color: rgba(220, 38, 38, 0.3);
-        }
+        .popup-btn-icon.t-tutup { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.3); }
         .popup-btn-icon.t-tutup svg { stroke: #dc2626; }
-
-        .popup-btn-icon.t-branding {
-            background: rgba(124, 58, 237, 0.12);
-            border-color: rgba(124, 58, 237, 0.3);
-        }
+        .popup-btn-icon.t-branding { background: rgba(124, 58, 237, 0.12); border-color: rgba(124, 58, 237, 0.3); }
         .popup-btn-icon.t-branding svg { stroke: #7c3aed; }
-
-        .popup-btn-icon.t-tambah {
-            background: rgba(5, 150, 105, 0.12);
-            border-color: rgba(5, 150, 105, 0.3);
-        }
+        .popup-btn-icon.t-tambah { background: rgba(5, 150, 105, 0.12); border-color: rgba(5, 150, 105, 0.3); }
         .popup-btn-icon.t-tambah svg { stroke: #059669; }
-
-        .popup-btn-icon.t-pin {
-            background: rgba(217, 119, 6, 0.12);
-            border-color: rgba(217, 119, 6, 0.3);
-        }
+        .popup-btn-icon.t-pin { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.3); }
         .popup-btn-icon.t-pin svg { stroke: #d97706; }
-
-        .popup-btn-icon.t-hapus {
-            background: rgba(220, 38, 38, 0.12);
-            border-color: rgba(220, 38, 38, 0.3);
-        }
+        .popup-btn-icon.t-hapus { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.3); }
         .popup-btn-icon.t-hapus svg { stroke: #dc2626; }
-
-        .popup-btn-icon.t-keluar {
-            background: rgba(217, 119, 6, 0.12);
-            border-color: rgba(217, 119, 6, 0.3);
-        }
+        .popup-btn-icon.t-keluar { background: rgba(217, 119, 6, 0.12); border-color: rgba(217, 119, 6, 0.3); }
         .popup-btn-icon.t-keluar svg { stroke: #d97706; }
-
-        .popup-btn-icon.t-paksa {
-            background: rgba(124, 58, 237, 0.12);
-            border-color: rgba(124, 58, 237, 0.3);
-        }
+        .popup-btn-icon.t-paksa { background: rgba(124, 58, 237, 0.12); border-color: rgba(124, 58, 237, 0.3); }
         .popup-btn-icon.t-paksa svg { stroke: #7c3aed; }
-
-        .popup-btn-icon.t-lock {
-            background: rgba(220, 38, 38, 0.12);
-            border-color: rgba(220, 38, 38, 0.3);
-        }
+        .popup-btn-icon.t-lock { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.3); }
         .popup-btn-icon.t-lock svg { stroke: #dc2626; }
-
-        .popup-btn-icon.t-reset {
-            background: rgba(220, 38, 38, 0.12);
-            border-color: rgba(220, 38, 38, 0.3);
-        }
+        .popup-btn-icon.t-reset { background: rgba(220, 38, 38, 0.12); border-color: rgba(220, 38, 38, 0.3); }
         .popup-btn-icon.t-reset svg { stroke: #dc2626; }
-
-        .popup-btn-icon.t-gps-on {
-            background: rgba(5, 150, 105, 0.12);
-            border-color: rgba(5, 150, 105, 0.3);
-        }
-        .popup-btn-icon.t-gps-on svg { stroke: #059669; }
-
-        .popup-btn-icon.t-gps-off {
-            background: rgba(220, 38, 38, 0.12);
-            border-color: rgba(220, 38, 38, 0.3);
-        }
-        .popup-btn-icon.t-gps-off svg { stroke: #dc2626; }
+        .popup-btn-icon.t-whitelist { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); }
+        .popup-btn-icon.t-whitelist svg { stroke: #10b981; }
 
         /* Dark mode popup button */
         body.dark-mode .popup-body .popup-btn {
@@ -1415,11 +1315,11 @@
             border-color: rgba(220, 38, 38, 0.3) !important;
         }
         html body:not(.dark-mode) .admin-menu-card-icon.t-darurat svg { stroke: #dc2626 !important; }
-        html body:not(.dark-mode) .admin-menu-card-icon.t-gps {
-            background: rgba(124, 58, 237, 0.12) !important;
-            border-color: rgba(124, 58, 237, 0.3) !important;
+        html body:not(.dark-mode) .admin-menu-card-icon.t-whitelist {
+            background: rgba(16, 185, 129, 0.12) !important;
+            border-color: rgba(16, 185, 129, 0.3) !important;
         }
-        html body:not(.dark-mode) .admin-menu-card-icon.t-gps svg { stroke: #7c3aed !important; }
+        html body:not(.dark-mode) .admin-menu-card-icon.t-whitelist svg { stroke: #10b981 !important; }
         html body:not(.dark-mode) .popup-box {
             background: #ffffff !important;
             border: 2px solid #2563eb !important;
@@ -1449,242 +1349,207 @@
             text-transform: uppercase;
         }
         /* ============================================================ */
-/* ===== FIX KONTRAS TEKS TOMBOL POPUP — MODE GELAP =========== */
-/* ============================================================ */
-
-/* Background tombol popup mode gelap → putih bersih */
-body.dark-mode .popup-body .popup-btn {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    border: 2px solid #38bdf8 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-}
-
-body.dark-mode .popup-body .popup-btn:hover {
-    background: #f1f5f9 !important;
-    border-color: #00d2ff !important;
-    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.5) !important;
-}
-
-/* Judul tombol → hitam tegas */
-body.dark-mode .popup-body .popup-btn,
-body.dark-mode .popup-body .popup-btn .popup-btn-text {
-    color: #0f172a !important;
-    font-weight: 800 !important;
-}
-
-/* Subtitle → abu tua (bukan pink pudar) */
-body.dark-mode .popup-body .popup-btn .popup-btn-text small {
-    color: #475569 !important;
-    font-weight: 700 !important;
-}
-
-/* Icon kotak → warna asli tetap, tapi background lebih kontras */
-body.dark-mode .popup-body .popup-btn-icon {
-    background: rgba(37, 99, 235, 0.12) !important;
-    border: 1px solid rgba(37, 99, 235, 0.35) !important;
-}
-
-body.dark-mode .popup-body .popup-btn-icon svg {
-    stroke: #2563eb !important;
-}
-
-/* Warna icon per kategori di mode gelap */
-body.dark-mode .popup-body .popup-btn-icon.t-buka,
-body.dark-mode .popup-body .popup-btn-icon.t-tambah,
-body.dark-mode .popup-body .popup-btn-icon.t-gps-on {
-    background: rgba(5, 150, 105, 0.15) !important;
-    border-color: rgba(5, 150, 105, 0.4) !important;
-}
-body.dark-mode .popup-body .popup-btn-icon.t-buka svg,
-body.dark-mode .popup-body .popup-btn-icon.t-tambah svg,
-body.dark-mode .popup-body .popup-btn-icon.t-gps-on svg {
-    stroke: #059669 !important;
-}
-
-body.dark-mode .popup-body .popup-btn-icon.t-tutup,
-body.dark-mode .popup-body .popup-btn-icon.t-hapus,
-body.dark-mode .popup-body .popup-btn-icon.t-lock,
-body.dark-mode .popup-body .popup-btn-icon.t-reset,
-body.dark-mode .popup-body .popup-btn-icon.t-gps-off {
-    background: rgba(220, 38, 38, 0.15) !important;
-    border-color: rgba(220, 38, 38, 0.4) !important;
-}
-body.dark-mode .popup-body .popup-btn-icon.t-tutup svg,
-body.dark-mode .popup-body .popup-btn-icon.t-hapus svg,
-body.dark-mode .popup-body .popup-btn-icon.t-lock svg,
-body.dark-mode .popup-body .popup-btn-icon.t-reset svg,
-body.dark-mode .popup-body .popup-btn-icon.t-gps-off svg {
-    stroke: #dc2626 !important;
-}
-
-body.dark-mode .popup-body .popup-btn-icon.t-pin,
-body.dark-mode .popup-body .popup-btn-icon.t-keluar {
-    background: rgba(217, 119, 6, 0.15) !important;
-    border-color: rgba(217, 119, 6, 0.4) !important;
-}
-body.dark-mode .popup-body .popup-btn-icon.t-pin svg,
-body.dark-mode .popup-body .popup-btn-icon.t-keluar svg {
-    stroke: #d97706 !important;
-}
-
-body.dark-mode .popup-body .popup-btn-icon.t-branding,
-body.dark-mode .popup-body .popup-btn-icon.t-paksa {
-    background: rgba(124, 58, 237, 0.15) !important;
-    border-color: rgba(124, 58, 237, 0.4) !important;
-}
-body.dark-mode .popup-body .popup-btn-icon.t-branding svg,
-body.dark-mode .popup-body .popup-btn-icon.t-paksa svg {
-    stroke: #7c3aed !important;
-}
-
-/* Header popup tetap gelap biar kontras dengan body */
-body.dark-mode .popup-header {
-    background: linear-gradient(135deg, #0c1e33, #071321) !important;
-    border-bottom: 2px solid #38bdf8 !important;
-}
-
-body.dark-mode .popup-title {
-    color: #ffffff !important;
-    text-shadow: 0 0 10px rgba(56, 189, 248, 0.8) !important;
-}
+        /* ===== FIX KONTRAS TEKS TOMBOL POPUP — MODE GELAP =========== */
         /* ============================================================ */
-/* ===== FIX KONTRAS TEKS TOMBOL POPUP — MODE TERANG ========== */
-/* ============================================================ */
+        body.dark-mode .popup-body .popup-btn {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 2px solid #38bdf8 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+        body.dark-mode .popup-body .popup-btn:hover {
+            background: #f1f5f9 !important;
+            border-color: #00d2ff !important;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.5) !important;
+        }
+        body.dark-mode .popup-body .popup-btn,
+        body.dark-mode .popup-body .popup-btn .popup-btn-text {
+            color: #0f172a !important;
+            font-weight: 800 !important;
+        }
+        body.dark-mode .popup-body .popup-btn .popup-btn-text small {
+            color: #475569 !important;
+            font-weight: 700 !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon {
+            background: rgba(37, 99, 235, 0.12) !important;
+            border: 1px solid rgba(37, 99, 235, 0.35) !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon svg {
+            stroke: #2563eb !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-buka,
+        body.dark-mode .popup-body .popup-btn-icon.t-tambah,
+        body.dark-mode .popup-body .popup-btn-icon.t-gps-on {
+            background: rgba(5, 150, 105, 0.15) !important;
+            border-color: rgba(5, 150, 105, 0.4) !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-buka svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-tambah svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-gps-on svg {
+            stroke: #059669 !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-tutup,
+        body.dark-mode .popup-body .popup-btn-icon.t-hapus,
+        body.dark-mode .popup-body .popup-btn-icon.t-lock,
+        body.dark-mode .popup-body .popup-btn-icon.t-reset,
+        body.dark-mode .popup-body .popup-btn-icon.t-gps-off {
+            background: rgba(220, 38, 38, 0.15) !important;
+            border-color: rgba(220, 38, 38, 0.4) !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-tutup svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-hapus svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-lock svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-reset svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-gps-off svg {
+            stroke: #dc2626 !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-pin,
+        body.dark-mode .popup-body .popup-btn-icon.t-keluar {
+            background: rgba(217, 119, 6, 0.15) !important;
+            border-color: rgba(217, 119, 6, 0.4) !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-pin svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-keluar svg {
+            stroke: #d97706 !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-branding,
+        body.dark-mode .popup-body .popup-btn-icon.t-paksa {
+            background: rgba(124, 58, 237, 0.15) !important;
+            border-color: rgba(124, 58, 237, 0.4) !important;
+        }
+        body.dark-mode .popup-body .popup-btn-icon.t-branding svg,
+        body.dark-mode .popup-body .popup-btn-icon.t-paksa svg {
+            stroke: #7c3aed !important;
+        }
+        body.dark-mode .popup-header {
+            background: linear-gradient(135deg, #0c1e33, #071321) !important;
+            border-bottom: 2px solid #38bdf8 !important;
+        }
+        body.dark-mode .popup-title {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.8) !important;
+        }
 
-/* Background tombol popup mode terang → putih dengan border biru tegas */
-html body:not(.dark-mode) .popup-body .popup-btn {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    border: 2px solid #2563eb !important;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12) !important;
-}
-
-html body:not(.dark-mode) .popup-body .popup-btn:hover {
-    background: #eff6ff !important;
-    border-color: #1d4ed8 !important;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25) !important;
-}
-
-html body:not(.dark-mode) .popup-body .popup-btn:active {
-    transform: scale(0.99);
-}
-
-/* Judul tombol → hitam tegas */
-html body:not(.dark-mode) .popup-body .popup-btn,
-html body:not(.dark-mode) .popup-body .popup-btn .popup-btn-text {
-    color: #0f172a !important;
-    font-weight: 800 !important;
-}
-
-/* Subtitle → abu tua tegas (bukan abu pudar) */
-html body:not(.dark-mode) .popup-body .popup-btn .popup-btn-text small {
-    color: #475569 !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.3px !important;
-}
-
-/* Icon kotak → warna sesuai kategori */
-html body:not(.dark-mode) .popup-body .popup-btn-icon {
-    background: rgba(37, 99, 235, 0.1) !important;
-    border: 1px solid rgba(37, 99, 235, 0.3) !important;
-}
-
-html body:not(.dark-mode) .popup-body .popup-btn-icon svg {
-    stroke: #2563eb !important;
-}
-
-/* Warna icon per kategori — mode terang */
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-buka,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tambah,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-on {
-    background: rgba(5, 150, 105, 0.1) !important;
-    border-color: rgba(5, 150, 105, 0.35) !important;
-}
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-buka svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tambah svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-on svg {
-    stroke: #059669 !important;
-}
-
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tutup,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-hapus,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-lock,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-reset,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-off {
-    background: rgba(220, 38, 38, 0.1) !important;
-    border-color: rgba(220, 38, 38, 0.35) !important;
-}
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tutup svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-hapus svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-lock svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-reset svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-off svg {
-    stroke: #dc2626 !important;
-}
-
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-pin,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-keluar {
-    background: rgba(217, 119, 6, 0.1) !important;
-    border-color: rgba(217, 119, 6, 0.35) !important;
-}
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-pin svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-keluar svg {
-    stroke: #d97706 !important;
-}
-
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-branding,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-paksa {
-    background: rgba(124, 58, 237, 0.1) !important;
-    border-color: rgba(124, 58, 237, 0.35) !important;
-}
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-branding svg,
-html body:not(.dark-mode) .popup-body .popup-btn-icon.t-paksa svg {
-    stroke: #7c3aed !important;
-}
-
-/* Header popup mode terang — tetap gelap biar kontras */
-html body:not(.dark-mode) .popup-header {
-    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
-    border-bottom: 2px solid #2563eb !important;
-}
-
-html body:not(.dark-mode) .popup-title {
-    color: #ffffff !important;
-    text-shadow: none !important;
-}
-
-html body:not(.dark-mode) .popup-close {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    color: #ffffff !important;
-}
-
-html body:not(.dark-mode) .popup-close:hover {
-    background: rgba(255, 255, 255, 0.3) !important;
-}
-
-/* GPS status box mode terang */
-html body:not(.dark-mode) .gps-status-box.aktif {
-    background: rgba(5, 150, 105, 0.12) !important;
-    color: #047857 !important;
-    border: 1px solid rgba(5, 150, 105, 0.35) !important;
-}
-
-html body:not(.dark-mode) .gps-status-box.nonaktif {
-    background: rgba(220, 38, 38, 0.12) !important;
-    color: #b91c1c !important;
-    border: 1px solid rgba(220, 38, 38, 0.35) !important;
-}
+        /* ============================================================ */
+        /* ===== FIX KONTRAS TEKS TOMBOL POPUP — MODE TERANG ========== */
+        /* ============================================================ */
+        html body:not(.dark-mode) .popup-body .popup-btn {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 2px solid #2563eb !important;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn:hover {
+            background: #eff6ff !important;
+            border-color: #1d4ed8 !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn:active {
+            transform: scale(0.99);
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn,
+        html body:not(.dark-mode) .popup-body .popup-btn .popup-btn-text {
+            color: #0f172a !important;
+            font-weight: 800 !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn .popup-btn-text small {
+            color: #475569 !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.3px !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon {
+            background: rgba(37, 99, 235, 0.1) !important;
+            border: 1px solid rgba(37, 99, 235, 0.3) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon svg {
+            stroke: #2563eb !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-buka,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tambah,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-on {
+            background: rgba(5, 150, 105, 0.1) !important;
+            border-color: rgba(5, 150, 105, 0.35) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-buka svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tambah svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-on svg {
+            stroke: #059669 !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tutup,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-hapus,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-lock,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-reset,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-off {
+            background: rgba(220, 38, 38, 0.1) !important;
+            border-color: rgba(220, 38, 38, 0.35) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-tutup svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-hapus svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-lock svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-reset svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-gps-off svg {
+            stroke: #dc2626 !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-pin,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-keluar {
+            background: rgba(217, 119, 6, 0.1) !important;
+            border-color: rgba(217, 119, 6, 0.35) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-pin svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-keluar svg {
+            stroke: #d97706 !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-branding,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-paksa {
+            background: rgba(124, 58, 237, 0.1) !important;
+            border-color: rgba(124, 58, 237, 0.35) !important;
+        }
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-branding svg,
+        html body:not(.dark-mode) .popup-body .popup-btn-icon.t-paksa svg {
+            stroke: #7c3aed !important;
+        }
+        html body:not(.dark-mode) .popup-header {
+            background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+            border-bottom: 2px solid #2563eb !important;
+        }
+        html body:not(.dark-mode) .popup-title {
+            color: #ffffff !important;
+            text-shadow: none !important;
+        }
+        html body:not(.dark-mode) .popup-close {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: #ffffff !important;
+        }
+        html body:not(.dark-mode) .popup-close:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+        }
+        html body:not(.dark-mode) .gps-status-box.aktif {
+            background: rgba(5, 150, 105, 0.12) !important;
+            color: #047857 !important;
+            border: 1px solid rgba(5, 150, 105, 0.35) !important;
+        }
+        html body:not(.dark-mode) .gps-status-box.nonaktif {
+            background: rgba(220, 38, 38, 0.12) !important;
+            color: #b91c1c !important;
+            border: 1px solid rgba(220, 38, 38, 0.35) !important;
+        }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
         <div class="top-controls">
-            <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">🌙 Mode Gelap</button>
-            <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutAdmin()" style="display: none;">Logout</button>
+            <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">
+                <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <span id="btn-toggle-dark-text">Mode Gelap</span>
+            </button>
+            <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutAdmin()" style="display: none;">
+                <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </button>
         </div>
 
         <div class="header-admin">
@@ -1869,14 +1734,15 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
                     <span class="admin-menu-card-label">Tindakan<br>Darurat</span>
                 </button>
 
-                <button type="button" class="admin-menu-card" onclick="bukaPopupAdmin('gps')">
-                    <span class="admin-menu-card-icon t-gps">
+                <button type="button" class="admin-menu-card" onclick="bukaPopupAdmin('whitelist')">
+                    <span class="admin-menu-card-icon t-whitelist">
                         <svg viewBox="0 0 24 24">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                            <polyline points="16 11 18 13 22 9"/>
                         </svg>
                     </span>
-                    <span class="admin-menu-card-label">Konfigurasi<br>GPS Toko</span>
+                    <span class="admin-menu-card-label">Akses Login<br>Promotor</span>
                 </button>
 
             </div>
@@ -2698,7 +2564,6 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
             const body = document.getElementById('popup-aktivitas-admin-body');
             if (!popup || !title || !body) return;
 
-            // Header dengan icon SVG (bukan emoji)
             const iconSvg = {
                 bawa: `<svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
                 ibadah: `<svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-4 7 4"/><path d="M5 16l7-4 7 4"/></svg>`,
@@ -2766,146 +2631,228 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
         /* ===== POPUP MENU ADMIN ===================================== */
         /* ============================================================ */
        function bukaPopupAdmin(jenis) {
-    const popup = document.getElementById('popup-aktivitas-admin');
-    const title = document.getElementById('popup-aktivitas-admin-title');
-    const body = document.getElementById('popup-aktivitas-admin-body');
-    if (!popup || !title || !body) return;
+            const popup = document.getElementById('popup-aktivitas-admin');
+            const title = document.getElementById('popup-aktivitas-admin-title');
+            const body = document.getElementById('popup-aktivitas-admin-body');
+            if (!popup || !title || !body) return;
 
-    // Icon SVG untuk header popup
-    const headerIcon = {
-        operasional: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-        urutan: `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
-        darurat: `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-        gps: `<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
-    };
-    const namaHeader = {
-        operasional: 'Operasional Sistem',
-        urutan: 'Manajemen Urutan',
-        darurat: 'Tindakan Darurat',
-        gps: 'Konfigurasi GPS Toko'
-    };
+            const headerIcon = {
+                operasional: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+                urutan: `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+                darurat: `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+                whitelist: `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>`
+            };
+            const namaHeader = {
+                operasional: 'Operasional Sistem',
+                urutan: 'Manajemen Urutan',
+                darurat: 'Tindakan Darurat',
+                whitelist: 'Kelola Akses Login (Whitelist)'
+            };
 
-    // Icon SVG untuk tombol-tombol di dalam popup
-    const ICONS = {
-        buka: `<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`,
-        tutup: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
-        branding: `<svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
-        tambahAntri: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
-        tambahSales: `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
-        pin: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-        hapus: `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
-        keluarkan: `<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-        paksa: `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-        lock: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-        reset: `<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
-        gpsOn: `<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-        gpsOff: `<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`
-    };
+            const ICONS = {
+                buka: `<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`,
+                tutup: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
+                branding: `<svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
+                tambahAntri: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+                tambahSales: `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`,
+                hapus: `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`,
+                keluarkan: `<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+                paksa: `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+                lock: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+                reset: `<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
+                whitelist: `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>`
+            };
 
-    let html = '';
+            let html = '';
 
-    if (jenis === 'operasional') {
-        title.innerHTML = headerIcon.operasional + namaHeader.operasional;
-        const sedangBuka = statusSistemGlobal === "BUKA";
+            if (jenis === 'operasional') {
+                title.innerHTML = headerIcon.operasional + namaHeader.operasional;
+                const sedangBuka = statusSistemGlobal === "BUKA";
+                let tombolUtama = sedangBuka
+                    ? `<button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalToggleSistem('TUTUP')">
+                        <span class="popup-btn-icon t-tutup">${ICONS.tutup}</span>
+                        <span class="popup-btn-text">Tutup Sistem Antrian<small>Hentikan sementara antrian sekarang</small></span>
+                       </button>`
+                    : `<button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalToggleSistem('BUKA')">
+                        <span class="popup-btn-icon t-buka">${ICONS.buka}</span>
+                        <span class="popup-btn-text">Buka Sistem Antrian<small>Aktifkan kembali antrian sekarang</small></span>
+                       </button>`;
+                const statusInfo = sedangBuka
+                    ? `<div class="gps-status-box aktif" style="margin-bottom:12px;"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Sistem Sedang BUKA — Antrian Aktif</span></div>`
+                    : `<div class="gps-status-box nonaktif" style="margin-bottom:12px;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span>Sistem Sedang TUTUP — Antrian Ditutup</span></div>`;
+                html = `
+                    ${statusInfo}
+                    ${tombolUtama}
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalBranding()">
+                        <span class="popup-btn-icon t-branding">${ICONS.branding}</span>
+                        <span class="popup-btn-text">Pengaturan Branding & GPS<small>Nama, logo & lokasi toko</small></span>
+                    </button>
+                `;
+            } else if (jenis === 'urutan') {
+                title.innerHTML = headerIcon.urutan + namaHeader.urutan;
+                html = `
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalTambahAntriAdmin()">
+                        <span class="popup-btn-icon t-tambah">${ICONS.tambahAntri}</span>
+                        <span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan sekarang</small></span>
+                    </button>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalTambahMasterSales()">
+                        <span class="popup-btn-icon t-tambah">${ICONS.tambahSales}</span>
+                        <span class="popup-btn-text">Tambah Nama Promotor Baru<small>Daftarkan nama promotor baru</small></span>
+                    </button>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalHapusMasterSales()">
+                        <span class="popup-btn-icon t-hapus">${ICONS.hapus}</span>
+                        <span class="popup-btn-text">Hapus Nama Permanen<small>Hapus dari daftar promotor</small></span>
+                    </button>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalKeluarkanAntrian()">
+                        <span class="popup-btn-icon t-keluar">${ICONS.keluarkan}</span>
+                        <span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan aktif</small></span>
+                    </button>
+                `;
+            } else if (jenis === 'darurat') {
+                title.innerHTML = headerIcon.darurat + namaHeader.darurat;
+                html = `
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalPaksaBawaCustomer()">
+                        <span class="popup-btn-icon t-paksa">${ICONS.paksa}</span>
+                        <span class="popup-btn-text">Paksa Bawa Customer<small>Set promotor langsung melayani</small></span>
+                    </button>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalLockPromotorAdmin()">
+                        <span class="popup-btn-icon t-lock">${ICONS.lock}</span>
+                        <span class="popup-btn-text">Kontrol Hukuman / Lock Akun<small>Kunci/buka akun promotor</small></span>
+                    </button>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalResetTotal()">
+                        <span class="popup-btn-icon t-reset">${ICONS.reset}</span>
+                        <span class="popup-btn-text">Reset Seluruh Antrian Aktif<small>Hapus semua antrian hari ini</small></span>
+                    </button>
+                `;
+            } else if (jenis === 'whitelist') {
+                title.innerHTML = headerIcon.whitelist + namaHeader.whitelist;
+                html = `
+                    <div style="font-size:12px; color:#64748b; margin-bottom:12px;">Daftarkan email Google promotor di sini agar mereka bisa login ke aplikasi antrian.</div>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalWhitelist()">
+                        <span class="popup-btn-icon t-whitelist">${ICONS.whitelist}</span>
+                        <span class="popup-btn-text">Tambah Akses Login Promotor<small>Daftarkan email Google baru</small></span>
+                    </button>
+                    <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalLihatWhitelist()">
+                        <span class="popup-btn-icon t-branding">${ICONS.tambahSales}</span>
+                        <span class="popup-btn-text">Lihat Daftar Akses Login<small>Cek email yang sudah terdaftar</small></span>
+                    </button>
+                `;
+            }
 
-        let tombolUtama;
-        if (sedangBuka) {
-            tombolUtama = `
-                <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalToggleSistem('TUTUP')">
-                    <span class="popup-btn-icon t-tutup">${ICONS.tutup}</span>
-                    <span class="popup-btn-text">Tutup Sistem Antrian<small>Hentikan sementara antrian sekarang</small></span>
-                </button>
-            `;
-        } else {
-            tombolUtama = `
-                <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalToggleSistem('BUKA')">
-                    <span class="popup-btn-icon t-buka">${ICONS.buka}</span>
-                    <span class="popup-btn-text">Buka Sistem Antrian<small>Aktifkan kembali antrian sekarang</small></span>
-                </button>
-            `;
+            body.innerHTML = html;
+            popup.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        const statusInfo = sedangBuka
-            ? `<div class="gps-status-box aktif" style="margin-bottom:12px;">
-                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <span>Sistem Sedang BUKA — Antrian Aktif</span>
-               </div>`
-            : `<div class="gps-status-box nonaktif" style="margin-bottom:12px;">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                <span>Sistem Sedang TUTUP — Antrian Ditutup</span>
-               </div>`;
+        // ============================================================
+        // FUNGSI WHITELIST
+        // ============================================================
+        function bukaModalWhitelist() {
+            let options = '<option value="">-- Pilih Promotor --</option>';
+            masterSalesGlobal.forEach(n => {
+                options += `<option value="${n.nama}">${n.nama}</option>`;
+            });
 
-        html = `
-            ${statusInfo}
-            ${tombolUtama}
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalBranding()">
-                <span class="popup-btn-icon t-branding">${ICONS.branding}</span>
-                <span class="popup-btn-text">Pengaturan Branding<small>Nama, logo & lokasi toko</small></span>
-            </button>
-        `;
-    } else if (jenis === 'urutan') {
-        title.innerHTML = headerIcon.urutan + namaHeader.urutan;
-        html = `
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalTambahAntriAdmin()">
-                <span class="popup-btn-icon t-tambah">${ICONS.tambahAntri}</span>
-                <span class="popup-btn-text">Masukkan Promotor ke Antrian<small>Tambahkan ke urutan sekarang</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalTambahMasterSales()">
-                <span class="popup-btn-icon t-tambah">${ICONS.tambahSales}</span>
-                <span class="popup-btn-text">Tambah Nama Promotor Baru<small>Daftarkan promotor baru</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalKelolaPIN()">
-                <span class="popup-btn-icon t-pin">${ICONS.pin}</span>
-                <span class="popup-btn-text">Buat PIN Promotor<small>Atur kode akses login</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalHapusMasterSales()">
-                <span class="popup-btn-icon t-hapus">${ICONS.hapus}</span>
-                <span class="popup-btn-text">Hapus Nama Permanen<small>Hapus dari daftar promotor</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalKeluarkanAntrian()">
-                <span class="popup-btn-icon t-keluar">${ICONS.keluarkan}</span>
-                <span class="popup-btn-text">Keluarkan dari Antrian<small>Cabut dari urutan aktif</small></span>
-            </button>
-        `;
-    } else if (jenis === 'darurat') {
-        title.innerHTML = headerIcon.darurat + namaHeader.darurat;
-        html = `
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalPaksaBawaCustomer()">
-                <span class="popup-btn-icon t-paksa">${ICONS.paksa}</span>
-                <span class="popup-btn-text">Paksa Bawa Customer<small>Set promotor langsung melayani</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalLockPromotorAdmin()">
-                <span class="popup-btn-icon t-lock">${ICONS.lock}</span>
-                <span class="popup-btn-text">Kontrol Hukuman / Lock Akun<small>Kunci/buka akun promotor</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); bukaModalResetTotal()">
-                <span class="popup-btn-icon t-reset">${ICONS.reset}</span>
-                <span class="popup-btn-text">Reset Seluruh Antrian Aktif<small>Hapus semua antrian hari ini</small></span>
-            </button>
-        `;
-    } else if (jenis === 'gps') {
-        title.innerHTML = headerIcon.gps + namaHeader.gps;
-        const aktif = koordinatTokoAdmin.lat && koordinatTokoAdmin.lat !== "";
-        const statusHtml = aktif
-            ? `<div class="gps-status-box aktif"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>GPS Aktif — Radius ${koordinatTokoAdmin.radius}m</span></div>`
-            : `<div class="gps-status-box nonaktif"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg><span>GPS Nonaktif — Check-in dari mana saja</span></div>`;
-        html = `
-            ${statusHtml}
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); toggleGPSAdmin(true)">
-                <span class="popup-btn-icon t-gps-on">${ICONS.gpsOn}</span>
-                <span class="popup-btn-text">Aktifkan GPS Toko<small>Ambil koordinat lokasi HP sekarang</small></span>
-            </button>
-            <button type="button" class="popup-btn" onclick="tutupPopupAktivitasAdmin(); toggleGPSAdmin(false)">
-                <span class="popup-btn-icon t-gps-off">${ICONS.gpsOff}</span>
-                <span class="popup-btn-text">Matikan GPS Toko<small>Promotor bisa check-in dari mana saja</small></span>
-            </button>
-        `;
-    }
+            document.getElementById('modal-title').innerText = "Tambah Akses Login (Whitelist)";
+            document.getElementById('modal-desc').innerHTML = `
+                <div style="font-size:12px; margin-bottom:10px; color:#64748b;">
+                    Daftarkan email Google promotor agar bisa login ke aplikasi antrian.
+                </div>
+                <label style="font-size:11px; font-weight:700;">Pilih Nama Promotor:</label><br>
+                <select id="wl-pilih-promotor" style="margin-bottom:10px;">${options}</select>
+                
+                <label style="font-size:11px; font-weight:700;">Email Google (Gmail):</label><br>
+                <input type="email" id="wl-input-email" placeholder="contoh@gmail.com" style="margin-bottom:10px;">
+                
+                <div style="background:#fef3c7; padding:10px; border-radius:8px; font-size:11px; color:#92400e; line-height:1.5;">
+                    ⚠️ <b>Penting:</b> Promotor harus login ke web antrian menggunakan email Google ini. Pastikan emailnya benar.
+                </div>
+            `;
+            document.getElementById('modal-actions').innerHTML = `
+                <button type="button" class="btn-cancel" onclick="tutupModal()">Batal</button>
+                <button type="button" id="btn-modal-action-ok" onclick="eksekusiTambahWhitelist()">Simpan Akses</button>
+            `;
+            document.getElementById('custom-modal').classList.add('active');
+        }
 
-    body.innerHTML = html;
-    popup.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
+        async function eksekusiTambahWhitelist() {
+            const nama = document.getElementById('wl-pilih-promotor').value;
+            const email = document.getElementById('wl-input-email').value.trim().toLowerCase();
+            if (!nama || !email) { tampilkanModal("Perhatian", "Pilih promotor dan isi email!"); return; }
+            if (!email.includes('@')) { tampilkanModal("Perhatian", "Format email tidak valid!"); return; }
+            
+            const emailKey = email.replace(/\./g, ',');
+            const btn = document.getElementById('btn-modal-action-ok');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Menyimpan...`;
+            
+            try {
+                await window.dbSet(window.dbRef(window.db, 'users/whitelist/' + emailKey), {
+                    email: email,
+                    nama: nama,
+                    role: 'PROMOTOR'
+                });
+                tutupModal();
+                tampilkanModal("Berhasil", `Email <b>${email}</b> berhasil didaftarkan untuk promotor <b>${nama}</b>.<br><br>Sekarang promotor bisa login ke aplikasi antrian.`);
+            } catch (e) {
+                console.warn("Error simpan whitelist:", e);
+                tutupModal();
+                tampilkanModal("Gagal", "Tidak bisa menyimpan akses login.");
+            }
+        }
+
+        async function bukaModalLihatWhitelist() {
+            document.getElementById('modal-title').innerText = "Daftar Akses Login (Whitelist)";
+            document.getElementById('modal-desc').innerHTML = `<div style="text-align:center; padding:20px;">Memuat data...</div>`;
+            document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-cancel" onclick="tutupModal()">Tutup</button>`;
+            document.getElementById('custom-modal').classList.add('active');
+
+            try {
+                const snap = await window.dbGet(window.dbRef(window.db, 'users/whitelist'));
+                if (!snap.exists()) {
+                    document.getElementById('modal-desc').innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Belum ada email yang terdaftar.</div>`;
+                    return;
+                }
+                
+                const data = snap.val();
+                let html = `<div style="max-height:400px; overflow-y:auto; text-align:left;">`;
+                html += `<table style="width:100%; border-collapse:collapse; font-size:12px;">`;
+                html += `<thead><tr style="background:#f1f5f9;">
+                    <th style="padding:8px; text-align:left; border-bottom:1px solid #e2e8f0;">Nama</th>
+                    <th style="padding:8px; text-align:left; border-bottom:1px solid #e2e8f0;">Email</th>
+                    <th style="padding:8px; text-align:center; border-bottom:1px solid #e2e8f0;">Aksi</th>
+                </tr></thead><tbody>`;
+                
+                Object.keys(data).forEach(key => {
+                    const item = data[key];
+                    if (!item.email) return;
+                    html += `<tr>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; font-weight:600;">${item.nama || '-'}</td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; font-size:11px;">${item.email}</td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:center;">
+                            <button type="button" onclick="hapusWhitelist('${key}', '${item.email}')" style="background:#dc2626; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Hapus</button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+                
+                document.getElementById('modal-desc').innerHTML = html;
+            } catch (e) {
+                document.getElementById('modal-desc').innerHTML = `<div style="text-align:center; padding:20px; color:#dc2626;">Gagal memuat data.</div>`;
+            }
+        }
+
+        async function hapusWhitelist(key, email) {
+            if (!confirm(`Hapus akses login untuk ${email}?`)) return;
+            try {
+                await window.dbRemove(window.dbRef(window.db, 'users/whitelist/' + key));
+                tampilkanModal("Berhasil", `Akses login ${email} telah dihapus.`);
+                bukaModalLihatWhitelist();
+            } catch (e) {
+                tampilkanModal("Gagal", "Tidak bisa menghapus akses login.");
+            }
+        }
+
         function bukaModalToggleSistem(targetStatus) {
             document.getElementById('modal-title').innerText = targetStatus === 'BUKA' ? 'Mulai Antrian' : 'Hentikan Antrian';
             document.getElementById('modal-desc').innerHTML = `Ubah status sistem menjadi: <b>${targetStatus}</b>?`;
@@ -2926,7 +2873,7 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
             }
         }
         function bukaModalBranding() {
-            document.getElementById('modal-title').innerText = "🎨 Pengaturan Branding & Lokasi";
+            document.getElementById('modal-title').innerText = "Pengaturan Branding & Lokasi";
             const s = window.settingGlobal || {};
             const namaTokoSekarang = s.namaToko || "";
             const namaSistemSekarang = s.namaSistem || "";
@@ -3123,7 +3070,7 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
                 const punyaPIN = pinPromotorGlobal[clean] ? " ✅" : " ⚠️ belum ada PIN";
                 options += `<option value="${n.nama}">${n.nama}${punyaPIN}</option>`;
             });
-            document.getElementById('modal-title').innerText = "🔑 Buat / Atur PIN Promotor";
+            document.getElementById('modal-title').innerText = "Buat / Atur PIN Promotor";
             document.getElementById('modal-desc').innerHTML = `
                 <div style="font-size:12px; margin-bottom:10px; color:#64748b;">
                     PIN wajib 6 digit angka. Promotor akan memasukkan PIN ini untuk login.
@@ -3142,8 +3089,8 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
                     background:#ffffff; font-size:18px; font-weight:800; text-align:center; letter-spacing:6px;
                     outline:none; box-sizing:border-box; margin-bottom:10px;">
                 <div style="display:flex; gap:6px;">
-                    <button type="button" style="flex:1; font-size:11px; padding:8px;" onclick="generatePINAcak()">🎲 Acak</button>
-                    <button type="button" style="flex:1; font-size:11px; padding:8px;" onclick="lihatSemuaPIN()">👁️ Lihat Semua</button>
+                    <button type="button" style="flex:1; font-size:11px; padding:8px;" onclick="generatePINAcak()">Acak</button>
+                    <button type="button" style="flex:1; font-size:11px; padding:8px;" onclick="lihatSemuaPIN()">Lihat Semua</button>
                 </div>
             `;
             document.getElementById('modal-actions').innerHTML = `
@@ -3278,7 +3225,7 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
             html += `<div style="font-size:11px; color:#64748b; margin-top:10px; text-align:center;">
                 Total: ${Object.keys(pinPromotorGlobal).length} dari ${masterSalesGlobal.length} promotor punya PIN
             </div>`;
-            document.getElementById('modal-title').innerText = "👁️ Daftar Semua PIN Promotor";
+            document.getElementById('modal-title').innerText = "Daftar Semua PIN Promotor";
             document.getElementById('modal-desc').innerHTML = html;
             document.getElementById('modal-actions').innerHTML = `
                 <button type="button" class="btn-cancel" onclick="bukaModalKelolaPIN()">← Kembali</button>
@@ -3672,7 +3619,6 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
                 if (Object.keys(updatesStat).length > 0) {
                     await window.dbUpdate(window.dbRef(db), updatesStat);
                 }
-                console.log("✅ Reset selesai. Deal/Lihat tetap tersimpan di statistikAktivitas.");
                 localStorage.setItem('ufo_admin_last_nosale_reset', hariIniKey);
                 tutupModal();
                 let pesan = "Semua antrian berhasil direset.\n\n✅ Data Deal, Lihat, dan No Sale tetap aman.";
@@ -3748,7 +3694,13 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
         }
         function updateDarkButtonText(isDark) {
             const btn = document.getElementById('btn-toggle-dark');
-            if (btn) btn.innerHTML = isDark ? '☀️ Mode Terang' : '🌙 Mode Gelap';
+            const span = document.getElementById('btn-toggle-dark-text');
+            if (!btn) return;
+            if (isDark) {
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> <span id="btn-toggle-dark-text">Mode Terang</span>`;
+            } else {
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> <span id="btn-toggle-dark-text">Mode Gelap</span>`;
+            }
         }
 
         function tampilkanModal(judul, pesan) {
@@ -3807,6 +3759,12 @@ html body:not(.dark-mode) .gps-status-box.nonaktif {
         window.bukaPopupAktivitasAdmin = bukaPopupAktivitasAdmin;
         window.tutupPopupAktivitasAdmin = tutupPopupAktivitasAdmin;
         window.bukaPopupAdmin = bukaPopupAdmin;
+
+        // WHITELIST
+        window.bukaModalWhitelist = bukaModalWhitelist;
+        window.eksekusiTambahWhitelist = eksekusiTambahWhitelist;
+        window.bukaModalLihatWhitelist = bukaModalLihatWhitelist;
+        window.hapusWhitelist = hapusWhitelist;
 
         window.addEventListener('firebase-ready', () => {
             restoreAktivitasAdminState();

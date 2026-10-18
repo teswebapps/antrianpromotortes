@@ -625,22 +625,17 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
             </div>
         </div>
 
-        <div id="section-checkin-awal" style="display: none;">
+               <div id="section-checkin-awal" style="display: none;">
             <div class="gps-box">
                 <div style="font-size:11px; font-weight:800; color:var(--primary); text-transform:uppercase; margin-bottom:8px; letter-spacing:0.3px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
                 <div id="map-promotor"></div>
                 <div id="info-radius" class="info-radius">📡 Mendeteksi lokasi Anda...</div>
             </div>
-            <div class="input-group">
-                <label>Check-in Kehadiran</label>
-                <select id="pilih-kategori-hadir">
-                    <option value="HA">HA (Home Appliance)</option>
-                    <option value="AV">AV (Audio Video)</option>
-                </select>
-            </div>
+            
+            <!-- FORM DI BAWAH INI KITA HAPUS, KARENA KATEGORI AKAN OTOMATIS -->
+            
             <button type="button" id="btn-hadir" class="btn-success btn-disabled" onclick="aksiHadirKerja()" disabled>Menunggu Lokasi...</button>
         </div>
-
         <div id="section-normal" style="display: none;">
             <div class="input-group" id="group-pilih-kategori-normal">
                 <label>Pilih Kategori Antrian</label>
@@ -1334,16 +1329,29 @@ function aksiHadirKerja() {
         }
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko untuk check-in."); return; }
-        const kat = document.getElementById('pilih-kategori-hadir').value;
+        
+        // OTOMATIS MASUK KATEGORI HA (Bisa disesuaikan)
+        const kat = "HA"; 
         const nama = getAkunAktif();
         const clean = sanitizeNama(nama);
         const tglKey = getTanggalKey();
         const waktuSekarang = waktuServer();
-        window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 }).then(() => {
-            window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang });
+        
+        // 1. Simpan ke Daftar Antrian
+        window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { 
+            nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 
+        }).then(() => {
+            // 2. Simpan ke Riwayat Checkin Harian
+            window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { 
+                nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang 
+            });
+            
             localStorage.setItem('ufo_checkin_hari_ini', 'true');
             localStorage.setItem('ufo_checkin_tanggal', tglKey);
             catatAktivitas(nama, "CheckIn", kat);
+            
+            // 3. Tampilkan notifikasi sukses
+            tampilkanModal("Check-in Berhasil", "Anda berhasil check-in dan sudah masuk ke dalam antrian.");
             renderUI();
         });
     });

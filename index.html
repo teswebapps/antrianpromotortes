@@ -428,7 +428,58 @@ button {
     .btn-google-icon { width: 30px; height: 30px; }
     .btn-google-text { font-size: 13px; }
 }
-
+/* ===== FIX POPUP LOGIN BERHASIL ===== */
+.login-toast-overlay { 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: rgba(15, 23, 42, 0.85); 
+    backdrop-filter: blur(6px); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 999999; 
+    opacity: 0; 
+    visibility: hidden; 
+    padding: 16px; 
+    transition: all 0.3s ease; 
+}
+.login-toast-overlay.active { 
+    opacity: 1; 
+    visibility: visible; 
+}
+.login-toast-card { 
+    background: linear-gradient(160deg, #ffffff, #f8fafc); 
+    padding: 32px 40px; 
+    border-radius: 24px; 
+    text-align: center; 
+    border: 1px solid rgba(16, 185, 129, 0.4); 
+    min-width: 240px; 
+    box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3); 
+}
+.login-toast-icon { 
+    width: 72px; height: 72px; 
+    border-radius: 50%; 
+    background: linear-gradient(135deg, #10b981, #059669); 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 16px; 
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5); 
+}
+.login-toast-icon svg { 
+    width: 40px; height: 40px; 
+    stroke: #ffffff; stroke-width: 3; fill: none; 
+}
+.login-toast-title { 
+    font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px; 
+}
+.login-toast-subtitle { 
+    font-size: 13px; font-weight: 600; color: #64748b; 
+}
+.login-toast-name { 
+    color: #10b981; font-weight: 800; 
+}
 /* Light mode overrides untuk layar login */
 body:not(.dark-mode) #login-screen { background: #f1f5f9; }
 body:not(.dark-mode) .fut-card { background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important; }
@@ -516,7 +567,7 @@ body:not(.dark-mode) .login-theme-toggle { background: #ffffff !important; borde
 </div>
 
 <!-- ========== APLIKASI UTAMA ========== -->
-<div class="app-container" id="app-container" style="display: none;">
+<div class="app-container" id="app-container" style="display: none; visibility: hidden;">
     <div class="top-controls">
         <button type="button" class="dark-mode-btn" id="btn-toggle-dark" onclick="toggleDarkMode()">
             <svg id="btn-toggle-dark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;">
@@ -903,7 +954,12 @@ function tampilkanAplikasiUtama() {
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
     if (loginScreen) loginScreen.style.display = 'none';
-    if (appContainer) appContainer.style.display = 'block';
+    
+    if (appContainer) {
+        appContainer.style.display = 'block';
+        appContainer.style.visibility = 'visible'; // <-- Pastikan baris ini ada
+    }
+    
     const cachedNama = getAkunAktif();
     document.getElementById('panel-menu-utama').style.display = 'block';
     document.getElementById('label-user-aktif').innerText = cachedNama;

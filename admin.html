@@ -1949,14 +1949,13 @@
                 pinPromotorGlobal = snapshot.val() || {};
             });
 
-            cekDanJalankanAutoCleanup();
+                       cekDanJalankanAutoCleanup();
             if (timerCekGantiHari) clearInterval(timerCekGantiHari);
-            timerCekGantiHari = setInterval(() => {
-                cekDanJalankanAutoCleanup();
+            timerCekGantiHari = setInterval(async () => {
+                await cekDanJalankanAutoCleanup();
                 cekSemuaExpiredAdmin();
-                cekLockExpiredAdmin();
+                await cekLockExpiredAdmin();
             }, 30000);
-        }
 
         function matikanListenerFirebase() {
             if (unsubAntrian) { unsubAntrian(); unsubAntrian = null; }
@@ -2047,21 +2046,42 @@
             });
         }
 
-        function cekLockExpiredAdmin() {
+               async function cekLockExpiredAdmin() {
+            const db = window.db;
             const sekarang = waktuServer();
-            Object.keys(lockGlobal).forEach(clean => {
-                const lockData = lockGlobal[clean];
-                if (lockData && lockData.locked) {
-                    const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
-                    if (waktuExpired > 0 && sekarang >= waktuExpired) {
-                        window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + clean), {
-                            locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0
-                        }).catch(() => {});
-                    }
-                }
-            });
-        }
+            try {
+                const snap = await window.dbGet(window.dbRef(db, 'lockPromotor'));
+                if (!snap.exists()) return;
+                const locks = snap.val();
+                const updates = {};
+                let adaPerubahan = false;
 
+                Object.keys(locks).forEach(clean => {
+                    const lockData = locks[clean];
+                    if (!lockData || !lockData.locked) return;
+
+                    const waktuMulai = Number(lockData.waktuMulaiLock) || 0;
+                    const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
+
+                    // 1. Jika waktu sudah habis (expired)
+                    if (waktuExpired > 0 && sekarang >= waktuExpired) {
+                        updates['lockPromotor/' + clean] = { locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0 };
+                        adaPerubahan = true;
+                    } 
+                    // 2. Jika jadwal lock terjadwal sudah masuk waktunya
+                    else if (waktuMulai > 0 && sekarang >= waktuMulai && sekarang < waktuExpired) {
+                        // Hapus dari antrian jika masih ada
+                        window.dbRemove(window.dbRef(db, 'antrian/' + clean));
+                    }
+                });
+
+                if (adaPerubahan) {
+                    await window.dbUpdate(window.dbRef(db), updates);
+                }
+            } catch (e) {
+                console.warn("Gagal cek expired lock:", e);
+            }
+        }
         async function cekDanJalankanAutoCleanup() {
             try {
                 const now = new Date(waktuServer());
@@ -2085,7 +2105,7 @@
             }
         }
 
-        async function jalankanAutoCleanup(hariIniKey) {
+              async function jalankanAutoCleanup(hariIniKey) {
             const db = window.db;
             const snapAntrian = await window.dbGet(window.dbRef(db, 'antrian'));
             if (snapAntrian.exists()) {
@@ -2097,6 +2117,7 @@
                 Object.keys(data).forEach(key => {
                     const item = data[key];
                     if (!item) return;
+                    // Hanya hapus antrian lama, JANGAN hapus data lock
                     if (item.waktuStandby && item.waktuStandby < startToday) {
                         updates['antrian/' + key] = null;
                     }

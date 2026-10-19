@@ -1536,6 +1536,84 @@
             color: #b91c1c !important;
             border: 1px solid rgba(220, 38, 38, 0.35) !important;
         }
+
+        /* ============================================================ */
+        /* ===== STYLING LIST BAWA CUSTOMER (SESUAI GAMBAR) =========== */
+        /* ============================================================ */
+        .list-bawa-custom {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .list-bawa-custom li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f8fafc; 
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        .list-bawa-custom .nama-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase; 
+        }
+
+        .list-bawa-custom .waktu-wrapper {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            white-space: nowrap;
+            font-family: monospace; 
+        }
+
+        .list-bawa-custom .badge-melayani-text {
+            color: #059669; 
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .total-box-custom {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .total-box-custom .text-lihat { color: #d97706; }
+        .total-box-custom .text-deal { color: #059669; }
+
+        /* Dark Mode */
+        body.dark-mode .list-bawa-custom li {
+            background: #2b0007 !important;
+            border: 1px solid #ff1f3d !important;
+        }
+        body.dark-mode .list-bawa-custom .nama-wrapper { color: #ffffff !important; }
+        body.dark-mode .list-bawa-custom .waktu-wrapper { color: #ff99a8 !important; }
+        body.dark-mode .list-bawa-custom .badge-melayani-text { color: #34d399 !important; }
+        body.dark-mode .total-box-custom {
+            background: #1a0205 !important;
+            border: 1px solid #ff1f3d !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body>
@@ -2305,53 +2383,69 @@
             semuaBawa.sort((a, b) => (b.waktuMulai || 0) - (a.waktuMulai || 0));
 
             document.getElementById('count-bawa').innerText = semuaBawa.length;
-            document.getElementById('list-bawa').innerHTML = semuaBawa.length === 0
-                ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
-                : semuaBawa.map(a => {
-                    const mulai = a.waktuMulai;
-                    const selesai = a.waktuSelesai;
-                    let rangeLabel, namaLabel;
-                    if (a._sedangMelayani) {
-                        rangeLabel = `(${formatJam(mulai)} - ...)`;
-                        namaLabel = `${a.nama} <span class="label-melayani">(MELAYANI)</span>`;
-                    } else if (selesai) {
-                        rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
-                        if (a.hasil === "Deal") {
-                            namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
-                        } else if (a.hasil === "Lihat") {
-                            namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
-                        } else {
-                            namaLabel = `${a.nama} <span class="label-lihat">(selesai)</span>`;
-                        }
-                    } else {
-                        rangeLabel = `(${formatJam(mulai)} - ...)`;
-                        namaLabel = `${a.nama} <span class="label-lihat">(proses)</span>`;
-                    }
-                    return `<li><span class="nama">${namaLabel}</span><span class="waktu">${rangeLabel}</span></li>`;
-                }).join('');
-
+            
             let totalLihatHariIni = 0, totalDealHariIni = 0;
             semuaBawa.forEach(a => {
                 if (a.hasil === "Lihat") totalLihatHariIni++;
                 else if (a.hasil === "Deal") totalDealHariIni++;
             });
+
+            // --- BAGIAN YANG DIUBAH UNTUK LIST BAWA CUSTOMER ---
             const totalBox = document.getElementById('total-bawa-box');
             if (totalBox) {
                 if (semuaBawa.length === 0) {
                     totalBox.style.display = 'none';
                     totalBox.innerHTML = '';
                 } else {
-                    totalBox.style.display = 'block';
-                    totalBox.style.fontSize = '11px';
-                    totalBox.style.fontWeight = '800';
-                    totalBox.style.textAlign = 'center';
-                    totalBox.style.padding = '6px 8px';
-                    totalBox.style.marginBottom = '6px';
-                    totalBox.style.borderRadius = '8px';
-                    totalBox.style.background = 'rgba(100, 116, 139, 0.1)';
-                    totalBox.innerHTML = `TOTAL: <span class="total-lihat">👀 ${totalLihatHariIni} Lihat</span> &nbsp;│&nbsp; <span class="total-deal">✓ ${totalDealHariIni} Deal</span>`;
+                    totalBox.style.display = 'flex';
+                    totalBox.className = 'total-box-custom';
+                    totalBox.innerHTML = `
+                        <span>TOTAL:</span> 
+                        <span class="text-lihat">👀 ${totalLihatHariIni} Lihat</span> 
+                        <span>|</span> 
+                        <span class="text-deal">✓ ${totalDealHariIni} Deal</span>
+                    `;
                 }
             }
+
+            const elListBawa = document.getElementById('list-bawa');
+            if (elListBawa) {
+                elListBawa.className = 'list-bawa-custom';
+                if (semuaBawa.length === 0) {
+                    elListBawa.innerHTML = '<div class="aktivitas-empty">Belum ada yang membawa customer</div>';
+                } else {
+                    elListBawa.innerHTML = semuaBawa.map(a => {
+                        const mulai = a.waktuMulai;
+                        const selesai = a.waktuSelesai;
+                        let rangeLabel, namaLabel;
+
+                        if (a._sedangMelayani) {
+                            rangeLabel = `(${formatJam(mulai)} - ...)`;
+                            namaLabel = `${a.nama} <span class="badge-melayani-text">(MELAYANI)</span>`;
+                        } else if (selesai) {
+                            rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
+                            if (a.hasil === "Deal") {
+                                namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
+                            } else if (a.hasil === "Lihat") {
+                                namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
+                            } else {
+                                namaLabel = `${a.nama}`;
+                            }
+                        } else {
+                            rangeLabel = `(${formatJam(mulai)} - ...)`;
+                            namaLabel = `${a.nama}`;
+                        }
+
+                        return `
+                            <li>
+                                <div class="nama-wrapper">${namaLabel}</div>
+                                <div class="waktu-wrapper">${rangeLabel}</div>
+                            </li>
+                        `;
+                    }).join('');
+                }
+            }
+            // --- AKHIR BAGIAN YANG DIUBAH ---
 
             const listIbadah = gabungRentang(list, "MulaiIbadah", "SelesaiIbadah");
             document.getElementById('count-ibadah').innerText = listIbadah.length;

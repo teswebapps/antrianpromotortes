@@ -241,10 +241,16 @@ body.dark-mode .app-container {
     padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800;
     text-transform: uppercase; margin: 0 auto 20px auto; letter-spacing: 0.5px; width: fit-content;
 }
-.status-open { background: var(--green-light); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.status-open { 
+    background: var(--green) !important; 
+    color: #ffffff !important; 
+    border: 1px solid var(--green); 
+}
 .status-closed { background: var(--red-light); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
 .status-badge-sistem .dot { width: 6px; height: 6px; border-radius: 50%; }
-.status-open .dot { background: var(--green); }
+.status-open .dot { 
+    background: #ffffff !important; 
+}
 .status-closed .dot { background: var(--red); }
 
 /* Kartu Profil (Sudah Dihapus Teks Promotor Bertugas & Badge Aktif) */

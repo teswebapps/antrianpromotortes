@@ -109,13 +109,14 @@
 
 <style>
 /* ============================================================ */
-/* ========== 1. VARIABEL & DASAR ============================= */
+/* ========== 1. VARIABEL DASAR & RESET ======================= */
 /* ============================================================ */
 :root {
+    /* --- LIGHT MODE (Default) --- */
     --bg-body: #e2e8f0;
     --bg-card: #ffffff;
     --bg-soft: #f8fafc;
-    --text-dark: #0f172a;
+    --text-main: #0f172a;
     --text-muted: #64748b;
     --border-light: #e2e8f0;
     --border-strong: #cbd5e1;
@@ -138,10 +139,11 @@
 }
 
 body.dark-mode {
+    /* --- DARK MODE --- */
     --bg-body: #0b1120;
     --bg-card: #111827;
     --bg-soft: #1f2937;
-    --text-dark: #f8fafc;
+    --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --border-light: #1f2937;
     --border-strong: #374151;
@@ -159,7 +161,7 @@ body.dark-mode {
 
 body {
     background-color: var(--bg-body);
-    color: var(--text-dark);
+    color: var(--text-main);
     margin: 0;
     padding: 16px;
     display: flex;
@@ -168,7 +170,7 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Bingkai HP */
+/* Bingkai HP / Card Utama */
 .app-container {
     width: 100%;
     max-width: 440px;
@@ -200,7 +202,7 @@ body.dark-mode .app-container {
     font-weight: 900; font-size: 13px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
 }
-.brand-text h1 { font-size: 14px; font-weight: 800; margin: 0; line-height: 1.2; color: var(--text-dark); }
+.brand-text h1 { font-size: 14px; font-weight: 800; margin: 0; line-height: 1.2; color: var(--text-main); }
 .brand-text p { font-size: 10px; color: var(--text-muted); margin: 0; font-weight: 600; }
 
 .header-actions { display: flex; gap: 8px; }
@@ -245,7 +247,7 @@ body.dark-mode .app-container {
     font-weight: 900; font-size: 16px;
 }
 .user-label { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block;}
-#label-user-aktif { font-size: 14px; font-weight: 800; color: var(--text-dark); }
+#label-user-aktif { font-size: 14px; font-weight: 800; color: var(--text-main); }
 
 .status-kerja-badge {
     background: rgba(16, 185, 129, 0.1); color: var(--green);
@@ -272,19 +274,19 @@ body.dark-mode .app-container {
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
 .av .timer-badge-title { background: var(--purple-light); color: var(--purple); }
 
-.promotor-nama-aktif { font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; line-height: 1.2; }
+.promotor-nama-aktif { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
 .promotor-sub-text { font-size: 10px; color: var(--text-muted); font-weight: 600; }
 
 /* ============================================================ */
 /* ========== 4. FORM & TOMBOL ================================ */
 /* ============================================================ */
 .input-group { margin-bottom: 16px; text-align: left; }
-.input-group label { display: block; font-size: 10px; font-weight: 800; color: var(--text-dark); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;}
+.input-group label { display: block; font-size: 10px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;}
 
 select, input[type="text"], input[type="password"] {
     width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); background: var(--bg-card);
-    font-size: 13px; font-weight: 600; color: var(--text-dark); outline: none; transition: all 0.2s;
+    font-size: 13px; font-weight: 600; color: var(--text-main); outline: none; transition: all 0.2s;
 }
 select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
 
@@ -315,7 +317,7 @@ button {
 }
 .badge-total-antri {
     background: var(--bg-soft); border: 1px solid var(--border-strong);
-    padding: 4px 8px; border-radius: 6px; font-size: 9px; color: var(--text-dark);
+    padding: 4px 8px; border-radius: 6px; font-size: 9px; color: var(--text-main);
 }
 
 .list-antrian { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -323,7 +325,7 @@ button {
     padding: 10px 12px; background: var(--bg-soft);
     border-radius: var(--radius-md); 
     display: flex; justify-content: space-between; align-items: center;
-    border: 1px solid var(--border-light); font-size: 12px; font-weight: 700; color: var(--text-dark);
+    border: 1px solid var(--border-light); font-size: 12px; font-weight: 700; color: var(--text-main);
 }
 .list-antrian li.saya-sendiri { border: 1.5px solid var(--blue); background: var(--bg-card); box-shadow: 0 0 0 1px var(--blue); }
 
@@ -357,7 +359,7 @@ button {
 }
 .aktivitas-header-toggle .judul { 
     display: flex; align-items: center; gap: 8px; font-size: 11px; 
-    font-weight: 800; text-transform: uppercase; color: var(--text-dark); letter-spacing: 0.5px;
+    font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px;
 }
 .aktivitas-header-toggle .arrow {
     width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
@@ -376,9 +378,9 @@ button {
     cursor: pointer; position: relative; min-height: 85px; transition: all 0.2s;
 }
 .aktivitas-menu-btn:hover { background: var(--bg-soft); }
-.aktivitas-menu-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text-dark); }
+.aktivitas-menu-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
 .aktivitas-menu-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; }
-.aktivitas-menu-label { font-size: 10.5px; font-weight: 700; text-align: center; color: var(--text-dark); }
+.aktivitas-menu-label { font-size: 10.5px; font-weight: 700; text-align: center; color: var(--text-main); }
 .aktivitas-menu-count { 
     position: absolute; top: 8px; right: 8px; font-size: 9px; font-weight: 800; 
     background: var(--blue); color: #fff; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; 
@@ -390,25 +392,161 @@ button {
 /* ============================================================ */
 .popup-overlay, .modal-overlay { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 9999; }
 .popup-box, .modal-box { border-radius: var(--radius-lg); border: 1px solid var(--border-strong); background: var(--bg-card); }
-.popup-title, .modal-title { color: var(--text-dark); font-weight: 800; }
-.popup-close { color: var(--text-dark); background: var(--bg-soft); border: 1px solid var(--border-strong); }
+.popup-title, .modal-title { color: var(--text-main); font-weight: 800; }
+.popup-close { color: var(--text-main); background: var(--bg-soft); border: 1px solid var(--border-strong); }
 .modal-desc { color: var(--text-muted); font-weight: 600; }
 
-/* Sembunyikan elemen Login karena sudah login */
-#login-screen { display: none !important; }
-
-@media (max-width: 480px) {
-    body { padding: 10px; }
-    .app-container { border-radius: 24px; padding: 16px; border-width: 4px; }
-}
+/* ============================================================ */
+/* ========== 8. STYLING BAWAAN LOGIN (TETAP UTUH) ============ */
+/* ============================================================ */
+#login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050814; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; transition: background 0.3s; }
+.fut-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px); background-size: 40px 40px; animation: futGridMove 20s linear infinite; pointer-events: none; z-index: 1; }
+@keyframes futGridMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+.fut-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.6; animation: futOrbFloat 12s ease-in-out infinite; pointer-events: none; z-index: 1; }
+.fut-orb-1 { width: 400px; height: 400px; background: #0ea5e9; top: -100px; left: -100px; }
+.fut-orb-2 { width: 300px; height: 300px; background: #a855f7; bottom: -80px; right: -80px; animation-delay: -4s; }
+.fut-orb-3 { width: 350px; height: 350px; background: #06b6d4; top: 40%; left: 45%; animation-delay: -8s; opacity: 0.4; }
+@keyframes futOrbFloat { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-30px) scale(1.1); } 66% { transform: translate(-30px,40px) scale(0.9); } }
+.fut-particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.fut-particle { position: absolute; width: 2px; height: 2px; border-radius: 50%; animation: futParticleFloat linear infinite; }
+@keyframes futParticleFloat { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) scale(1); opacity: 0; } }
+.fut-container { position: relative; z-index: 10; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; max-width: 1100px; width: 100%; animation: futFadeIn 0.8s ease-out; }
+@keyframes futFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.fut-left { color: #ffffff; text-align: center; padding: 20px; }
+.fut-tagline { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.3); border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #22d3ee; margin-bottom: 20px; text-transform: uppercase; }
+.fut-dot { width: 6px; height: 6px; background: #22d3ee; border-radius: 50%; box-shadow: 0 0 10px #22d3ee; animation: futDotPulse 1.5s infinite; }
+@keyframes futDotPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
+.fut-headline { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; color: #ffffff; text-shadow: 0 0 30px rgba(34,211,238,0.5); line-height: 1.1; }
+.fut-subheadline { font-size: 14px; color: #94a3b8; font-weight: 500; margin: 0 0 30px 0; letter-spacing: 1px; }
+.fut-characters { display: flex; justify-content: center; align-items: center; margin-bottom: 30px; }
+.fut-characters .team-3d-img { max-width: 100%; max-height: 260px; height: auto; filter: drop-shadow(0 20px 30px rgba(0, 200, 255, 0.35)); }
+.fut-live-status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: rgba(5,8,20,0.6); border: 1px solid rgba(34,211,238,0.3); border-radius: 100px; font-size: 12px; color: #e2e8f0; font-weight: 600; }
+.fut-pulse-dot { width: 8px; height: 8px; background: #22d3ee; border-radius: 50%; animation: futDotPulse 1.5s infinite; }
+.fut-right { display: flex; justify-content: center; }
+.fut-card { width: 100%; max-width: 400px; border-radius: 24px; padding: 40px 32px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid rgba(56, 189, 248, 0.18); box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08), 0 20px 60px -20px rgba(56, 189, 248, 0.3), 0 30px 80px -30px rgba(168, 85, 247, 0.25); position: relative; overflow: hidden; animation: cardEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); backdrop-filter: blur(24px); }
+.fut-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 0.15), transparent 30%); animation: cardRotate 8s linear infinite; pointer-events: none; z-index: 0; }
+.fut-card::after { content: ''; position: absolute; inset: 1px; border-radius: 23px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%); z-index: 1; pointer-events: none; }
+.fut-card > * { position: relative; z-index: 2; }
+@keyframes cardEnter { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes cardRotate { to { transform: rotate(360deg); } }
+.fut-logo { width: 80px; height: 80px; margin: 0 auto 20px; background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.08)) !important; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; border-radius: 22px; display: flex; align-items: center; justify-content: center; padding: 12px; box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15) !important; animation: logoPulse 3s ease-in-out infinite; position: relative; }
+@keyframes logoPulse { 0%, 100% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15); } 50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25); } }
+.fut-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.login-hero { text-align: center; margin-bottom: 22px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
+.login-hero-title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.login-hero-sub { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.btn-google { width: 100%; padding: 14px 16px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); color: #111827; border: none; border-radius: 14px; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset; animation: fadeUp 0.6s ease-out 0.25s backwards; margin-top: 6px; text-transform: none; letter-spacing: 0.2px; }
+.btn-google::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent); transition: left 0.6s ease; }
+.btn-google:hover::before { left: 100%; }
+.btn-google:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset; background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%); }
+.btn-google:active { transform: translateY(0) scale(0.98); }
+.btn-google:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+.btn-google-icon { width: 34px; height: 34px; background: #ffffff; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease; }
+.btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg); }
+.btn-google-text { flex: 1; text-align: left; font-size: 14.5px; font-weight: 700; letter-spacing: 0.2px; }
+.btn-google-arrow { display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.3s ease; flex-shrink: 0; }
+.btn-google:hover .btn-google-arrow { color: #0284c7; transform: translateX(4px); }
+.login-theme-toggle { position: absolute !important; top: 14px !important; right: 14px !important; width: 38px !important; height: 38px !important; border-radius: 10px !important; border: 1px solid rgba(56, 189, 248, 0.4) !important; background: rgba(2, 6, 23, 0.7) !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 20 !important; padding: 0 !important; color: #38bdf8 !important; transition: all 0.25s ease !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important; }
+.login-theme-toggle svg { width: 18px !important; height: 18px !important; stroke: currentColor !important; stroke-width: 2 !important; fill: none !important; }
+.login-theme-toggle:hover { background: rgba(56, 189, 248, 0.25) !important; box-shadow: 0 0 20px rgba(56, 189, 248, 0.7) !important; transform: rotate(15deg) !important; }
+.login-toast-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 999999; opacity: 0; visibility: hidden; padding: 16px; transition: all 0.3s ease; }
+.login-toast-overlay.active { opacity: 1; visibility: visible; }
+.login-toast-card { background: linear-gradient(160deg, #ffffff, #f8fafc); padding: 32px 40px; border-radius: 24px; text-align: center; border: 2px solid #10b981; min-width: 240px; box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3); }
+.login-toast-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.5); }
+.login-toast-icon svg { width: 40px; height: 40px; stroke: #ffffff; stroke-width: 3; fill: none; }
+.login-toast-title { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+.login-toast-subtitle { font-size: 13px; font-weight: 600; color: #64748b; }
+.login-toast-name { color: #10b981; font-weight: 800; }
+body:not(.dark-mode) #login-screen { background: #f1f5f9; }
+body:not(.dark-mode) .fut-card { background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important; }
+body:not(.dark-mode) .fut-card::after { background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%) !important; }
+body:not(.dark-mode) .login-hero-title { color: #0f172a !important; background: none !important; -webkit-text-fill-color: #0f172a !important; }
+body:not(.dark-mode) .login-hero-sub { color: #475569 !important; }
+body:not(.dark-mode) .fut-headline { color: #0f172a !important; text-shadow: none !important; }
+body:not(.dark-mode) .fut-subheadline { color: #475569 !important; }
+body:not(.dark-mode) .fut-tagline { color: #0284c7 !important; border-color: rgba(14, 165, 233, 0.4) !important; background: rgba(14, 165, 233, 0.12) !important; }
+body:not(.dark-mode) .fut-live-status { background: #ffffff !important; border-color: rgba(14, 165, 233, 0.4) !important; color: #075985 !important; }
+body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important; }
+@media (max-width: 900px) { #login-screen { padding: 16px; align-items: flex-start; overflow-y: auto; } .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 480px; margin: 0 auto; } .fut-left { padding: 8px; } .fut-headline { font-size: 26px; margin-bottom: 4px; } .fut-subheadline { font-size: 12px; margin-bottom: 14px; } .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; } .fut-characters { display: flex; margin-bottom: 15px; } .fut-characters .team-3d-img { max-height: 140px; } .fut-live-status { font-size: 11px; padding: 7px 14px; } .fut-card { padding: 28px 22px; border-radius: 20px; } .fut-logo { width: 70px; height: 70px; margin-bottom: 14px; padding: 10px; } .login-hero-title { font-size: 20px; } .login-hero-sub { font-size: 12px; } .fut-orb-1 { width: 250px; height: 250px; } .fut-orb-2 { width: 200px; height: 200px; } .fut-orb-3 { width: 220px; height: 220px; } }
+@media (max-width: 400px) { #login-screen { padding: 10px; } .fut-container { gap: 12px; } .fut-headline { font-size: 22px; } .fut-subheadline { font-size: 11px; margin-bottom: 10px; } .fut-live-status { font-size: 10.5px; padding: 6px 12px; } .fut-card { padding: 22px 18px; border-radius: 18px; } .fut-logo { width: 60px; height: 60px; margin-bottom: 12px; padding: 8px; } .login-hero-title { font-size: 18px; } .login-hero-sub { font-size: 11.5px; } .btn-google { padding: 12px 14px; font-size: 13px; } .btn-google-icon { width: 30px; height: 30px; } .btn-google-text { font-size: 13px; } }
+@media (max-width: 480px) { body { padding: 10px; } .app-container { border-radius: 24px; padding: 16px; border-width: 4px; } }
 </style>
 </head>
-<body>
+<body class="login-active">
+
+<!-- ========== LAYAR LOGIN (TETAP UTUH) ========== -->
+<div id="login-screen">
+    <div class="fut-grid"></div>
+    <div class="fut-orb fut-orb-1"></div>
+    <div class="fut-orb fut-orb-2"></div>
+    <div class="fut-orb fut-orb-3"></div>
+    <div class="fut-particles" id="fut-particles"></div>
+
+    <div class="fut-container">
+        <div class="fut-left">
+            <div class="fut-tagline">
+                <span class="fut-dot"></span>
+                <span>SISTEM ANTRIAN DIGITAL</span>
+            </div>
+            <h1 class="fut-headline">
+                <span>Antrian Walk-In</span>
+            </h1>
+            <p class="fut-subheadline" id="fut-subheadline">UFO Malang Kebonsari</p>
+
+            <div class="fut-characters">
+                <img src="team-3d.png" alt="Tim Promotor UFO" class="team-3d-img" onerror="this.style.display='none';" />
+            </div>
+
+            <div class="fut-live-status">
+                <span class="fut-pulse-dot"></span>
+                <span id="live-status-text">Memuat...</span>
+            </div>
+        </div>
+
+        <div class="fut-right">
+            <div class="fut-card">
+                <button type="button" class="login-theme-toggle" onclick="toggleDarkMode()" title="Ganti tema">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+
+                <div class="fut-logo">
+                    <img id="logo-app" src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:32px;\'>UFO</span>';">
+                </div>
+
+                <div class="login-hero">
+                    <h1 class="login-hero-title">Selamat Datang</h1>
+                    <p class="login-hero-sub">Masuk untuk melanjutkan ke sistem antrian</p>
+                </div>
+
+                <button type="button" id="btn-login-google" class="btn-google" onclick="loginDenganGoogle()">
+                    <span class="btn-google-icon">
+                        <svg viewBox="0 0 48 48" width="22" height="22">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                    </span>
+                    <span id="btn-login-text" class="btn-google-text">Lanjutkan dengan Google</span>
+                    <span class="btn-google-arrow">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </button>
+                <div id="login-error" style="color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-top: 12px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- ========== APLIKASI UTAMA ========== -->
-<div class="app-container" id="app-container">
+<div class="app-container" id="app-container" style="display: none; visibility: hidden;">
     
-    <!-- Header -->
     <div class="top-controls">
         <div class="brand-area">
             <div class="brand-logo">UFO</div>
@@ -428,14 +566,12 @@ button {
         </div>
     </div>
 
-    <!-- Badge Status Sistem -->
     <div id="badge-status-sistem" class="status-badge-sistem status-open">
         <span class="dot"></span>
         <span id="badge-status-text">STATUS ANTRIAN: OPEN</span>
     </div>
 
-    <div id="panel-menu-utama">
-        <!-- Profil Promotor -->
+    <div id="panel-menu-utama" style="display: none;">
         <div class="user-badge">
             <div class="user-info-left">
                 <div class="user-avatar" id="avatar-inisial">P</div>
@@ -449,7 +585,6 @@ button {
             </div>
         </div>
 
-        <!-- Timer Lock -->
         <div id="box-lock-timer" style="display:none; margin-bottom: 16px;">
             <div class="timer-card-admin" style="border-color: var(--red);">
                 <span class="timer-badge-title" style="background: var(--red-light); color: var(--red);">🔒 AKUN DIKUNCI</span>
@@ -458,7 +593,6 @@ button {
             </div>
         </div>
 
-        <!-- Giliran HA & AV -->
         <div class="timer-box-wrapper">
             <div class="timer-card-admin ha">
                 <div>
@@ -474,7 +608,6 @@ button {
             </div>
         </div>
 
-        <!-- Section Check-in Awal -->
         <div id="section-checkin-awal" style="display: none;">
             <div class="gps-box" style="background: var(--bg-soft); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;">
                 <div style="font-size:10px; font-weight:800; color:var(--blue); text-transform:uppercase; margin-bottom:8px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
@@ -483,8 +616,7 @@ button {
             </div>
             <button type="button" id="btn-hadir" class="btn-success btn-disabled" onclick="aksiHadirKerja()" disabled>Menunggu Lokasi...</button>
         </div>
-
-        <!-- Section Normal (Sudah Check-in / Antri) -->
+        
         <div id="section-normal" style="display: none;">
             <div class="input-group" id="group-pilih-kategori-normal">
                 <label>Pilih Kategori Antrian</label>
@@ -502,7 +634,6 @@ button {
         </div>
     </div>
 
-    <!-- List Antrian -->
     <div style="margin-top: 20px; text-align: left;">
         <div class="live-urutan-title">
             <span>LIVE URUTAN KATEGORI HA</span>
@@ -517,7 +648,6 @@ button {
         <ul id="list-AV" class="list-antrian"><li><span>Memuat...</span></li></ul>
     </div>
 
-    <!-- Menu Aktivitas -->
     <div class="aktivitas-section">
         <div class="aktivitas-header-toggle" id="toggle-aktivitas" onclick="toggleAktivitasSection()">
             <span class="judul">
@@ -585,7 +715,6 @@ button {
     </div>
 </div>
 
-<!-- Modal & Popup -->
 <div id="popup-aktivitas" class="popup-overlay">
     <div class="popup-box" style="max-width: 400px; width: 100%; max-height: 80vh; display: flex; flex-direction: column;">
         <div class="popup-header" style="display: flex; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-light);">
@@ -604,9 +733,17 @@ button {
     </div>
 </div>
 
+<div class="login-toast-overlay" id="login-toast">
+    <div class="login-toast-card">
+        <div class="login-toast-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg></div>
+        <div class="login-toast-title">Login Berhasil!</div>
+        <div class="login-toast-subtitle">Selamat datang, <span class="login-toast-name" id="login-toast-name">-</span></div>
+    </div>
+</div>
+
 <script>
 /* ============================================================ */
-/* ========== GLOBAL STATE ==================================== */
+/* ========== GLOBAL STATE (TETAP UTUH) ======================= */
 /* ============================================================ */
 let daftarAntrianGlobal = [];
 let masterSalesGlobal = [];
@@ -671,9 +808,489 @@ function updateLiveStatus() {
     el.innerText = total === 0 ? 'Belum ada yang antri' : `${total} Orang Sedang Antri`;
 }
 
+function applyBranding(setting) {
+    if (!setting) return;
+    const namaToko = setting.namaToko || "Nama Toko";
+    const alamat = setting.alamat || "";
+    const logoUrl = setting.logoUrl || "";
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) titleEl.innerText = `Antrian Walk-In Promotor - ${namaToko}`;
+    const subheadlineEl = document.getElementById('fut-subheadline');
+    if (subheadlineEl) subheadlineEl.innerText = alamat ? `${namaToko} · ${alamat}` : namaToko;
+    if (logoUrl) {
+        const logoEl = document.getElementById('logo-app');
+        if (logoEl) {
+            logoEl.src = logoUrl;
+            logoEl.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = '🛸'; };
+        }
+    }
+}
+
+/* ============================================================ */
+/* ========== PARTICLES ======================================= */
+/* ============================================================ */
+function initParticles() {
+    const container = document.getElementById('fut-particles');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < 25; i++) {
+        const p = document.createElement('div');
+        p.className = 'fut-particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (8 + Math.random() * 12) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        const colors = ['#22d3ee', '#a855f7', '#3b82f6'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = color;
+        p.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
+        container.appendChild(p);
+    }
+}
+
+/* ============================================================ */
+/* ========== LOGIN GOOGLE ==================================== */
+/* ============================================================ */
+async function loginDenganGoogle() {
+    const btn = document.getElementById('btn-login-google');
+    const txt = document.getElementById('btn-login-text');
+    const errEl = document.getElementById('login-error');
+    const asli = txt.innerText;
+
+    btn.disabled = true;
+    txt.innerText = 'MEMPROSES...';
+    errEl.innerText = '';
+
+    try {
+        const provider = new window.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
+    } catch (err) {
+        console.error('Login gagal:', err);
+        if (err.code !== 'auth/popup-closed-by-user') {
+            errEl.innerText = '❌ ' + err.message;
+        }
+        btn.disabled = false;
+        txt.innerText = asli;
+    }
+}
+window.loginDenganGoogle = loginDenganGoogle;
+
+window.addEventListener('google-login-sukses', (e) => {
+    const data = e.detail;
+    namaSalesAktifGlobal = data.nama;
+    localStorage.setItem('ufo_nama_sales_aktif', data.nama);
+    localStorage.setItem('ufo_pin_verified', 'true');
+    localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
+    localStorage.setItem('ufo_login_google', 'true');
+
+    document.getElementById('login-toast-name').innerText = data.nama;
+    const toast = document.getElementById('login-toast');
+    toast.classList.add('active');
+
+    setTimeout(() => {
+        tampilkanAplikasiUtama();
+        setTimeout(() => { toast.classList.remove('active'); }, 800);
+    }, 1200);
+});
+
+window.addEventListener('google-login-gagal', (e) => {
+    const errEl = document.getElementById('login-error');
+    if (errEl) errEl.innerText = '❌ ' + e.detail;
+    const btn = document.getElementById('btn-login-google');
+    const txt = document.getElementById('btn-login-text');
+    if (btn) btn.disabled = false;
+    if (txt) txt.innerText = 'Lanjutkan dengan Google';
+});
+
+/* ============================================================ */
+/* ========== FIREBASE READY ================================== */
+/* ============================================================ */
+window.addEventListener('firebase-ready', () => {
+    initDarkMode();
+    initParticles();
+    resetCheckinHarianJikaPerlu();
+    restoreAktivitasState();
+
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        setTimeout(() => { cekSesiDanTampilkan(); }, 1500);
+    } else {
+        cekSesiDanTampilkan();
+    }
+    
+    inisialisasiRealtimeFirebase();
+    cekPINVerification();
+});
+
+function cekSesiDanTampilkan() {
+    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
+    const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
+    const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
+    const pinKadaluarsa = (Date.now() - verifiedAt) > DURASI_PIN_VALID;
+    
+    if (cachedNama && pinVerified && !pinKadaluarsa) {
+        namaSalesAktifGlobal = cachedNama;
+        tampilkanAplikasiUtama();
+    } else {
+        localStorage.removeItem('ufo_nama_sales_aktif');
+        localStorage.removeItem('ufo_pin_verified');
+        localStorage.removeItem('ufo_pin_verified_at');
+        tampilkanLayarLogin();
+    }
+}
+
+function tampilkanAplikasiUtama() {
+    document.body.classList.remove('login-active');
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    if (loginScreen) loginScreen.style.display = 'none';
+    
+    if (appContainer) {
+        appContainer.style.display = 'block';
+        appContainer.style.visibility = 'visible';
+    }
+    
+    const cachedNama = getAkunAktif();
+    document.getElementById('panel-menu-utama').style.display = 'block';
+    document.getElementById('label-user-aktif').innerText = cachedNama;
+    
+    // Set Inisial Avatar
+    const avatarEl = document.getElementById('avatar-inisial');
+    if (avatarEl && cachedNama) avatarEl.innerText = cachedNama.charAt(0).toUpperCase();
+
+    const btnLogoutTop = document.getElementById('btn-logout-top');
+    if (btnLogoutTop) btnLogoutTop.style.display = 'flex';
+    renderUI();
+    renderAktivitas();
+    renderRekapBawaCustomer();
+}
+
+function tampilkanLayarLogin() {
+    document.body.classList.add('login-active');
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    if (loginScreen) loginScreen.style.display = 'flex';
+    if (appContainer) appContainer.style.display = 'none';
+    const btnLogoutTop = document.getElementById('btn-logout-top');
+    if (btnLogoutTop) btnLogoutTop.style.display = 'none';
+}
+
+function resetCheckinHarianJikaPerlu() {
+    const tglTersimpan = localStorage.getItem('ufo_checkin_tanggal');
+    const hariIni = getTanggalKey();
+    if (tglTersimpan !== hariIni) {
+        localStorage.removeItem('ufo_checkin_hari_ini');
+        localStorage.removeItem('ufo_checkin_tanggal');
+    }
+}
+
+function cekPINVerification() {
+    const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
+    const verified = localStorage.getItem('ufo_pin_verified');
+    const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
+    if (!cachedNama) return;
+    const kadaluarsa = (Date.now() - verifiedAt) > DURASI_PIN_VALID;
+    if (verified !== 'true' || kadaluarsa) {
+        localStorage.removeItem('ufo_nama_sales_aktif');
+        localStorage.removeItem('ufo_pin_verified');
+        localStorage.removeItem('ufo_pin_verified_at');
+        tampilkanLayarLogin();
+    }
+}
+
+function toggleAktivitasSection() {
+    const header = document.getElementById('toggle-aktivitas');
+    const content = document.getElementById('content-aktivitas');
+    if (!header || !content) return;
+    const isOpen = content.classList.contains('open');
+    if (isOpen) {
+        content.classList.remove('open');
+        header.classList.remove('open');
+        localStorage.setItem('ufo_aktivitas_open', 'false');
+    } else {
+        content.classList.add('open');
+        header.classList.add('open');
+        localStorage.setItem('ufo_aktivitas_open', 'true');
+    }
+}
+
+function restoreAktivitasState() {
+    setTimeout(() => {
+        const saved = localStorage.getItem('ufo_aktivitas_open');
+        if (saved === 'true') {
+            const header = document.getElementById('toggle-aktivitas');
+            const content = document.getElementById('content-aktivitas');
+            if (header && content) { header.classList.add('open'); content.classList.add('open'); }
+        }
+    }, 150);
+}
+
+/* ============================================================ */
+/* ========== REALTIME FIREBASE LISTENER ====================== */
+/* ============================================================ */
+function inisialisasiRealtimeFirebase() {
+    const db = window.db;
+    window.dbOnValue(window.dbRef(db, 'antrian'), (snapshot) => {
+        const dataRaw = snapshot.val();
+        daftarAntrianGlobal = [];
+        if (dataRaw) {
+            Object.keys(dataRaw).forEach(k => {
+                const item = dataRaw[k];
+                if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); }
+            });
+        }
+        updateLiveStatus();
+        renderUI();
+        renderAktivitas();
+    });
+    window.dbOnValue(window.dbRef(db, 'mastersales'), (snapshot) => {
+        const dataRaw = snapshot.val();
+        if (dataRaw) { prosesMasterSales(dataRaw); masterSalesLoaded = true; }
+        else if (!masterSalesLoaded) {
+            window.dbOnValue(window.dbRef(db, 'data'), (snap2) => {
+                const d2 = snap2.val();
+                if (d2 && !masterSalesLoaded) { prosesMasterSales(d2); masterSalesLoaded = true; }
+            });
+        }
+    });
+    window.dbOnValue(window.dbRef(db, 'setting'), (snapshot) => {
+        const setting = snapshot.val();
+        if (setting) {
+            statusSistemGlobal = setting.statusAntrian || "BUKA";
+            koordinatToko.lat = setting.latToko ? Number(setting.latToko) : null;
+            koordinatToko.lng = setting.lngToko ? Number(setting.lngToko) : null;
+            koordinatToko.radius = Number(setting.radiusToko) || 50;
+            window.settingGlobal = setting;
+            applyBranding(setting);
+        }
+        renderUI();
+    });
+    window.dbOnValue(window.dbRef(db, 'statistikAktivitas'), (snapshot) => {
+        const dataRaw = snapshot.val();
+        aktivitasGlobal = [];
+        if (dataRaw) {
+            Object.keys(dataRaw).forEach(k => {
+                const item = dataRaw[k];
+                if (item && item.nama) { item._key = k; aktivitasGlobal.push(item); }
+            });
+        }
+        renderAktivitas();
+        renderRekapBawaCustomer();
+    });
+    window.dbOnValue(window.dbRef(db, 'checkinHarian'), (snapshot) => {
+        const dataCheckin = snapshot.val() || {};
+        checkinHarianGlobal = dataCheckin;
+        const akunSaya = sanitizeNama(getAkunAktif());
+        if (!akunSaya) { renderRekapBawaCustomer(); return; }
+        const dataSaya = dataCheckin[akunSaya];
+        const hariIni = getTanggalKey();
+        let sudahHariIni = false;
+        if (dataSaya) { if (dataSaya[hariIni] || (dataSaya.tanggalKey === hariIni)) sudahHariIni = true; }
+        if (sudahHariIni) {
+            localStorage.setItem('ufo_checkin_hari_ini', 'true');
+            localStorage.setItem('ufo_checkin_tanggal', hariIni);
+        } else {
+            localStorage.removeItem('ufo_checkin_hari_ini');
+            localStorage.removeItem('ufo_checkin_tanggal');
+        }
+        renderUI();
+        renderRekapBawaCustomer();
+    });
+    window.dbOnValue(window.dbRef(db, 'riwayatBulanan'), (snapshot) => {
+        riwayatBulananGlobal = snapshot.val() || {};
+        renderTotalBulanan();
+    });
+    window.dbOnValue(window.dbRef(db, 'lockPromotor'), (snapshot) => {
+        lockGlobal = snapshot.val() || {};
+        const akunSaya = sanitizeNama(getAkunAktif());
+        if (!akunSaya) return;
+        const lockSaya = lockGlobal[akunSaya];
+        if (lockSaya && lockSaya.locked) {
+            const sekarang = waktuServer();
+            const waktuMulai = Number(lockSaya.waktuMulaiLock) || 0;
+            const waktuExpired = Number(lockSaya.waktuSelesaiLock) || 0;
+            const sudahMulai = waktuMulai === 0 || sekarang >= waktuMulai;
+            const belumExpired = waktuExpired === 0 || sekarang < waktuExpired;
+            if (sudahMulai && belumExpired) {
+                lockDataGlobal = { waktuExpired, alasan: lockSaya.alasan || "-" };
+                mulaiLockTimer(waktuExpired, lockSaya.alasan || "-");
+                if (daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya)) {
+                    window.dbRemove(window.dbRef(window.db, 'antrian/' + akunSaya));
+                }
+            } else if (!sudahMulai) {
+                lockDataGlobal = null;
+                sembunyikanLockTimer();
+            } else {
+                lockDataGlobal = null;
+                sembunyikanLockTimer();
+                autoUnlockSendiri(akunSaya, lockSaya);
+            }
+        } else {
+            lockDataGlobal = null;
+            sembunyikanLockTimer();
+        }
+        renderUI();
+    });
+    if (autoCleanupInterval) clearInterval(autoCleanupInterval);
+    autoCleanupInterval = setInterval(() => { cekLockExpired(); }, 15000);
+    setTimeout(() => { cekLockExpired(); }, 2000);
+}
+
+function autoUnlockSendiri(cleanNama, lockData) {
+    if (!lockData || !lockData.locked) return;
+    window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + cleanNama), {
+        locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0
+    }).catch(() => {});
+}
+function cekLockExpired() {
+    const sekarang = waktuServer();
+    Object.keys(lockGlobal).forEach(clean => {
+        const lockData = lockGlobal[clean];
+        if (lockData && lockData.locked) {
+            const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
+            if (waktuExpired > 0 && sekarang >= waktuExpired) autoUnlockSendiri(clean, lockData);
+        }
+    });
+}
+function mulaiLockTimer(waktuExpired, alasan) {
+    const box = document.getElementById('box-lock-timer');
+    const display = document.getElementById('lock-timer-display');
+    const reasonEl = document.getElementById('lock-reason-display');
+    if (!box || !display) return;
+    box.style.display = 'block';
+    if (reasonEl) reasonEl.innerText = `Alasan: ${alasan}`;
+    if (waktuExpired === 0) { display.innerText = "∞"; if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } return; }
+    if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
+    const tick = () => {
+        const sisa = waktuExpired - waktuServer();
+        if (sisa <= 0) {
+            display.innerText = "00:00";
+            sembunyikanLockTimer();
+            if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
+            const akunSaya = sanitizeNama(getAkunAktif());
+            if (akunSaya) autoUnlockSendiri(akunSaya, lockGlobal[akunSaya]);
+            return;
+        }
+        const jam = Math.floor(sisa / 3600000);
+        const menit = Math.floor((sisa % 3600000) / 60000);
+        const detik = Math.floor((sisa % 60000) / 1000);
+        display.innerText = jam > 0 ? `${String(jam).padStart(2, '0')}:${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}` : `${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}`;
+    };
+    tick();
+    lockTimerInterval = setInterval(tick, 1000);
+}
+function sembunyikanLockTimer() {
+    const box = document.getElementById('box-lock-timer');
+    if (box) box.style.display = 'none';
+    if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
+}
+
+function prosesMasterSales(dataRaw) {
+    let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw);
+    let names = [];
+    listSales.forEach(item => {
+        let salesObj = item;
+        if (item && item.record) salesObj = item.record;
+        let nama = salesObj && (salesObj.NAMA_PROMOTOR || salesObj.nama_promotor || salesObj.nama || salesObj.Nama_Sales || salesObj.nama_sales || salesObj.name || salesObj.promotor || salesObj.NAMA || salesObj.Nama);
+        if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim());
+    });
+    names = [...new Set(names)].sort();
+    masterSalesGlobal = names.map(n => ({ nama: n }));
+}
+
 function getAkunAktif() {
     if (!namaSalesAktifGlobal) namaSalesAktifGlobal = localStorage.getItem('ufo_nama_sales_aktif') || "";
     return namaSalesAktifGlobal;
+}
+
+/* ============================================================ */
+/* ========== LOGOUT ========================================== */
+/* ============================================================ */
+function logoutPromotor() {
+    tampilkanModalKonfirmasi("Logout", "Yakin ingin logout dari akun ini?\n\nAnda harus login Google lagi untuk masuk.", async () => {
+        localStorage.removeItem('ufo_nama_sales_aktif');
+        localStorage.removeItem('ufo_pin_verified');
+        localStorage.removeItem('ufo_pin_verified_at');
+        localStorage.removeItem('ufo_checkin_hari_ini');
+        localStorage.removeItem('ufo_checkin_tanggal');
+        localStorage.removeItem('ufo_login_google');
+        namaSalesAktifGlobal = '';
+        try { await window.firebaseSignOut(window.firebaseAuth); } catch(e) {}
+        tampilkanLayarLogin();
+    });
+}
+window.logoutPromotor = logoutPromotor;
+
+/* ============================================================ */
+/* ========== GPS & PETA ====================================== */
+/* ============================================================ */
+function initPetaPromotor() {
+    const gpsAktif = koordinatToko.lat && koordinatToko.lng;
+    if (!gpsAktif) {
+        const gpsBox = document.querySelector('.gps-box');
+        if (gpsBox) gpsBox.style.display = 'none';
+        const infoEl = document.getElementById('info-radius');
+        if (infoEl) {
+            const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+            infoEl.innerHTML = `${ICON_CHECK} <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`;
+            infoEl.className = "info-radius ok";
+        }
+        const btnHadir = document.getElementById('btn-hadir');
+        if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
+        return;
+    }
+    const gpsBox = document.querySelector('.gps-box');
+    if (gpsBox) gpsBox.style.display = 'block';
+    if (mapPromotor) return;
+    const container = document.getElementById('map-promotor');
+    if (!container) return;
+    mapPromotor = L.map('map-promotor', { zoomControl: false }).setView([koordinatToko.lat, koordinatToko.lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapPromotor);
+    markerTokoPeta = L.marker([koordinatToko.lat, koordinatToko.lng]).addTo(mapPromotor).bindPopup("Lokasi Toko");
+    circleTokoPeta = L.circle([koordinatToko.lat, koordinatToko.lng], { radius: koordinatToko.radius, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.15 }).addTo(mapPromotor);
+    setTimeout(() => { if(mapPromotor) mapPromotor.invalidateSize(); }, 1000);
+    mulaiDeteksiLokasi();
+}
+function mulaiDeteksiLokasi() {
+    if (geolocationWatchId !== null) navigator.geolocation.clearWatch(geolocationWatchId);
+    const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
+    if (!navigator.geolocation) {
+        const infoEl = document.getElementById('info-radius');
+        if (infoEl) { infoEl.innerHTML = `${ICON_X} <span>Browser tidak mendukung GPS</span>`; infoEl.className = "info-radius err"; }
+        return;
+    }
+    geolocationWatchId = navigator.geolocation.watchPosition(
+        (pos) => { posisiSaya.lat = pos.coords.latitude; posisiSaya.lng = pos.coords.longitude; updatePetaLokasiSaya(); },
+        (err) => {
+            const infoEl = document.getElementById('info-radius');
+            if (infoEl) { infoEl.innerHTML = `${ICON_X} <span>Izin lokasi ditolak / tidak tersedia</span>`; infoEl.className = "info-radius err"; }
+        },
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+}
+function updatePetaLokasiSaya() {
+    if (!mapPromotor || !koordinatToko.lat) return;
+    const lat = posisiSaya.lat, lng = posisiSaya.lng;
+    if (markerSayaPeta) mapPromotor.removeLayer(markerSayaPeta);
+    markerSayaPeta = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: '<div style="background:#38bdf8;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px #38bdf8;"></div>', iconSize: [16,16] }) }).addTo(mapPromotor).bindPopup("Posisi Anda");
+    const jarak = hitungJarak(lat, lng, koordinatToko.lat, koordinatToko.lng);
+    const infoEl = document.getElementById('info-radius');
+    const btnHadir = document.getElementById('btn-hadir');
+    const ICON_CHECK = `<span class="status-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+    const ICON_X = `<span class="status-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;
+    if (jarak <= koordinatToko.radius) {
+        posisiSaya.ok = true;
+        infoEl.innerHTML = `${ICON_CHECK} Anda dalam radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
+        infoEl.className = "info-radius ok";
+        if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
+    } else {
+        posisiSaya.ok = false;
+        infoEl.innerHTML = `${ICON_X} Di luar radius (${Math.round(jarak)}m / max ${koordinatToko.radius}m)`;
+        infoEl.className = "info-radius err";
+        if (btnHadir) { btnHadir.classList.add('btn-disabled'); btnHadir.disabled = true; btnHadir.innerText = `Di Luar Radius (${Math.round(jarak)}m)`; }
+    }
+    const bounds = L.latLngBounds([[lat, lng], [koordinatToko.lat, koordinatToko.lng]]);
+    mapPromotor.fitBounds(bounds, { padding: [30, 30], maxZoom: 17 });
 }
 
 /* ============================================================ */
@@ -701,21 +1318,27 @@ function aksiHadirKerja() {
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko untuk check-in."); return; }
         
+        // OTOMATIS MASUK KATEGORI HA (Bisa disesuaikan)
         const kat = "HA"; 
         const nama = getAkunAktif();
         const clean = sanitizeNama(nama);
         const tglKey = getTanggalKey();
         const waktuSekarang = waktuServer();
         
+        // 1. Simpan ke Daftar Antrian
         window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { 
             nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 
         }).then(() => {
+            // 2. Simpan ke Riwayat Checkin Harian
             window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { 
                 nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang 
             });
+            
             localStorage.setItem('ufo_checkin_hari_ini', 'true');
             localStorage.setItem('ufo_checkin_tanggal', tglKey);
             catatAktivitas(nama, "CheckIn", kat);
+            
+            // 3. Tampilkan notifikasi sukses
             tampilkanModal("Check-in Berhasil", "Anda berhasil check-in dan sudah masuk ke dalam antrian.");
             renderUI();
         });
@@ -890,9 +1513,7 @@ function renderUI() {
         let itemHtml = "";
         const isSaya = sanitizeNama(item.nama) === akunSaya;
         const clsSaya = isSaya ? ' class="saya-sendiri"' : '';
-        const numberHtml = `<span class="antri-number">${kat === "HA" ? (isSaya ? urutHA : urutHA++) : (isSaya ? urutAV : urutAV++)}</span>`;
         
-        // Perbaikan perhitungan urutan agar akurat
         if (item.status === "Standby") {
             let urut = kat === "HA" ? urutHA : urutAV;
             if (kat === "HA") urutHA++; else urutAV++;
@@ -986,8 +1607,172 @@ function renderUI() {
     }
 }
 
+function renderAktivitas() {
+    const hariIni = getTanggalIndo();
+    const list = aktivitasGlobal.filter(a => a.tanggal === hariIni);
+    const listBawaStatistik = list.filter(a => a.aksi === "BawaCustomer");
+    const statistikSelesai = listBawaStatistik.filter(a => a.waktuSelesai);
+    const statistikMasihProses = listBawaStatistik.filter(a => !a.waktuSelesai);
+    const namaSudahSelesai = new Set(statistikSelesai.map(a => sanitizeNama(a.nama)));
+    const listSedangMelayani = daftarAntrianGlobal.filter(item => item.status === "Melayani").map(item => ({ nama: item.nama, waktuMulai: item.waktuMulaiMelayani || item.waktuStandby || waktuServer(), waktuSelesai: null, hasil: null, _sedangMelayani: true }));
+    const namaSedangMelayani = new Set(listSedangMelayani.map(i => sanitizeNama(i.nama)));
+    let semuaBawa = [];
+    listSedangMelayani.forEach(item => semuaBawa.push(item));
+    statistikMasihProses.forEach(a => {
+        const clean = sanitizeNama(a.nama);
+        if (!namaSedangMelayani.has(clean) && !namaSudahSelesai.has(clean)) semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: null, hasil: null, _sedangMelayani: false });
+    });
+    statistikSelesai.forEach(a => semuaBawa.push({ nama: a.nama, waktuMulai: a.waktuMulai || a.waktu, waktuSelesai: a.waktuSelesai, hasil: a.hasil, _sedangMelayani: false }));
+    semuaBawa.sort((a, b) => (b.waktuMulai || 0) - (a.waktuMulai || 0));
+    const elCountBawa = document.getElementById('count-bawa');
+    if (elCountBawa) elCountBawa.innerText = semuaBawa.length;
+    let totalLihat = 0, totalDeal = 0;
+    semuaBawa.forEach(a => { if (a.hasil === "Lihat") totalLihat++; else if (a.hasil === "Deal") totalDeal++; });
+    const totalBox = document.getElementById('total-bawa-box');
+    if (totalBox) {
+        if (semuaBawa.length === 0) { totalBox.innerHTML = ''; totalBox.style.display = 'none'; }
+        else {
+            totalBox.style.display = 'block';
+            totalBox.innerHTML = `TOTAL: <span style="color: #f59e0b; font-weight: 900;">👀 ${totalLihat} Lihat</span> &nbsp;│&nbsp; <span style="color: #10b981; font-weight: 900;">✓ ${totalDeal} Deal</span>`;
+        }
+    }
+    const elListBawa = document.getElementById('list-bawa');
+    if (elListBawa) elListBawa.innerHTML = semuaBawa.length === 0 ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
+        : semuaBawa.map(a => {
+            const mulai = a.waktuMulai, selesai = a.waktuSelesai;
+            let rangeLabel, namaLabel;
+            if (a._sedangMelayani) { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-melayani">(MELAYANI)</span>`; }
+            else if (selesai) {
+                rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
+                if (a.hasil === "Deal") namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
+                else if (a.hasil === "Lihat") namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
+                else namaLabel = `${a.nama} <span class="label-lihat">(selesai)</span>`;
+            } else { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-lihat">(proses)</span>`; }
+            return `<li><span class="nama">${namaLabel}</span><span class="waktu">${rangeLabel}</span></li>`;
+        }).join('');
+    const listIbadah = gabungRentang(list, "MulaiIbadah", "SelesaiIbadah");
+    const elCountIbadah = document.getElementById('count-ibadah');
+    if (elCountIbadah) elCountIbadah.innerText = listIbadah.length;
+    const elListIbadah = document.getElementById('list-ibadah');
+    if (elListIbadah) elListIbadah.innerHTML = listIbadah.length === 0 ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
+        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--text-main); font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
+    const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
+    const elCountKeluar = document.getElementById('count-keluar');
+    if (elCountKeluar) elCountKeluar.innerText = listKeluar.length;
+    const elListKeluar = document.getElementById('list-keluar');
+    if (elListKeluar) elListKeluar.innerHTML = listKeluar.length === 0 ? '<div class="aktivitas-empty">Belum ada yang keluar antrian</div>'
+        : listKeluar.map(a => `<li><span class="nama">${a.nama}</span><span class="waktu">${formatJam(a.waktu)}</span></li>`).join('');
+    const listAutokick = list.filter(a => a.aksi === "Autokick").sort((a,b) => (b.waktu||0) - (a.waktu||0));
+    const elCountAutokick = document.getElementById('count-autokick');
+    if (elCountAutokick) elCountAutokick.innerText = listAutokick.length;
+    const elListAutokick = document.getElementById('list-autokick');
+    if (elListAutokick) elListAutokick.innerHTML = listAutokick.length === 0 ? '<div class="aktivitas-empty">Tidak ada pelanggaran hari ini 👍</div>'
+        : listAutokick.map(a => {
+            const teksAlasan = a.alasan ? a.alasan : (a.kategori || "");
+            return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--danger); font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`;
+        }).join('');
+}
+
+function renderRekapBawaCustomer() {
+    const tbody = document.getElementById('rekap-tbody');
+    const labelPeriode = document.getElementById('rekap-periode-label');
+    if (!tbody) return;
+    const bulanIni = getBulanKey();
+    const tglHariIni = new Date(waktuServer()).getDate();
+    const labelBulan = getBulanLabelIndo();
+    if (labelPeriode) labelPeriode.innerText = `1 - ${tglHariIni} ${labelBulan}`;
+    const promotorMap = {};
+    masterSalesGlobal.forEach(item => { const clean = sanitizeNama(item.nama); if (clean) promotorMap[clean] = { nama: item.nama, clean: clean }; });
+    const perPromotor = {};
+    Object.keys(promotorMap).forEach(clean => { perPromotor[clean] = { nama: promotorMap[clean].nama, deal: 0, lihat: 0, noSale: 0, hari: 0 }; });
+    aktivitasGlobal.forEach(a => {
+        const tgl = a.tanggal; if (!tgl) return;
+        const parts = String(tgl).split('-'); if (parts.length !== 3) return;
+        const tglKey = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        if (!tglKey.startsWith(bulanIni)) return;
+        const clean = sanitizeNama(a.nama); if (!clean) return;
+        if (!perPromotor[clean]) perPromotor[clean] = { nama: a.nama, deal: 0, lihat: 0, noSale: 0, hari: 0 };
+        if (a.aksi === "BawaCustomer" && a.waktuSelesai) {
+            if (a.hasil === "Deal") perPromotor[clean].deal++;
+            else if (a.hasil === "Lihat") perPromotor[clean].lihat++;
+        }
+    });
+    Object.keys(perPromotor).forEach(clean => {
+        const dataCheckinPromotor = checkinHarianGlobal[clean];
+        if (!dataCheckinPromotor) return;
+        const hariSet = new Set();
+        Object.keys(dataCheckinPromotor).forEach(k => { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && k.startsWith(bulanIni)) hariSet.add(k); });
+        if (dataCheckinPromotor.tanggalKey && /^\d{4}-\d{2}-\d{2}$/.test(dataCheckinPromotor.tanggalKey) && dataCheckinPromotor.tanggalKey.startsWith(bulanIni)) hariSet.add(dataCheckinPromotor.tanggalKey);
+        perPromotor[clean].hari = hariSet.size;
+        let noSaleCount = 0;
+        hariSet.forEach(tglKeyHari => {
+            const p = tglKeyHari.split('-');
+            const tglIndoHari = `${p[2]}-${p[1]}-${p[0]}`;
+            const adaDeal = aktivitasGlobal.some(a => sanitizeNama(a.nama) === clean && a.tanggal === tglIndoHari && a.aksi === "BawaCustomer" && a.hasil === "Deal");
+            if (!adaDeal) noSaleCount++;
+        });
+        perPromotor[clean].noSale = noSaleCount;
+    });
+    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => {
+        if (b.deal !== a.deal) return b.deal - a.deal;
+        if (b.lihat !== a.lihat) return b.lihat - a.lihat;
+        return a.nama.localeCompare(b.nama);
+    });
+    if (arr.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="aktivitas-empty">Belum ada data bulan ini</td></tr>'; return; }
+    let totalDeal = 0, totalLihat = 0, totalNoSale = 0;
+    arr.forEach(p => { totalDeal += p.deal; totalLihat += p.lihat; totalNoSale += p.noSale; });
+    let html = arr.map(p => `<tr><td class="kolom-nama">${p.nama}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td><td class="angka-nosale">${p.noSale}</td><td class="angka-hari">${p.hari}</td></tr>`).join('');
+    html += `<tr class="total-row"><td class="kolom-nama">TOTAL</td><td class="angka-deal">${totalDeal}</td><td class="angka-lihat">${totalLihat}</td><td class="angka-nosale">${totalNoSale}</td><td></td></tr>`;
+    tbody.innerHTML = html;
+}
+
+function renderTotalBulanan() {
+    const tbody = document.getElementById('total-bulanan-tbody');
+    const labelTahun = document.getElementById('total-bulanan-tahun-label');
+    if (!tbody) return;
+    const tahunIni = String(new Date(waktuServer()).getFullYear());
+    if (labelTahun) labelTahun.innerText = tahunIni;
+    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const perBulan = {};
+    aktivitasGlobal.forEach(a => {
+        if (a.aksi !== "BawaCustomer" || !a.waktuSelesai || !a.tanggal) return;
+        const parts = String(a.tanggal).split('-'); if (parts.length !== 3) return;
+        const tglKey = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        if (!tglKey.startsWith(tahunIni)) return;
+        const bulanKey = tglKey.substring(0, 7);
+        if (!perBulan[bulanKey]) perBulan[bulanKey] = { deal: 0, lihat: 0 };
+        if (a.hasil === "Deal") perBulan[bulanKey].deal++;
+        else if (a.hasil === "Lihat") perBulan[bulanKey].lihat++;
+    });
+    const keysSorted = Object.keys(perBulan).sort().reverse();
+    if (keysSorted.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="aktivitas-empty">Belum ada data tahun ini</td></tr>'; return; }
+    tbody.innerHTML = keysSorted.map(bulanKey => {
+        const p = perBulan[bulanKey];
+        const parts = bulanKey.split('-');
+        const namaBln = namaBulan[parseInt(parts[1]) - 1];
+        return `<tr><td class="kolom-nama">${namaBln} ${parts[0]}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td></tr>`;
+    }).join('');
+}
+
+function gabungRentang(list, aksiMulai, aksiSelesai) {
+    const perNama = {};
+    list.forEach(a => {
+        if (a.aksi === aksiMulai) {
+            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null };
+            else perNama[a.nama].mulai = a.waktuMulai || a.waktu;
+        } else if (a.aksi === aksiSelesai) {
+            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: a.waktuSelesai || a.waktu };
+            else perNama[a.nama].selesai = a.waktuSelesai || a.waktu;
+        }
+    });
+    return Object.values(perNama).sort((a,b) => (b.mulai||0) - (a.mulai||0)).map(a => {
+        const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`;
+        return { ...a, label };
+    });
+}
+
 /* ============================================================ */
-/* ========== THEME, MODAL & POPUP ============================ */
+/* ========== THEME (DARK/LIGHT) ============================== */
 /* ============================================================ */
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
@@ -998,9 +1783,23 @@ window.toggleDarkMode = toggleDarkMode;
 
 function initDarkMode() {
     const saved = localStorage.getItem('ufo_theme');
-    if (saved === 'dark') document.body.classList.add('dark-mode');
+    const isDark = (saved === 'dark');
+    if (isDark) document.body.classList.add('dark-mode');
+    else document.body.classList.remove('dark-mode');
 }
+window.initDarkMode = initDarkMode;
 
+window.addEventListener('storage', (e) => {
+    if (e.key === 'ufo_theme') {
+        const isDark = e.newValue === 'dark';
+        if (isDark) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    }
+});
+
+/* ============================================================ */
+/* ========== MODAL & POPUP =================================== */
+/* ============================================================ */
 function tampilkanModal(j, d) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
@@ -1010,20 +1809,14 @@ function tampilkanModal(j, d) {
 function tampilkanModalKonfirmasi(j, d, cb) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" style="background:var(--bg-soft);color:var(--text-dark);border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya">Ya</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" style="background:var(--bg-soft);color:var(--text-main);border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya">Ya</button>`;
     document.getElementById('custom-modal').classList.add('active');
     document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); };
 }
 function tutupModal() { document.getElementById('custom-modal').classList.remove('active'); }
-
-function toggleAktivitasSection() {
-    const header = document.getElementById('toggle-aktivitas');
-    const content = document.getElementById('content-aktivitas');
-    if (!header || !content) return;
-    const isOpen = content.classList.contains('open');
-    if (isOpen) { content.classList.remove('open'); header.classList.remove('open'); localStorage.setItem('ufo_aktivitas_open', 'false'); }
-    else { content.classList.add('open'); header.classList.add('open'); localStorage.setItem('ufo_aktivitas_open', 'true'); }
-}
+window.tampilkanModal = tampilkanModal;
+window.tampilkanModalKonfirmasi = tampilkanModalKonfirmasi;
+window.tutupModal = tutupModal;
 
 function bukaPopupAktivitas(jenis) {
     const popup = document.getElementById('popup-aktivitas');
@@ -1049,58 +1842,18 @@ function tutupPopupAktivitas() {
     popup.classList.remove('active');
     document.body.style.overflow = '';
 }
+window.bukaPopupAktivitas = bukaPopupAktivitas;
+window.tutupPopupAktivitas = tutupPopupAktivitas;
 
-/* ============================================================ */
-/* ========== INITIALIZATION ================================== */
-/* ============================================================ */
-window.addEventListener('firebase-ready', () => {
-    initDarkMode();
-    
-    // Simulasi Login untuk demo (Hapus atau sesuaikan jika pakai login google asli)
-    namaSalesAktifGlobal = "Promotor Demo";
-    localStorage.setItem('ufo_nama_sales_aktif', "Promotor Demo");
-    document.getElementById('label-user-aktif').innerText = "Promotor Demo";
-    document.getElementById('avatar-inisial').innerText = "P";
-    document.getElementById('btn-logout-top').style.display = 'flex';
-    
-    // Tampilkan UI
-    document.getElementById('app-container').style.display = 'block';
-    
-    renderUI();
-    inisialisasiRealtimeFirebase();
-    
-    // Set state aktivitas terbuka secara default
-    setTimeout(() => {
-        const header = document.getElementById('toggle-aktivitas');
-        const content = document.getElementById('content-aktivitas');
-        if (header && content) { header.classList.add('open'); content.classList.add('open'); }
-    }, 500);
+document.addEventListener('click', (e) => {
+    const popup = document.getElementById('popup-aktivitas');
+    if (popup && e.target === popup) tutupPopupAktivitas();
 });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupPopupAktivitas(); });
 
-function inisialisasiRealtimeFirebase() {
-    const db = window.db;
-    window.dbOnValue(window.dbRef(db, 'antrian'), (snapshot) => {
-        const dataRaw = snapshot.val();
-        daftarAntrianGlobal = [];
-        if (dataRaw) {
-            Object.keys(dataRaw).forEach(k => {
-                const item = dataRaw[k];
-                if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); }
-            });
-        }
-        renderUI();
-    });
-    window.dbOnValue(window.dbRef(db, 'setting'), (snapshot) => {
-        const setting = snapshot.val();
-        if (setting) {
-            statusSistemGlobal = setting.statusAntrian || "BUKA";
-            koordinatToko.lat = setting.latToko ? Number(setting.latToko) : null;
-            koordinatToko.lng = setting.lngToko ? Number(setting.lngToko) : null;
-            koordinatToko.radius = Number(setting.radiusToko) || 50;
-        }
-        renderUI();
-    });
-}
+document.addEventListener('DOMContentLoaded', () => {
+    initParticles();
+});
 </script>
 </body>
 </html>

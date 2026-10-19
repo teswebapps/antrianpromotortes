@@ -251,8 +251,14 @@ body.dark-mode .app-container {
 .status-open .dot { 
     background: #ffffff !important; 
 }
-.status-closed .dot { background: var(--red); }
-
+.status-closed { 
+    background: var(--red) !important; 
+    color: #ffffff !important; 
+    border: 1px solid var(--red) !important; 
+}
+.status-closed .dot { 
+    background: #ffffff !important; 
+}
 /* Kartu Profil (Sudah Dihapus Teks Promotor Bertugas & Badge Aktif) */
 .user-badge {
     background: var(--bg-soft); 
@@ -290,7 +296,7 @@ body.dark-mode .app-container {
 .timer-box-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .timer-card-admin {
     background: var(--bg-card); border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md); padding: 12px; text-align: left; position: relative;
+    border-radius: var(--radius-md); padding: 12px; text-align: center; position: relative;
 }
 .timer-card-admin.ha { border-color: var(--blue); }
 .timer-card-admin.av { border-color: var(--red); }
@@ -302,7 +308,14 @@ body.dark-mode .app-container {
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
 .av .timer-badge-title { background: var(--red-light); color: var(--red); }
 
-.promotor-nama-aktif { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+.promotor-nama-aktif { 
+    font-size: 15px; 
+    font-weight: 800; 
+    color: var(--text-main); 
+    margin-bottom: 4px; 
+    line-height: 1.2; 
+    text-align: center; /* Memastikan teks nama di tengah */
+}
 .promotor-sub-text { font-size: 11px; color: var(--text-muted); font-weight: 600; }
 
 /* ============================================================ */

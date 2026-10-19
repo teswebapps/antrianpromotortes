@@ -1828,24 +1828,38 @@ function renderAktivitas() {
     if (totalBox) {
         if (semuaBawa.length === 0) { totalBox.innerHTML = ''; totalBox.style.display = 'none'; }
         else {
-            totalBox.style.display = 'block';
-            totalBox.innerHTML = `TOTAL: <span style="color: #f59e0b; font-weight: 900;">👀 ${totalLihat} Lihat</span> &nbsp;│&nbsp; <span style="color: #10b981; font-weight: 900;">✓ ${totalDeal} Deal</span>`;
+            totalBox.style.display = 'flex';
+            totalBox.className = 'total-box-custom'; // Terapkan class baru
+            totalBox.innerHTML = `
+                <span>TOTAL:</span> 
+                <span class="text-lihat">👀 ${totalLihat} Lihat</span> 
+                <span>|</span> 
+                <span class="text-deal">✓ ${totalDeal} Deal</span>
+            `;
         }
     }
     const elListBawa = document.getElementById('list-bawa');
-    if (elListBawa) elListBawa.innerHTML = semuaBawa.length === 0 ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
-        : semuaBawa.map(a => {
-            const mulai = a.waktuMulai, selesai = a.waktuSelesai;
-            let rangeLabel, namaLabel;
-            if (a._sedangMelayani) { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-melayani">(MELAYANI)</span>`; }
-            else if (selesai) {
-                rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
-                if (a.hasil === "Deal") namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
-                else if (a.hasil === "Lihat") namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
-                else namaLabel = `${a.nama} <span class="label-lihat">(selesai)</span>`;
-            } else { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="label-lihat">(proses)</span>`; }
-            return `<li><span class="nama">${namaLabel}</span><span class="waktu">${rangeLabel}</span></li>`;
-        }).join('');
+    if (elListBawa) {
+        elListBawa.className = 'list-bawa-custom'; // Terapkan class baru
+        elListBawa.innerHTML = semuaBawa.length === 0 ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
+            : semuaBawa.map(a => {
+                const mulai = a.waktuMulai, selesai = a.waktuSelesai;
+                let rangeLabel, namaLabel;
+                if (a._sedangMelayani) { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama} <span class="badge-melayani-text">(MELAYANI)</span>`; }
+                else if (selesai) {
+                    rangeLabel = `(${formatJam(mulai)} - ${formatJam(selesai)})`;
+                    if (a.hasil === "Deal") namaLabel = `${a.nama} <span class="check-deal">${SVG_CHECK_DEAL}</span>`;
+                    else if (a.hasil === "Lihat") namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
+                    else namaLabel = `${a.nama}`;
+                } else { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama}`; }
+                return `
+                    <li>
+                        <div class="nama-wrapper">${namaLabel}</div>
+                        <div class="waktu-wrapper">${rangeLabel}</div>
+                    </li>
+                `;
+            }).join('');
+    }
     const listIbadah = gabungRentang(list, "MulaiIbadah", "SelesaiIbadah");
     const elCountIbadah = document.getElementById('count-ibadah');
     if (elCountIbadah) elCountIbadah.innerText = listIbadah.length;

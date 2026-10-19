@@ -112,6 +112,7 @@
 /* ========== 1. VARIABEL DASAR & RESET ======================= */
 /* ============================================================ */
 :root {
+    /* --- LIGHT MODE --- */
     --bg-body: #e2e8f0;
     --bg-card: #ffffff;
     --bg-soft: #f8fafc;
@@ -138,6 +139,7 @@
 }
 
 body.dark-mode {
+    /* --- DARK MODE --- */
     --bg-body: #0b1120;
     --bg-card: #111827;
     --bg-soft: #1f2937;
@@ -197,6 +199,7 @@ body.dark-mode .app-container {
 
 .brand-area { display: flex; align-items: center; gap: 12px; }
 
+/* Styling Logo Custom (Gambar) */
 .brand-logo {
     width: 42px; 
     height: 42px; 
@@ -236,47 +239,32 @@ body.dark-mode .app-container {
 .logout-btn:hover { background: var(--red-light); }
 .logout-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
 
+/* Status Badge Open (Hijau Solid) & Closed (Merah Solid) */
 .status-badge-sistem {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800;
     text-transform: uppercase; margin: 0 auto 20px auto; letter-spacing: 0.5px; width: fit-content;
+    color: #ffffff !important;
 }
 .status-open { 
     background: var(--green) !important; 
-    color: #ffffff !important; 
-    border: 1px solid var(--green); 
-}
-.status-closed { background: var(--red-light); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
-.status-badge-sistem .dot { width: 6px; height: 6px; border-radius: 50%; }
-.status-open .dot { 
-    background: #ffffff !important; 
+    border: 1px solid var(--green) !important; 
 }
 .status-closed { 
     background: var(--red) !important; 
-    color: #ffffff !important; 
     border: 1px solid var(--red) !important; 
 }
-.status-closed .dot { 
-    background: #ffffff !important; 
-}
-/* Kartu Profil (Sudah Dihapus Teks Promotor Bertugas & Badge Aktif) */
-.user-badge {
-    background: var(--bg-soft); 
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); 
-    padding: 12px 16px; 
-    margin-bottom: 16px;
-    display: flex; 
-    justify-content: center; /* Mengubah perataan menjadi ke tengah */
-    align-items: center; 
-}
+.status-badge-sistem .dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-open .dot { background: #ffffff !important; }
+.status-closed .dot { background: #ffffff !important; }
 
-.user-info-left { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    /* Hapus width: 100% jika sebelumnya ada */
+/* Kartu Profil (Center) */
+.user-badge {
+    background: var(--bg-soft); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
+    display: flex; justify-content: center; align-items: center; 
 }
+.user-info-left { display: flex; align-items: center; gap: 12px; }
 .user-avatar {
     width: 38px; height: 38px; border-radius: 8px;
     background: var(--blue-light); color: var(--blue);
@@ -291,7 +279,7 @@ body.dark-mode .app-container {
 #label-user-aktif { font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0; }
 
 /* ============================================================ */
-/* ========== 3. GILIRAN (HA & AV) ============================ */
+/* ========== 3. GILIRAN (HA Biru & AV Merah) ================= */
 /* ============================================================ */
 .timer-box-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .timer-card-admin {
@@ -308,15 +296,7 @@ body.dark-mode .app-container {
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
 .av .timer-badge-title { background: var(--red-light); color: var(--red); }
 
-.promotor-nama-aktif { 
-    font-size: 15px; 
-    font-weight: 800; 
-    color: var(--text-main); 
-    margin-bottom: 4px; 
-    line-height: 1.2; 
-    text-align: center; /* Memastikan teks nama di tengah */
-}
-.promotor-sub-text { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.promotor-nama-aktif { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; text-align: center; }
 
 /* ============================================================ */
 /* ========== 4. FORM & TOMBOL ================================ */
@@ -389,7 +369,7 @@ button {
 .badge-ibadah { background: var(--purple); color: #fff; }
 
 /* ============================================================ */
-/* ========== 6. MENU AKTIVITAS =============================== */
+/* ========== 6. MENU AKTIVITAS & LIST DALAM POPUP ============ */
 /* ============================================================ */
 .aktivitas-section { margin-top: 20px; }
 
@@ -428,8 +408,87 @@ button {
     border: 1.5px solid var(--bg-card);
 }
 
+/* List untuk Bawa Customer & Ibadah di dalam Popup */
+.aktivitas-list { list-style: none; padding: 0; margin: 0 0 6px 0; }
+.aktivitas-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; background: var(--bg-soft);
+    border-radius: var(--radius-md); margin-bottom: 8px;
+    font-size: 13px; color: var(--text-main); font-weight: 600;
+    border: 1px solid var(--border-light);
+}
+.aktivitas-list li .nama { font-weight: 700; }
+.aktivitas-list li .waktu {
+    font-weight: 800; color: var(--text-muted); font-size: 12px;
+    background: var(--bg-card); padding: 4px 8px;
+    border-radius: 6px; border: 1px solid var(--border-strong);
+    white-space: nowrap;
+}
+
 /* ============================================================ */
-/* ========== 7. POPUP & MODAL (FIXED OVERLAY) ================ */
+/* ========== 7. TABEL REKAP (MODERN) ========================= */
+/* ============================================================ */
+.rekap-wrapper { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border-strong); 
+    border-radius: var(--radius-md); 
+    padding: 16px 12px; 
+    margin-bottom: 16px; 
+    overflow-x: auto; 
+}
+.rekap-label { 
+    font-size: 12px; font-weight: 800; color: var(--text-main); 
+    text-align: center; margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border-strong);
+}
+.rekap-tabel { 
+    width: 100%; border-collapse: separate; border-spacing: 0 6px; 
+    font-size: 12px; table-layout: fixed; 
+}
+.rekap-tabel th { 
+    background: var(--bg-soft); color: var(--text-muted); 
+    font-weight: 800; text-transform: uppercase; font-size: 10px; 
+    padding: 10px 4px; text-align: center; 
+    border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+    white-space: nowrap; 
+}
+.rekap-tabel th:first-child { border-left: 1px solid var(--border-light); border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.rekap-tabel th:last-child { border-right: 1px solid var(--border-light); border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+.rekap-tabel td { 
+    padding: 12px 4px; text-align: center; font-weight: 800; font-size: 13px; 
+    background: var(--bg-soft);
+    border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+    color: var(--text-main);
+}
+.rekap-tabel td:first-child { border-left: 1px solid var(--border-light); border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.rekap-tabel td:last-child { border-right: 1px solid var(--border-light); border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+.rekap-tabel td.kolom-nama { 
+    text-align: left; padding-left: 12px; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    border-left: 1px solid var(--border-light);
+}
+.rekap-tabel th:nth-child(1) { width: 32%; }
+.rekap-tabel th:nth-child(2) { width: 16%; }
+.rekap-tabel th:nth-child(3) { width: 16%; }
+.rekap-tabel th:nth-child(4) { width: 21%; }
+.rekap-tabel th:nth-child(5) { width: 15%; }
+
+.rekap-tabel td.angka-deal { color: var(--green) !important; }
+.rekap-tabel td.angka-lihat { color: var(--orange) !important; }
+.rekap-tabel td.angka-nosale { color: var(--red) !important; }
+.rekap-tabel td.angka-hari { color: var(--blue) !important; }
+
+.rekap-tabel tr.total-row td { 
+    background: var(--bg-card); border-top: 2px solid var(--border-strong); border-bottom: 2px solid var(--border-strong);
+    font-weight: 900; color: var(--text-main); 
+}
+.rekap-tabel tr.total-row td:first-child { border-left: 2px solid var(--border-strong); }
+.rekap-tabel tr.total-row td:last-child { border-right: 2px solid var(--border-strong); }
+
+/* ============================================================ */
+/* ========== 8. POPUP & MODAL (FIXED OVERLAY) ================ */
 /* ============================================================ */
 .popup-overlay, .modal-overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -461,7 +520,7 @@ button {
 .modal-actions button { flex: 1; padding: 12px; font-size: 12px; border-radius: 50px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; }
 
 /* ============================================================ */
-/* ========== 8. STYLING BAWAAN LOGIN (TETAP UTUH) ============ */
+/* ========== 9. STYLING BAWAAN LOGIN (TETAP UTUH) ============ */
 /* ============================================================ */
 #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050814; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; transition: background 0.3s; }
 .fut-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px); background-size: 40px 40px; animation: futGridMove 20s linear infinite; pointer-events: none; z-index: 1; }
@@ -617,8 +676,8 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
                 <img src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='UFO';">
             </div>
             <div class="brand-text">
-                <h1>UFO Malang</h1>
-                <p>Kebonsari</p>
+                <h1>UFO Elektronika</h1>
+                <p>Kebonsari Malang</p>
             </div>
         </div>
         <div class="header-actions">
@@ -638,7 +697,7 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
     </div>
 
     <div id="panel-menu-utama" style="display: none;">
-        <!-- Profil Promotor (Bersih dari Teks Tambahan) -->
+        <!-- Profil Promotor -->
         <div class="user-badge">
             <div class="user-info-left">
                 <div class="user-avatar" id="avatar-inisial">P</div>
@@ -1562,11 +1621,10 @@ function renderUI() {
     const sorted = [...daftarAntrianGlobal].sort((a,b) => (a.waktuStandby||0) - (b.waktuStandby||0));
     const dataStandby = sorted.filter(item => item.status === "Standby");
     
-    // BAGIAN INI SUDAH DIPERBAIKI (Syntax Error dihilangkan)
     const elHa = document.getElementById('promotor-nama-ha');
     const elAv = document.getElementById('promotor-nama-av');
     if (elHa) elHa.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "HA") || {}).nama || "Belum Ada"}</div>`;
-if (elAv) elAv.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "AV") || {}).nama || "Belum Ada"}</div>`;
+    if (elAv) elAv.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "AV") || {}).nama || "Belum Ada"}</div>`;
     
     sorted.forEach(item => {
         let kat = String(item.kategori || "HA").toUpperCase();
@@ -1715,7 +1773,12 @@ function renderAktivitas() {
     if (elCountIbadah) elCountIbadah.innerText = listIbadah.length;
     const elListIbadah = document.getElementById('list-ibadah');
     if (elListIbadah) elListIbadah.innerHTML = listIbadah.length === 0 ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
-        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--text-main); font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
+        : listIbadah.map(a => `
+            <li>
+                <span class="nama">${a.nama} <span style="font-size:10px; color:var(--text-muted); font-weight:700;">#${a.posisi||'-'}</span></span>
+                <span class="waktu">${a.label}</span>
+            </li>
+        `).join('');
     const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
     const elCountKeluar = document.getElementById('count-keluar');
     if (elCountKeluar) elCountKeluar.innerText = listKeluar.length;

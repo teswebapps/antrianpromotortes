@@ -181,6 +181,7 @@ body {
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
     position: relative;
     transition: all 0.3s ease;
+    height: fit-content;
 }
 body.dark-mode .app-container {
     border-color: #2a3446;
@@ -198,34 +199,35 @@ body.dark-mode .app-container {
 
 .brand-area { display: flex; align-items: center; gap: 12px; }
 .brand-logo {
-    width: 38px; height: 38px; background: var(--blue); color: white;
-    font-weight: 900; font-size: 13px; border-radius: 10px;
+    width: 42px; height: 42px; background: var(--blue); color: white;
+    font-weight: 900; font-size: 14px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
 }
-.brand-text h1 { font-size: 14px; font-weight: 800; margin: 0; line-height: 1.2; color: var(--text-main); }
-.brand-text p { font-size: 10px; color: var(--text-muted); margin: 0; font-weight: 600; }
+.brand-text h1 { font-size: 15px; font-weight: 800; margin: 0; line-height: 1.2; color: var(--text-main); }
+.brand-text p { font-size: 11px; color: var(--text-muted); margin: 0; font-weight: 600; }
 
 .header-actions { display: flex; gap: 8px; }
 .icon-btn {
-    width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border-strong);
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border-strong);
     background: transparent; display: flex; align-items: center; justify-content: center;
     cursor: pointer; color: var(--text-muted); padding: 0; transition: all 0.2s;
 }
-.icon-btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; }
+.icon-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
 .icon-btn:hover { background: var(--bg-soft); }
 
 .logout-btn {
-    background: transparent; color: var(--red); border: 1px solid rgba(239, 68, 68, 0.5);
-    font-weight: 700; border-radius: 8px; padding: 0 10px; height: 34px;
+    background: rgba(239, 68, 68, 0.05); color: #ef4444 !important; 
+    border: 1px solid #ef4444 !important;
+    font-weight: 800; border-radius: 8px; padding: 0 12px; height: 36px;
     font-size: 11px; cursor: pointer; display: inline-flex; align-items: center;
-    gap: 4px; width: auto; transition: all 0.2s;
+    gap: 6px; width: auto; transition: all 0.2s;
 }
-.logout-btn:hover { background: var(--red-light); border-color: var(--red); }
-.logout-btn svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2; fill: none; }
+.logout-btn:hover { background: var(--red-light); }
+.logout-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
 
 .status-badge-sistem {
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800;
+    padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800;
     text-transform: uppercase; margin: 0 auto 20px auto; letter-spacing: 0.5px; width: fit-content;
 }
 .status-open { background: var(--green-light); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
@@ -236,7 +238,7 @@ body.dark-mode .app-container {
 
 .user-badge {
     background: var(--bg-soft); border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;
+    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
     display: flex; justify-content: space-between; align-items: center; 
 }
 .user-info-left { display: flex; align-items: center; gap: 12px; }
@@ -246,12 +248,12 @@ body.dark-mode .app-container {
     display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 16px;
 }
-.user-label { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block;}
+.user-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; display: block;}
 #label-user-aktif { font-size: 14px; font-weight: 800; color: var(--text-main); }
 
 .status-kerja-badge {
     background: rgba(16, 185, 129, 0.1); color: var(--green);
-    font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px;
     text-transform: uppercase; display: flex; align-items: center; gap: 4px;
     border: 1px solid rgba(16, 185, 129, 0.2);
 }
@@ -268,14 +270,14 @@ body.dark-mode .app-container {
 .timer-card-admin.av { border-color: var(--purple); }
 
 .timer-badge-title { 
-    font-size: 9px; font-weight: 800; text-transform: uppercase; 
+    font-size: 10px; font-weight: 800; text-transform: uppercase; 
     padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px;
 }
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
 .av .timer-badge-title { background: var(--purple-light); color: var(--purple); }
 
-.promotor-nama-aktif { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
-.promotor-sub-text { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+.promotor-nama-aktif { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+.promotor-sub-text { font-size: 11px; color: var(--text-muted); font-weight: 600; }
 
 /* ============================================================ */
 /* ========== 4. FORM & TOMBOL ================================ */
@@ -291,7 +293,7 @@ select, input[type="text"], input[type="password"] {
 select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
 
 button {
-    width: 100%; padding: 12px; border-radius: 50px;
+    width: 100%; padding: 14px; border-radius: 50px;
     font-size: 12px; font-weight: 800; cursor: pointer;
     text-transform: uppercase; letter-spacing: 0.5px;
     display: inline-flex; justify-content: center; align-items: center;
@@ -311,13 +313,13 @@ button {
 /* ========== 5. DAFTAR ANTRIAN =============================== */
 /* ============================================================ */
 .live-urutan-title { 
-    font-size: 10px; font-weight: 800; color: var(--text-muted); 
+    font-size: 11px; font-weight: 800; color: var(--text-muted); 
     text-transform: uppercase; margin: 20px 0 10px 0; letter-spacing: 0.5px;
     display: flex; justify-content: space-between; align-items: center;
 }
 .badge-total-antri {
     background: var(--bg-soft); border: 1px solid var(--border-strong);
-    padding: 4px 8px; border-radius: 6px; font-size: 9px; color: var(--text-main);
+    padding: 4px 8px; border-radius: 6px; font-size: 10px; color: var(--text-main);
 }
 
 .list-antrian { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -325,20 +327,20 @@ button {
     padding: 10px 12px; background: var(--bg-soft);
     border-radius: var(--radius-md); 
     display: flex; justify-content: space-between; align-items: center;
-    border: 1px solid var(--border-light); font-size: 12px; font-weight: 700; color: var(--text-main);
+    border: 1px solid var(--border-light); font-size: 13px; font-weight: 700; color: var(--text-main);
 }
 .list-antrian li.saya-sendiri { border: 1.5px solid var(--blue); background: var(--bg-card); box-shadow: 0 0 0 1px var(--blue); }
 
 .list-antrian li b { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .antri-number {
-    width: 20px; height: 20px; background: var(--bg-card); border-radius: 4px;
+    width: 22px; height: 22px; background: var(--bg-card); border-radius: 4px;
     border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center;
     font-size: 10px; color: var(--text-muted);
 }
 .saya-sendiri .antri-number { background: var(--blue); color: #fff; border-color: var(--blue); }
 
 .badge-status-item { 
-    font-size: 9px; font-weight: 800; padding: 5px 8px; border-radius: 4px; 
+    font-size: 10px; font-weight: 800; padding: 5px 8px; border-radius: 4px; 
     white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px;
 }
 .badge-giliran-anda { background: var(--red); color: #fff; }
@@ -358,11 +360,11 @@ button {
     background: var(--bg-soft); border: 1px solid var(--border-strong); 
 }
 .aktivitas-header-toggle .judul { 
-    display: flex; align-items: center; gap: 8px; font-size: 11px; 
+    display: flex; align-items: center; gap: 8px; font-size: 12px; 
     font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px;
 }
 .aktivitas-header-toggle .arrow {
-    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
     color: var(--text-muted); border-radius: 50%; border: 1px solid var(--border-strong); transition: transform 0.3s;
 }
 .aktivitas-header-toggle.open .arrow { transform: rotate(180deg); }
@@ -388,13 +390,36 @@ button {
 }
 
 /* ============================================================ */
-/* ========== 7. POPUP, MODAL & LOGIN ========================= */
+/* ========== 7. POPUP & MODAL (FIXED OVERLAY) ================ */
 /* ============================================================ */
-.popup-overlay, .modal-overlay { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 9999; }
-.popup-box, .modal-box { border-radius: var(--radius-lg); border: 1px solid var(--border-strong); background: var(--bg-card); }
-.popup-title, .modal-title { color: var(--text-main); font-weight: 800; }
-.popup-close { color: var(--text-main); background: var(--bg-soft); border: 1px solid var(--border-strong); }
-.modal-desc { color: var(--text-muted); font-weight: 600; }
+.popup-overlay, .modal-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); 
+    display: flex; justify-content: center; align-items: center; 
+    z-index: 99999; opacity: 0; visibility: hidden; padding: 16px; 
+    transition: all 0.3s ease; 
+}
+.popup-overlay.active, .modal-overlay.active { opacity: 1; visibility: visible; }
+
+.popup-box, .modal-box { 
+    background: var(--bg-card); border: 1px solid var(--border-strong); 
+    border-radius: var(--radius-lg); width: 100%; max-width: 400px; 
+    max-height: 85vh; display: flex; flex-direction: column; 
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
+    transform: translateY(20px); transition: transform 0.3s ease;
+}
+.popup-overlay.active .popup-box, .modal-overlay.active .modal-box { transform: translateY(0); }
+
+.popup-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+.popup-title, .modal-title { font-size: 15px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+.popup-close { background: var(--bg-soft); border: 1px solid var(--border-strong); color: var(--text-main); width: 32px; height: 32px; border-radius: 6px; font-size: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.2s; }
+.popup-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+.popup-body { padding: 16px; overflow-y: auto; flex: 1; }
+
+.modal-box { padding: 24px; text-align: center; }
+.modal-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
+.modal-actions { display: flex; gap: 8px; }
+.modal-actions button { flex: 1; padding: 12px; font-size: 12px; border-radius: 50px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; }
 
 /* ============================================================ */
 /* ========== 8. STYLING BAWAAN LOGIN (TETAP UTUH) ============ */
@@ -475,7 +500,7 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
 </head>
 <body class="login-active">
 
-<!-- ========== LAYAR LOGIN (TETAP UTUH) ========== -->
+<!-- ========== LAYAR LOGIN ========== -->
 <div id="login-screen">
     <div class="fut-grid"></div>
     <div class="fut-orb fut-orb-1"></div>
@@ -716,20 +741,20 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
 </div>
 
 <div id="popup-aktivitas" class="popup-overlay">
-    <div class="popup-box" style="max-width: 400px; width: 100%; max-height: 80vh; display: flex; flex-direction: column;">
-        <div class="popup-header" style="display: flex; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-light);">
-            <div class="popup-title" id="popup-aktivitas-title" style="font-size: 14px;">Aktivitas</div>
-            <button type="button" class="popup-close" onclick="tutupPopupAktivitas()" style="width: 28px; height: 28px; border-radius: 6px;">✕</button>
+    <div class="popup-box">
+        <div class="popup-header">
+            <div class="popup-title" id="popup-aktivitas-title">Aktivitas</div>
+            <button type="button" class="popup-close" onclick="tutupPopupAktivitas()">✕</button>
         </div>
-        <div class="popup-body" id="popup-aktivitas-body" style="padding: 16px; overflow-y: auto;"></div>
+        <div class="popup-body" id="popup-aktivitas-body"></div>
     </div>
 </div>
 
 <div id="custom-modal" class="modal-overlay">
-    <div class="modal-box" style="padding: 20px; width: 90%; max-width: 340px; text-align: center;">
-        <div id="modal-title" class="modal-title" style="font-size: 15px; margin-bottom: 8px;">Pemberitahuan</div>
-        <div id="modal-desc" class="modal-desc" style="font-size: 12px; margin-bottom: 16px; text-align: center;">Isi pesan...</div>
-        <div class="modal-actions" id="modal-actions" style="display: flex; gap: 8px;"></div>
+    <div class="modal-box">
+        <div id="modal-title" class="modal-title">Pemberitahuan</div>
+        <div id="modal-desc" class="modal-desc">Isi pesan...</div>
+        <div class="modal-actions" id="modal-actions"></div>
     </div>
 </div>
 
@@ -1803,13 +1828,13 @@ window.addEventListener('storage', (e) => {
 function tampilkanModal(j, d) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()">OK</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()" style="background:var(--blue); color:#fff;">OK</button>`;
     document.getElementById('custom-modal').classList.add('active');
 }
 function tampilkanModalKonfirmasi(j, d, cb) {
     document.getElementById('modal-title').innerText = j;
     document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" style="background:var(--bg-soft);color:var(--text-main);border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya">Ya</button>`;
+    document.getElementById('modal-actions').innerHTML = `<button type="button" style="background:var(--bg-soft); color:var(--text-main); border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya" style="background:var(--blue); color:#fff;">Ya</button>`;
     document.getElementById('custom-modal').classList.add('active');
     document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); };
 }

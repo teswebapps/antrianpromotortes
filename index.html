@@ -1544,8 +1544,8 @@ function renderUI() {
     
     const elHa = document.getElementById('promotor-nama-ha');
     const elAv = document.getElementById('promotor-nama-av');
-    if (elHa) elHa.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "HA") || {}).nama || "Belum Ada"}</div><div class="promotor-sub-text">Standby di Area HA</div>`;
-    if (elAv) elAv.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "AV") || {}).nama || "Belum Ada"}</div><div class="promotor-sub-text">Standby di Area AV</div>`;
+    if (elHa) elHa.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "HA") || {}).nama || "Belum Ada"}
+    if (elAv) elAv.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "AV") || {}).nama || "Belum Ada"}
     
     sorted.forEach(item => {
         let kat = String(item.kategori || "HA").toUpperCase();

@@ -249,11 +249,22 @@ body.dark-mode .app-container {
 
 /* Kartu Profil (Sudah Dihapus Teks Promotor Bertugas & Badge Aktif) */
 .user-badge {
-    background: var(--bg-soft); border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
-    display: flex; align-items: center; 
+    background: var(--bg-soft); 
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); 
+    padding: 12px 16px; 
+    margin-bottom: 16px;
+    display: flex; 
+    justify-content: center; /* Mengubah perataan menjadi ke tengah */
+    align-items: center; 
 }
-.user-info-left { display: flex; align-items: center; gap: 12px; width: 100%; }
+
+.user-info-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    /* Hapus width: 100% jika sebelumnya ada */
+}
 .user-avatar {
     width: 38px; height: 38px; border-radius: 8px;
     background: var(--blue-light); color: var(--blue);
@@ -276,14 +287,14 @@ body.dark-mode .app-container {
     border-radius: var(--radius-md); padding: 12px; text-align: left; position: relative;
 }
 .timer-card-admin.ha { border-color: var(--blue); }
-.timer-card-admin.av { border-color: var(--purple); }
+.timer-card-admin.av { border-color: var(--red); }
 
 .timer-badge-title { 
     font-size: 10px; font-weight: 800; text-transform: uppercase; 
     padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px;
 }
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
-.av .timer-badge-title { background: var(--purple-light); color: var(--purple); }
+.av .timer-badge-title { background: var(--red-light); color: var(--red); }
 
 .promotor-nama-aktif { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
 .promotor-sub-text { font-size: 11px; color: var(--text-muted); font-weight: 600; }

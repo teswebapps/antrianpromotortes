@@ -215,11 +215,43 @@ body.dark-mode .app-container {
 .timer-box-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .timer-card-admin { background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 12px; text-align: center; position: relative; }
 .timer-card-admin.ha { border-color: var(--blue); }
-.timer-card-admin.av { border-color: var(--red); }
+.timer-card-admin.av { border-color: var(--orange); }
 .timer-badge-title { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
-.av .timer-badge-title { background: var(--red-light); color: var(--red); }
+.av .timer-badge-title { background: rgba(217, 119, 6, 0.15); color: var(--orange); }
 .promotor-nama-aktif { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; text-align: center; }
+
+/* ============================================================ */
+/* ===== STYLING DROPDOWN MODERN ============================== */
+/* ============================================================ */
+.input-group { margin-bottom: 16px; text-align: left; }
+.input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+select, input[type="text"], input[type="password"] {
+    width: 100%; 
+    padding: 12px 14px; 
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border-strong); 
+    background: var(--bg-card);
+    font-size: 13px; 
+    font-weight: 700; 
+    color: var(--text-main); 
+    outline: none; 
+    transition: all 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px top 50%;
+    background-size: 12px auto;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+select:focus, input:focus { 
+    border-color: var(--blue); 
+    box-shadow: 0 0 0 4px var(--blue-light); 
+}
 
 /* TOMBOL */
 button { width: 100%; padding: 14px; border-radius: 50px; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; border: none; }
@@ -257,7 +289,7 @@ button { width: 100%; padding: 14px; border-radius: 50px; font-size: 12px; font-
 .badge-ibadah { background: var(--purple); color: #fff; }
 
 /* ============================================================ */
-/* ===== AKTIVITAS SECTION (GAYA ADMIN DASHBOARD) ============= */
+/* ===== AKTIVITAS SECTION (SAMA DENGAN ADMIN) ================ */
 /* ============================================================ */
 .aktivitas-section { margin-top: 20px; text-align: left; }
 .aktivitas-header-toggle { 
@@ -403,6 +435,8 @@ body:not(.dark-mode) .btn-google { background: #ffffff !important; color: #0f172
 body:not(.dark-mode) .btn-google:hover { background: #f8fafc !important; }
 body:not(.dark-mode) .btn-google-icon { background: #ffffff !important; }
 body:not(.dark-mode) .btn-google-arrow { color: #64748b !important; }
+body:not(.dark-mode) .icon-btn { border-color: #0f172a !important; color: #0f172a !important; }
+body:not(.dark-mode) .icon-btn:hover { background: #f1f5f9 !important; }
 
 /* ============================================================ */
 /* ===== MEDIA QUERIES ======================================== */
@@ -493,7 +527,7 @@ body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px s
         <div class="fut-right">
             <div class="fut-card">
                 <button type="button" class="login-theme-toggle" onclick="toggleDarkMode()" title="Ganti tema">
-                    <svg viewBox="0 0 24 24">
+                    <svg viewBox="0 0 24 24" id="icon-theme-login">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
                 </button>
@@ -545,7 +579,9 @@ body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px s
         </div>
         <div class="header-actions">
             <button type="button" class="icon-btn" onclick="toggleDarkMode()">
-                <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg viewBox="0 0 24 24" id="icon-theme-antrian">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
             </button>
             <button type="button" class="logout-btn" id="btn-logout-top" onclick="logoutPromotor()" style="display: none;">
                 <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -598,6 +634,15 @@ body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px s
                 <div id="map-promotor"></div>
                 <div id="info-radius" class="info-radius">📡 Mendeteksi lokasi Anda...</div>
             </div>
+            
+            <div class="input-group" style="margin-bottom: 12px;">
+                <label>Pilih Kategori Antrian</label>
+                <select id="pilih-kategori-hadir">
+                    <option value="HA">HA (Home Appliance)</option>
+                    <option value="AV">AV (Audio Video)</option>
+                </select>
+            </div>
+
             <button type="button" id="btn-hadir" class="btn-success btn-disabled" onclick="aksiHadirKerja()" disabled>Menunggu Lokasi...</button>
         </div>
         
@@ -854,7 +899,6 @@ function tampilkanAplikasiUtama() {
     renderAktivitas();
     renderRekapBawaCustomer();
 
-    // TAMBAHKAN INI: Panggil peta setelah render
     setTimeout(() => {
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif) initPetaPromotor();
@@ -1084,7 +1128,8 @@ function aksiHadirKerja() {
         }
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko untuk check-in."); return; }
-        const kat = "HA"; 
+        
+        const kat = document.getElementById('pilih-kategori-hadir')?.value || 'HA';
         const nama = getAkunAktif();
         const clean = sanitizeNama(nama);
         const tglKey = getTanggalKey();
@@ -1463,11 +1508,44 @@ function gabungRentang(list, aksiMulai, aksiSelesai) {
     return Object.values(perNama).sort((a,b) => (b.mulai||0) - (a.mulai||0)).map(a => { const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`; return { ...a, label }; });
 }
 
-function toggleDarkMode() { document.body.classList.toggle('dark-mode'); const isDark = document.body.classList.contains('dark-mode'); localStorage.setItem('ufo_theme', isDark ? 'dark' : 'light'); }
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('ufo_theme', isDark ? 'dark' : 'light');
+    
+    const iconElAntrian = document.getElementById('icon-theme-antrian');
+    const iconElLogin = document.getElementById('icon-theme-login');
+    const svgMoon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    const svgSun = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+
+    if (iconElAntrian) iconElAntrian.innerHTML = isDark ? svgMoon : svgSun;
+    if (iconElLogin) iconElLogin.innerHTML = isDark ? svgMoon : svgSun;
+}
 window.toggleDarkMode = toggleDarkMode;
-function initDarkMode() { const saved = localStorage.getItem('ufo_theme'); const isDark = (saved === 'dark'); if (isDark) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); }
+
+function initDarkMode() {
+    const saved = localStorage.getItem('ufo_theme');
+    const isDark = (saved === 'dark');
+    if (isDark) document.body.classList.add('dark-mode');
+    else document.body.classList.remove('dark-mode');
+    
+    const iconElAntrian = document.getElementById('icon-theme-antrian');
+    const iconElLogin = document.getElementById('icon-theme-login');
+    const svgMoon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    const svgSun = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+
+    if (iconElAntrian) iconElAntrian.innerHTML = isDark ? svgMoon : svgSun;
+    if (iconElLogin) iconElLogin.innerHTML = isDark ? svgMoon : svgSun;
+}
 window.initDarkMode = initDarkMode;
-window.addEventListener('storage', (e) => { if (e.key === 'ufo_theme') { const isDark = e.newValue === 'dark'; if (isDark) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); } });
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'ufo_theme') {
+        const isDark = e.newValue === 'dark';
+        if (isDark) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    }
+});
 
 function tampilkanModal(j, d) { document.getElementById('modal-title').innerText = j; document.getElementById('modal-desc').innerText = d; document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()" style="background:var(--blue); color:#fff;">OK</button>`; document.getElementById('custom-modal').classList.add('active'); }
 function tampilkanModalKonfirmasi(j, d, cb) { document.getElementById('modal-title').innerText = j; document.getElementById('modal-desc').innerText = d; document.getElementById('modal-actions').innerHTML = `<button type="button" style="background:var(--bg-soft); color:var(--text-main); border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya" style="background:var(--blue); color:#fff;">Ya</button>`; document.getElementById('custom-modal').classList.add('active'); document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); }; }

@@ -308,9 +308,14 @@ button { width: 100%; padding: 14px; border-radius: 50px; font-size: 12px; font-
 .aktivitas-menu-btn { 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
     gap: 8px; padding: 16px 10px; background: var(--bg-card); 
-    border: 2px solid var(--blue); border-radius: var(--radius-md); 
+    border: 2px solid var(--text-main); /* <-- Ubah ke variabel teks utama (hitam di mode terang) */
+    border-radius: var(--radius-md); 
     cursor: pointer; position: relative; min-height: 85px; transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* Bayangan netral */
+}
+  /* Khusus Mode Gelap, border kembali biru atau terang */
+body.dark-mode .aktivitas-menu-btn {
+    border-color: var(--blue) !important;
 }
 .aktivitas-menu-btn:hover { background: var(--bg-soft); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
 .aktivitas-menu-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--blue); }

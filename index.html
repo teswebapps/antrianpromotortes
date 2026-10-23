@@ -585,6 +585,85 @@ body.dark-mode .list-bawa-custom .nama-wrapper { color: #ffffff !important; }
 body.dark-mode .list-bawa-custom .waktu-wrapper { color: #ff99a8 !important; }
 body.dark-mode .list-bawa-custom .badge-melayani-text { color: #34d399 !important; }
 body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px solid #ff1f3d !important; color: #ffffff !important; }
+  /* ============================================================ */
+/* ===== HILANGKAN JARAK KOSONG DI BAWAH (MOBILE) ============= */
+/* ============================================================ */
+
+/* 1. Paksa body dan html agar tidak ada margin/padding di bawah */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    overflow-x: hidden;
+}
+
+/* 2. Ubah padding body yang tadinya 16px menjadi 0 untuk mobile */
+@media (max-width: 480px) {
+    body { 
+        padding: 0 !important; 
+    }
+}
+
+/* 3. Sesuaikan container agar mengisi layar penuh tanpa jarak aneh */
+.app-container {
+    margin-bottom: 0 !important;
+    padding-bottom: 80px !important; /* Beri ruang HANYA untuk bottom nav */
+    border-radius: 0 !important; /* Opsional: hilangkan lengkungan di mobile agar full screen */
+    border: none !important; /* Opsional: hilangkan border luar */
+    box-shadow: none !important;
+    min-height: 100vh !important;
+}
+
+/* 4. Rapatkan jarak antar elemen dalam setiap TAB */
+.tab-content {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* 5. Paksa grid aktivitas dan list antrian agar tidak ada margin bawah berlebih */
+.aktivitas-section, 
+.aktivitas-menu-grid, 
+.aktivitas-content,
+.card-section {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* 6. Jika ada jarak di bawah list terakhir, hilangkan */
+.list-antrian li:last-child,
+.aktivitas-menu-btn:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* 7. Atur Bottom Nav agar menempel di bawah tanpa jarak */
+.bottom-nav {
+    bottom: 0 !important;
+    margin-bottom: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 8. Fix untuk layar HP agar full screen */
+@media (max-width: 480px) {
+    .app-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+    
+    .top-controls {
+        padding-top: 16px !important; /* Beri sedikit jarak di atas header */
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+    
+    .tab-content {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+}
 </style>
 </head>
 <body class="login-active">

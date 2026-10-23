@@ -112,7 +112,6 @@
 /* ========== 1. VARIABEL DASAR & RESET ======================= */
 /* ============================================================ */
 :root {
-    /* --- LIGHT MODE --- */
     --bg-body: #e2e8f0;
     --bg-card: #ffffff;
     --bg-soft: #f8fafc;
@@ -139,7 +138,6 @@
 }
 
 body.dark-mode {
-    /* --- DARK MODE --- */
     --bg-body: #0b1120;
     --bg-card: #111827;
     --bg-soft: #1f2937;
@@ -170,7 +168,6 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Bingkai HP / Card Utama */
 .app-container {
     width: 100%;
     max-width: 440px;
@@ -199,7 +196,6 @@ body.dark-mode .app-container {
 
 .brand-area { display: flex; align-items: center; gap: 12px; }
 
-/* Styling Logo Custom (Gambar) */
 .brand-logo {
     width: 42px; 
     height: 42px; 
@@ -239,7 +235,6 @@ body.dark-mode .app-container {
 .logout-btn:hover { background: var(--red-light); }
 .logout-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
 
-/* Status Badge Open (Hijau Solid) & Closed (Merah Solid) */
 .status-badge-sistem {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800;
@@ -258,7 +253,6 @@ body.dark-mode .app-container {
 .status-open .dot { background: #ffffff !important; }
 .status-closed .dot { background: #ffffff !important; }
 
-/* Kartu Profil (Center) */
 .user-badge {
     background: var(--bg-soft); border: 1px solid var(--border-light);
     border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
@@ -408,7 +402,6 @@ button {
     border: 1.5px solid var(--bg-card);
 }
 
-/* List untuk Bawa Customer & Ibadah di dalam Popup */
 .aktivitas-list { list-style: none; padding: 0; margin: 0 0 6px 0; }
 .aktivitas-list li {
     display: flex; justify-content: space-between; align-items: center;
@@ -488,7 +481,7 @@ button {
 .rekap-tabel tr.total-row td:last-child { border-right: 2px solid var(--border-strong); }
 
 /* ============================================================ */
-/* ========== 8. POPUP & MODAL (FIXED OVERLAY) ================ */
+/* ========== 8. POPUP & MODAL ================================ */
 /* ============================================================ */
 .popup-overlay, .modal-overlay { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -520,7 +513,7 @@ button {
 .modal-actions button { flex: 1; padding: 12px; font-size: 12px; border-radius: 50px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; }
 
 /* ============================================================ */
-/* ========== 9. STYLING BAWAAN LOGIN (TETAP UTUH) ============ */
+/* ========== 9. STYLING LOGIN (SAMAKAN DENGAN DASHBOARD) ===== */
 /* ============================================================ */
 #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050814; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; transition: background 0.3s; }
 .fut-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px); background-size: 40px 40px; animation: futGridMove 20s linear infinite; pointer-events: none; z-index: 1; }
@@ -546,30 +539,28 @@ button {
 .fut-live-status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: rgba(5,8,20,0.6); border: 1px solid rgba(34,211,238,0.3); border-radius: 100px; font-size: 12px; color: #e2e8f0; font-weight: 600; }
 .fut-pulse-dot { width: 8px; height: 8px; background: #22d3ee; border-radius: 50%; animation: futDotPulse 1.5s infinite; }
 .fut-right { display: flex; justify-content: center; }
-.fut-card { width: 100%; max-width: 400px; border-radius: 24px; padding: 40px 32px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid rgba(56, 189, 248, 0.18); box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08), 0 20px 60px -20px rgba(56, 189, 248, 0.3), 0 30px 80px -30px rgba(168, 85, 247, 0.25); position: relative; overflow: hidden; animation: cardEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); backdrop-filter: blur(24px); }
+.fut-card { width: 100%; max-width: 400px; border-radius: 24px; padding: 32px 28px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.9) 100%); border: 1px solid rgba(56, 189, 248, 0.18); box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08), 0 20px 60px -20px rgba(56, 189, 248, 0.3), 0 30px 80px -30px rgba(168, 85, 247, 0.25); position: relative; overflow: hidden; animation: cardEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); backdrop-filter: blur(24px); }
 .fut-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 0.15), transparent 30%); animation: cardRotate 8s linear infinite; pointer-events: none; z-index: 0; }
 .fut-card::after { content: ''; position: absolute; inset: 1px; border-radius: 23px; background: linear-gradient(160deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%); z-index: 1; pointer-events: none; }
 .fut-card > * { position: relative; z-index: 2; }
 @keyframes cardEnter { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes cardRotate { to { transform: rotate(360deg); } }
-.fut-logo { width: 80px; height: 80px; margin: 0 auto 20px; background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.08)) !important; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; border-radius: 22px; display: flex; align-items: center; justify-content: center; padding: 12px; box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15) !important; animation: logoPulse 3s ease-in-out infinite; position: relative; }
+.fut-logo { width: 90px; height: 90px; margin: 0 auto 16px; background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.08)) !important; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; border-radius: 22px; display: flex; align-items: center; justify-content: center; padding: 10px; box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15) !important; animation: logoPulse 3s ease-in-out infinite; position: relative; }
 @keyframes logoPulse { 0%, 100% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), inset 0 0 20px rgba(56, 189, 248, 0.15); } 50% { box-shadow: 0 0 45px rgba(56, 189, 248, 0.55), inset 0 0 25px rgba(56, 189, 248, 0.25); } }
 .fut-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.login-hero { text-align: center; margin-bottom: 22px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
+.login-hero { text-align: center; margin-bottom: 24px; animation: fadeUp 0.6s ease-out 0.15s backwards; }
 .login-hero-title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0; letter-spacing: -0.5px; background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .login-hero-sub { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; line-height: 1.5; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-.btn-google { width: 100%; padding: 14px 16px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); color: #111827; border: none; border-radius: 14px; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.5) inset; animation: fadeUp 0.6s ease-out 0.25s backwards; margin-top: 6px; text-transform: none; letter-spacing: 0.2px; }
-.btn-google::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent); transition: left 0.6s ease; }
-.btn-google:hover::before { left: 100%; }
-.btn-google:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.6) inset; background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%); }
+.btn-google { width: 100%; padding: 14px 16px; background: #0f172a; color: #ffffff; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5); animation: fadeUp 0.6s ease-out 0.25s backwards; margin-top: 6px; text-transform: none; letter-spacing: 0.2px; }
+.btn-google:hover { transform: translateY(-2px); background: #1e293b; border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 12px 30px rgba(56, 189, 248, 0.2); }
 .btn-google:active { transform: translateY(0) scale(0.98); }
 .btn-google:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-.btn-google-icon { width: 34px; height: 34px; background: #ffffff; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease; }
+.btn-google-icon { width: 34px; height: 34px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease; }
 .btn-google:hover .btn-google-icon { transform: scale(1.08) rotate(-3deg); }
 .btn-google-text { flex: 1; text-align: left; font-size: 14.5px; font-weight: 700; letter-spacing: 0.2px; }
-.btn-google-arrow { display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.3s ease; flex-shrink: 0; }
-.btn-google:hover .btn-google-arrow { color: #0284c7; transform: translateX(4px); }
+.btn-google-arrow { display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: all 0.3s ease; flex-shrink: 0; }
+.btn-google:hover .btn-google-arrow { color: #38bdf8; transform: translateX(4px); }
 .login-theme-toggle { position: absolute !important; top: 14px !important; right: 14px !important; width: 38px !important; height: 38px !important; border-radius: 10px !important; border: 1px solid rgba(56, 189, 248, 0.4) !important; background: rgba(2, 6, 23, 0.7) !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 20 !important; padding: 0 !important; color: #38bdf8 !important; transition: all 0.25s ease !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important; }
 .login-theme-toggle svg { width: 18px !important; height: 18px !important; stroke: currentColor !important; stroke-width: 2 !important; fill: none !important; }
 .login-theme-toggle:hover { background: rgba(56, 189, 248, 0.25) !important; box-shadow: 0 0 20px rgba(56, 189, 248, 0.7) !important; transform: rotate(15deg) !important; }
@@ -591,18 +582,25 @@ body:not(.dark-mode) .fut-subheadline { color: #475569 !important; }
 body:not(.dark-mode) .fut-tagline { color: #0284c7 !important; border-color: rgba(14, 165, 233, 0.4) !important; background: rgba(14, 165, 233, 0.12) !important; }
 body:not(.dark-mode) .fut-live-status { background: #ffffff !important; border-color: rgba(14, 165, 233, 0.4) !important; color: #075985 !important; }
 body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important; }
-/* ===== SAMAKAN UKURAN LOGIN DENGAN DASHBOARD ===== */
+body:not(.dark-mode) .btn-google { background: #ffffff !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+body:not(.dark-mode) .btn-google:hover { background: #f8fafc !important; }
+body:not(.dark-mode) .btn-google-icon { background: #ffffff !important; }
+body:not(.dark-mode) .btn-google-arrow { color: #64748b !important; }
+
+/* ============================================================ */
+/* ========== 10. MEDIA QUERIES (SAMAKAN UKURAN LOGIN) ======== */
+/* ============================================================ */
 @media (max-width: 900px) {
     #login-screen { padding: 12px; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
-    .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 400px; margin: 0 auto; } /* Ubah max-width jadi 400px */
+    .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 400px; margin: 0 auto; }
     .fut-left { padding: 8px; }
     .fut-headline { font-size: 26px; margin-bottom: 4px; }
     .fut-subheadline { font-size: 12px; margin-bottom: 14px; }
     .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; }
-    .fut-characters .team-3d-img { max-height: 180px; } /* Samakan tinggi gambar */
+    .fut-characters .team-3d-img { max-height: 180px; }
     .fut-live-status { font-size: 11px; padding: 7px 14px; }
     .fut-card { padding: 28px 22px; border-radius: 20px; }
-    .fut-logo { width: 90px; height: 90px; margin-bottom: 14px; padding: 10px; } /* Samakan ukuran logo */
+    .fut-logo { width: 90px; height: 90px; margin-bottom: 14px; padding: 10px; }
     .fut-orb-1 { width: 250px; height: 250px; }
     .fut-orb-2 { width: 200px; height: 200px; }
     .fut-orb-3 { width: 220px; height: 220px; }
@@ -615,18 +613,21 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
     .fut-subheadline { font-size: 11px; margin-bottom: 10px; }
     .fut-characters .team-3d-img { max-height: 140px; }
     .fut-card { padding: 22px 18px; border-radius: 18px; }
-    .fut-logo { width: 80px; height: 80px; margin-bottom: 10px; padding: 8px; } /* Samakan ukuran logo kecil */
-    .login-hero-title { font-size: 21px; } /* Samakan ukuran judul */
+    .fut-logo { width: 80px; height: 80px; margin-bottom: 12px; padding: 8px; }
+    .login-hero-title { font-size: 21px; }
     .login-hero-sub { font-size: 12px; }
     .btn-google { padding: 12px 14px; font-size: 13.5px; }
     .btn-google-icon { width: 30px; height: 30px; }
     .btn-google-text { font-size: 13.5px; }
 }
-  fut-live-status { font-size: 10.5px; padding: 6px 12px; } .fut-card { padding: 22px 18px; border-radius: 18px; } .fut-logo { width: 60px; height: 60px; margin-bottom: 12px; padding: 8px; } .login-hero-title { font-size: 18px; } .login-hero-sub { font-size: 11.5px; } .btn-google { padding: 12px 14px; font-size: 13px; } .btn-google-icon { width: 30px; height: 30px; } .btn-google-text { font-size: 13px; } }
-@media (max-width: 480px) { body { padding: 10px; } .app-container { border-radius: 24px; padding: 16px; border-width: 4px; } }
+
+@media (max-width: 480px) { 
+    body { padding: 10px; } 
+    .app-container { border-radius: 24px; padding: 16px; border-width: 4px; } 
+}
 
 /* ============================================================ */
-/* ===== STYLING LIST BAWA CUSTOMER (SESUAI GAMBAR) =========== */
+/* ========== 11. STYLING LIST BAWA CUSTOMER ================== */
 /* ============================================================ */
 .list-bawa-custom {
     list-style: none;
@@ -689,7 +690,6 @@ body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,2
 .total-box-custom .text-lihat { color: #d97706; }
 .total-box-custom .text-deal { color: #059669; }
 
-/* Dark Mode */
 body.dark-mode .list-bawa-custom li {
     background: #2b0007 !important;
     border: 1px solid #ff1f3d !important;
@@ -769,7 +769,7 @@ body.dark-mode .total-box-custom {
                         </svg>
                     </span>
                 </button>
-                <div id="login-error" style="color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 18px; margin-top: 12px;"></div>
+                <div id="login-error" style="color: #f87171; font-size: 12px; font-weight: 700; text-align: center; min-height: 0px; margin-top: 12px;"></div>
             </div>
         </div>
     </div>
@@ -805,7 +805,6 @@ body.dark-mode .total-box-custom {
     </div>
 
     <div id="panel-menu-utama" style="display: none;">
-        <!-- Profil Promotor -->
         <div class="user-badge">
             <div class="user-info-left">
                 <div class="user-avatar" id="avatar-inisial">P</div>
@@ -1184,7 +1183,6 @@ function tampilkanAplikasiUtama() {
     document.getElementById('panel-menu-utama').style.display = 'block';
     document.getElementById('label-user-aktif').innerText = cachedNama;
     
-    // Set Inisial Avatar
     const avatarEl = document.getElementById('avatar-inisial');
     if (avatarEl && cachedNama) avatarEl.innerText = cachedNama.charAt(0).toUpperCase();
 
@@ -1859,7 +1857,7 @@ function renderAktivitas() {
         if (semuaBawa.length === 0) { totalBox.innerHTML = ''; totalBox.style.display = 'none'; }
         else {
             totalBox.style.display = 'flex';
-            totalBox.className = 'total-box-custom'; // Terapkan class baru
+            totalBox.className = 'total-box-custom';
             totalBox.innerHTML = `
                 <span>TOTAL:</span> 
                 <span class="text-lihat">👀 ${totalLihat} Lihat</span> 
@@ -1870,7 +1868,7 @@ function renderAktivitas() {
     }
     const elListBawa = document.getElementById('list-bawa');
     if (elListBawa) {
-        elListBawa.className = 'list-bawa-custom'; // Terapkan class baru
+        elListBawa.className = 'list-bawa-custom';
         elListBawa.innerHTML = semuaBawa.length === 0 ? '<div class="aktivitas-empty">Belum ada yang membawa customer</div>'
             : semuaBawa.map(a => {
                 const mulai = a.waktuMulai, selesai = a.waktuSelesai;

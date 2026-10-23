@@ -591,8 +591,38 @@ body:not(.dark-mode) .fut-subheadline { color: #475569 !important; }
 body:not(.dark-mode) .fut-tagline { color: #0284c7 !important; border-color: rgba(14, 165, 233, 0.4) !important; background: rgba(14, 165, 233, 0.12) !important; }
 body:not(.dark-mode) .fut-live-status { background: #ffffff !important; border-color: rgba(14, 165, 233, 0.4) !important; color: #075985 !important; }
 body:not(.dark-mode) .fut-grid { background-image: linear-gradient(rgba(14,165,233,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.12) 1px, transparent 1px) !important; }
-@media (max-width: 900px) { #login-screen { padding: 16px; align-items: flex-start; overflow-y: auto; } .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 480px; margin: 0 auto; } .fut-left { padding: 8px; } .fut-headline { font-size: 26px; margin-bottom: 4px; } .fut-subheadline { font-size: 12px; margin-bottom: 14px; } .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; } .fut-characters { display: flex; margin-bottom: 15px; } .fut-characters .team-3d-img { max-height: 140px; } .fut-live-status { font-size: 11px; padding: 7px 14px; } .fut-card { padding: 28px 22px; border-radius: 20px; } .fut-logo { width: 70px; height: 70px; margin-bottom: 14px; padding: 10px; } .login-hero-title { font-size: 20px; } .login-hero-sub { font-size: 12px; } .fut-orb-1 { width: 250px; height: 250px; } .fut-orb-2 { width: 200px; height: 200px; } .fut-orb-3 { width: 220px; height: 220px; } }
-@media (max-width: 400px) { #login-screen { padding: 10px; } .fut-container { gap: 12px; } .fut-headline { font-size: 22px; } .fut-subheadline { font-size: 11px; margin-bottom: 10px; } .fut-live-status { font-size: 10.5px; padding: 6px 12px; } .fut-card { padding: 22px 18px; border-radius: 18px; } .fut-logo { width: 60px; height: 60px; margin-bottom: 12px; padding: 8px; } .login-hero-title { font-size: 18px; } .login-hero-sub { font-size: 11.5px; } .btn-google { padding: 12px 14px; font-size: 13px; } .btn-google-icon { width: 30px; height: 30px; } .btn-google-text { font-size: 13px; } }
+/* ===== SAMAKAN UKURAN LOGIN DENGAN DASHBOARD ===== */
+@media (max-width: 900px) {
+    #login-screen { padding: 12px; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
+    .fut-container { grid-template-columns: 1fr; gap: 16px; max-width: 400px; margin: 0 auto; } /* Ubah max-width jadi 400px */
+    .fut-left { padding: 8px; }
+    .fut-headline { font-size: 26px; margin-bottom: 4px; }
+    .fut-subheadline { font-size: 12px; margin-bottom: 14px; }
+    .fut-tagline { font-size: 10px; padding: 5px 12px; margin-bottom: 12px; }
+    .fut-characters .team-3d-img { max-height: 180px; } /* Samakan tinggi gambar */
+    .fut-live-status { font-size: 11px; padding: 7px 14px; }
+    .fut-card { padding: 28px 22px; border-radius: 20px; }
+    .fut-logo { width: 90px; height: 90px; margin-bottom: 14px; padding: 10px; } /* Samakan ukuran logo */
+    .fut-orb-1 { width: 250px; height: 250px; }
+    .fut-orb-2 { width: 200px; height: 200px; }
+    .fut-orb-3 { width: 220px; height: 220px; }
+}
+
+@media (max-width: 400px) {
+    #login-screen { padding: 8px; }
+    .fut-container { gap: 12px; }
+    .fut-headline { font-size: 22px; }
+    .fut-subheadline { font-size: 11px; margin-bottom: 10px; }
+    .fut-characters .team-3d-img { max-height: 140px; }
+    .fut-card { padding: 22px 18px; border-radius: 18px; }
+    .fut-logo { width: 80px; height: 80px; margin-bottom: 10px; padding: 8px; } /* Samakan ukuran logo kecil */
+    .login-hero-title { font-size: 21px; } /* Samakan ukuran judul */
+    .login-hero-sub { font-size: 12px; }
+    .btn-google { padding: 12px 14px; font-size: 13.5px; }
+    .btn-google-icon { width: 30px; height: 30px; }
+    .btn-google-text { font-size: 13.5px; }
+}
+  fut-live-status { font-size: 10.5px; padding: 6px 12px; } .fut-card { padding: 22px 18px; border-radius: 18px; } .fut-logo { width: 60px; height: 60px; margin-bottom: 12px; padding: 8px; } .login-hero-title { font-size: 18px; } .login-hero-sub { font-size: 11.5px; } .btn-google { padding: 12px 14px; font-size: 13px; } .btn-google-icon { width: 30px; height: 30px; } .btn-google-text { font-size: 13px; } }
 @media (max-width: 480px) { body { padding: 10px; } .app-container { border-radius: 24px; padding: 16px; border-width: 4px; } }
 
 /* ============================================================ */

@@ -517,6 +517,79 @@ body:not(.dark-mode) .btn-google-arrow { color: #64748b !important; }
     .fut-orb-2 { width: 200px; height: 200px; }
     .fut-orb-3 { width: 220px; height: 220px; }
 }
+  /* ============================================================ */
+/* ===== GAYA TOMBOL GLASSMORPHISM (PREMIUM) ================== */
+/* ============================================================ */
+
+.btn-glass {
+    position: relative;
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 50px; /* Bentuk kapsul */
+    background: linear-gradient(180deg, rgba(30,30,30,0.95) 0%, rgba(10,10,10,0.98) 100%);
+    color: #a1a1aa; /* Warna teks abu-abu terang */
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,255,255,0.08); /* Border tipis transparan */
+    box-shadow: 
+        inset 0 1px 1px rgba(255,255,255,0.15), /* Highlight atas */
+        inset 0 -2px 4px rgba(0,0,0,0.8),       /* Shadow bawah */
+        0 10px 25px rgba(0,0,0,0.5);            /* Shadow luar */
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    text-transform: uppercase;
+}
+
+/* Efek kilau saat di-hover */
+.btn-glass::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s ease;
+}
+.btn-glass:hover::before {
+    left: 100%;
+}
+
+.btn-glass:hover {
+    color: #ffffff;
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 
+        inset 0 1px 1px rgba(255,255,255,0.2), 
+        inset 0 -2px 4px rgba(0,0,0,0.8),       
+        0 15px 35px rgba(0,0,0,0.7);
+    transform: translateY(-2px);
+}
+
+.btn-glass:active {
+    transform: translateY(1px);
+    box-shadow: 
+        inset 0 2px 5px rgba(0,0,0,0.8),
+        0 5px 15px rgba(0,0,0,0.5);
+}
+
+/* Warna ikon bintang di dalam tombol */
+.btn-glass svg {
+    stroke: #e2e8f0;
+    fill: none;
+    width: 18px;
+    height: 18px;
+}
+
+/* Varian jika tombol disabled (misal: di luar radius) */
+.btn-glass:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
 </style>
 </head>
 <body class="login-active">

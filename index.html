@@ -257,7 +257,7 @@ button { width: 100%; padding: 14px; border-radius: 50px; font-size: 12px; font-
 .badge-ibadah { background: var(--purple); color: #fff; }
 
 /* ============================================================ */
-/* ===== AKTIVITAS SECTION (SAMA DENGAN ADMIN) ================ */
+/* ===== AKTIVITAS SECTION (GAYA ADMIN DASHBOARD) ============= */
 /* ============================================================ */
 .aktivitas-section { margin-top: 20px; text-align: left; }
 .aktivitas-header-toggle { 
@@ -276,11 +276,12 @@ button { width: 100%; padding: 14px; border-radius: 50px; font-size: 12px; font-
 .aktivitas-menu-btn { 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
     gap: 8px; padding: 16px 10px; background: var(--bg-card); 
-    border: 1px solid var(--border-strong); border-radius: var(--radius-md); 
+    border: 2px solid var(--blue); border-radius: var(--radius-md); 
     cursor: pointer; position: relative; min-height: 85px; transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
 }
-.aktivitas-menu-btn:hover { background: var(--bg-soft); }
-.aktivitas-menu-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
+.aktivitas-menu-btn:hover { background: var(--bg-soft); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+.aktivitas-menu-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--blue); }
 .aktivitas-menu-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; }
 .aktivitas-menu-label { font-size: 10.5px; font-weight: 700; text-align: center; color: var(--text-main); }
 .aktivitas-menu-count { position: absolute; top: 8px; right: 8px; font-size: 9px; font-weight: 800; background: var(--blue); color: #fff; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; border: 1.5px solid var(--bg-card); }

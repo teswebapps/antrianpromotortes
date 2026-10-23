@@ -586,32 +586,57 @@ body.dark-mode .list-bawa-custom .waktu-wrapper { color: #ff99a8 !important; }
 body.dark-mode .list-bawa-custom .badge-melayani-text { color: #34d399 !important; }
 body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px solid #ff1f3d !important; color: #ffffff !important; }
 /* ============================================================ */
-/* ===== FIX LAYOUT MOBILE (STANDAR APP - ANTI HILANG) ======== */
+/* ===== FLEXIBLE LAYOUT UNTUK MOBILE (SPACING MERATA) ======== */
 /* ============================================================ */
 
-/* 1. Pastikan body tidak mengunci scroll */
+/* 1. Atur Body & Container Utama */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: auto !important;
-    min-height: 100% !important;
-    overflow-x: hidden !important; /* Hanya kunci scroll ke samping */
+    height: 100% !important;
     background-color: var(--bg-body) !important;
 }
 
-/* 2. Atur container utama dengan padding bawah untuk ruang nav */
 .app-container {
     margin: 0 auto !important;
     padding: 16px !important;
-    padding-bottom: 100px !important; /* Ruang aman agar konten tidak tertutup nav */
+    padding-bottom: 90px !important; /* Jarak aman bottom nav */
     border-radius: 0 !important;
     border: none !important;
     box-shadow: none !important;
     min-height: 100vh !important;
+    height: 100% !important;
     max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* 3. Menu bawah melayang (fixed) dan menempel di dasar layar */
+/* 2. Jadikan Wrapper Konten sebagai Flex Column */
+.tab-contents-wrapper {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+/* 3. Tiap Tab Content harus jadi Flex Column */
+.tab-content {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 4. Beri jarak fleksibel antar elemen di dalam tab */
+.tab-content > * {
+    margin-bottom: 16px !important; /* Jarak dasar antar elemen */
+}
+
+/* 5. Dorong elemen terakhir agar menempel ke bawah (opsional) */
+.tab-content > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* 6. Menu Bawah (Mobile) */
 .bottom-nav {
     position: fixed !important;
     bottom: 0 !important;
@@ -619,18 +644,17 @@ html, body {
     right: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
     background: var(--bg-card) !important;
     border-top: 1px solid var(--border-light) !important;
     display: flex !important;
     justify-content: space-around !important;
     padding: 10px 8px !important;
-    z-index: 99999 !important; /* Pastikan di atas segalanya */
+    z-index: 99999 !important;
     border-radius: 0 !important;
     box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* 4. Khusus Desktop (PC), kembalikan gaya aslinya */
+/* 7. Khusus Desktop */
 @media (min-width: 481px) {
     body {
         padding: 16px !important;
@@ -642,15 +666,16 @@ html, body {
         border-radius: 36px !important;
         border: 6px solid var(--border-strong) !important;
         box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1) !important;
-        padding-bottom: 100px !important;
-        margin-bottom: 20px !important;
+        height: auto !important;
+        min-height: 90vh !important;
     }
     .bottom-nav {
-        max-width: 440px !important;
         left: 50% !important;
+        right: auto !important;
+        width: 440px !important; 
+        max-width: 440px !important;
         transform: translateX(-50%) !important;
         border-radius: 20px 20px 0 0 !important;
-        bottom: 20px !important; /* Sedikit naik di desktop agar tidak menempel di ujung browser */
     }
 }
 </style>

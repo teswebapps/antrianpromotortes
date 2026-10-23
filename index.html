@@ -585,83 +585,64 @@ body.dark-mode .list-bawa-custom .nama-wrapper { color: #ffffff !important; }
 body.dark-mode .list-bawa-custom .waktu-wrapper { color: #ff99a8 !important; }
 body.dark-mode .list-bawa-custom .badge-melayani-text { color: #34d399 !important; }
 body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px solid #ff1f3d !important; color: #ffffff !important; }
-  /* ============================================================ */
-/* ===== HILANGKAN JARAK KOSONG DI BAWAH (MOBILE) ============= */
 /* ============================================================ */
-
-/* 1. Paksa body dan html agar tidak ada margin/padding di bawah */
-html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100% !important;
-    overflow-x: hidden;
-}
-
-/* 2. Ubah padding body yang tadinya 16px menjadi 0 untuk mobile */
-@media (max-width: 480px) {
-    body { 
-        padding: 0 !important; 
+/* ===== OPERASI BERSIHKAN JARAK BAWAH (MOBILE) =============== */
+/* ============================================================ */
+@media (max-width: 768px) {
+    /* 1. Paksa body & html agar tidak ada margin/padding & tidak ada scroll kosong */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        background-color: var(--bg-body) !important;
     }
-}
 
-/* 3. Sesuaikan container agar mengisi layar penuh tanpa jarak aneh */
-.app-container {
-    margin-bottom: 0 !important;
-    padding-bottom: 80px !important; /* Beri ruang HANYA untuk bottom nav */
-    border-radius: 0 !important; /* Opsional: hilangkan lengkungan di mobile agar full screen */
-    border: none !important; /* Opsional: hilangkan border luar */
-    box-shadow: none !important;
-    min-height: 100vh !important;
-}
-
-/* 4. Rapatkan jarak antar elemen dalam setiap TAB */
-.tab-content {
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-}
-
-/* 5. Paksa grid aktivitas dan list antrian agar tidak ada margin bawah berlebih */
-.aktivitas-section, 
-.aktivitas-menu-grid, 
-.aktivitas-content,
-.card-section {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-/* 6. Jika ada jarak di bawah list terakhir, hilangkan */
-.list-antrian li:last-child,
-.aktivitas-menu-btn:last-child {
-    margin-bottom: 0 !important;
-}
-
-/* 7. Atur Bottom Nav agar menempel di bawah tanpa jarak */
-.bottom-nav {
-    bottom: 0 !important;
-    margin-bottom: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* 8. Fix untuk layar HP agar full screen */
-@media (max-width: 480px) {
+    /* 2. Paksa container agar pas dengan layar dan padding bawah HANYA untuk Nav */
     .app-container {
-        width: 100% !important;
-        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        padding-bottom: 75px !important; /* <-- Ini tinggi Nav, sesuaikan jika perlu */
+        min-height: 100vh !important;
+        height: auto !important;
         border-radius: 0 !important;
         border: none !important;
+        box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
-    
-    .top-controls {
-        padding-top: 16px !important; /* Beri sedikit jarak di atas header */
-        padding-left: 16px !important;
-        padding-right: 16px !important;
+
+    /* 3. Pastikan area tab mengisi sisa ruang kosong dengan benar */
+    .tab-contents-wrapper {
+        flex: 1 0 auto !important; /* Mengisi ruang yang tersedia */
+        padding: 16px !important;
+        padding-bottom: 0 !important; /* Jangan tambah jarak di bawah */
     }
-    
-    .tab-content {
-        padding-left: 16px !important;
-        padding-right: 16px !important;
+
+    /* 4. Hapus semua margin bawah pada elemen terakhir di setiap tab */
+    .tab-content > *:last-child,
+    .tab-content > *:last-child > *:last-child {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* 5. Jika ada card-section, hapus margin bawahnya */
+    .card-section {
+        margin-bottom: 0 !important;
+    }
+
+    /* 6. Paksa bottom nav menempel mati di dasar layar */
+    .bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important; /* Hilangkan sudut melengkung agar nempel */
+        border-top-left-radius: 16px !important;
+        border-top-right-radius: 16px !important;
     }
 }
 </style>

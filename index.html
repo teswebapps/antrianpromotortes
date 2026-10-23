@@ -586,63 +586,62 @@ body.dark-mode .list-bawa-custom .waktu-wrapper { color: #ff99a8 !important; }
 body.dark-mode .list-bawa-custom .badge-melayani-text { color: #34d399 !important; }
 body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px solid #ff1f3d !important; color: #ffffff !important; }
 /* ============================================================ */
-/* ===== OPERASI BERSIHKAN JARAK BAWAH (MOBILE) =============== */
+/* ===== FIX JARAK BAWAH & BOTTOM NAV (STANDAR APP) =========== */
 /* ============================================================ */
-@media (max-width: 768px) {
-    /* 1. Paksa body & html agar tidak ada margin/padding & tidak ada scroll kosong */
-    html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 100% !important;
-        min-height: 100% !important;
-        background-color: var(--bg-body) !important;
-    }
 
-    /* 2. Paksa container agar pas dengan layar dan padding bawah HANYA untuk Nav */
+/* 1. Hilangkan margin bawaan body agar pas di layar */
+body {
+    margin: 0 !important;
+    padding: 16px !important;
+    background-color: var(--bg-body) !important;
+}
+
+/* 2. Beri ruang kosong di bawah konten utama. 
+      Angka 100px ini adalah tinggi Bottom Nav + sedikit jarak aman. */
+.app-container {
+    margin-bottom: 0 !important;
+    padding-bottom: 100px !important; /* Jarak aman agar konten tidak tertutup nav */
+    min-height: auto !important;      /* Jangan paksa tinggi 100vh */
+}
+
+/* 3. Paksa Bottom Nav menempel mati di dasar layar */
+.bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 440px !important;      /* Samakan dengan lebar app-container */
+    background: var(--bg-card) !important;
+    border-top: 1px solid var(--border-light) !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    padding: 10px 8px !important;
+    z-index: 99999 !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 4. Khusus Mobile (HP), hapus padding luar body agar full screen */
+@media (max-width: 480px) {
+    body {
+        padding: 0 !important;
+    }
     .app-container {
-        margin: 0 !important;
-        padding: 0 !important;
-        padding-bottom: 75px !important; /* <-- Ini tinggi Nav, sesuaikan jika perlu */
-        min-height: 100vh !important;
-        height: auto !important;
-        border-radius: 0 !important;
+        border-radius: 0 !important; /* Full screen tanpa lengkungan */
         border: none !important;
-        box-shadow: none !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    /* 3. Pastikan area tab mengisi sisa ruang kosong dengan benar */
-    .tab-contents-wrapper {
-        flex: 1 0 auto !important; /* Mengisi ruang yang tersedia */
-        padding: 16px !important;
-        padding-bottom: 0 !important; /* Jangan tambah jarak di bawah */
-    }
-
-    /* 4. Hapus semua margin bawah pada elemen terakhir di setiap tab */
-    .tab-content > *:last-child,
-    .tab-content > *:last-child > *:last-child {
-        margin-bottom: 0 !important;
-        padding-bottom: 0 !important;
-    }
-
-    /* 5. Jika ada card-section, hapus margin bawahnya */
-    .card-section {
-        margin-bottom: 0 !important;
-    }
-
-    /* 6. Paksa bottom nav menempel mati di dasar layar */
-    .bottom-nav {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
+        padding: 16px !important;    /* Padding dalam tetap ada */
+        padding-bottom: 100px !important; /* Jarak aman nav */
         max-width: 100% !important;
-        border-radius: 0 !important; /* Hilangkan sudut melengkung agar nempel */
-        border-top-left-radius: 16px !important;
-        border-top-right-radius: 16px !important;
+        min-height: auto !important;
+        box-shadow: none !important;
+    }
+    .bottom-nav {
+        max-width: 100% !important;  /* Nav full width di HP */
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0 !important;
     }
 }
 </style>

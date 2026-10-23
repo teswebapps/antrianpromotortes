@@ -108,9 +108,6 @@
 </script>
 
 <style>
-/* ============================================================ */
-/* ========== 1. VARIABEL DASAR & RESET ======================= */
-/* ============================================================ */
 :root {
     --bg-body: #e2e8f0;
     --bg-card: #ffffff;
@@ -184,135 +181,48 @@ body.dark-mode .app-container {
     border-color: #2a3446;
 }
 
-/* ============================================================ */
-/* ========== 2. HEADER & PROFIL ============================== */
-/* ============================================================ */
-.top-controls {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 20px;
-}
-
+/* HEADER */
+.top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .brand-area { display: flex; align-items: center; gap: 12px; }
-
-.brand-logo {
-    width: 42px; 
-    height: 42px; 
-    background: transparent;
-    border-radius: 10px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    overflow: hidden; 
-    flex-shrink: 0;
-}
-.brand-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
+.brand-logo { width: 42px; height: 42px; background: transparent; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.brand-logo img { width: 100%; height: 100%; object-fit: contain; }
 .brand-text h1 { font-size: 15px; font-weight: 800; margin: 0; line-height: 1.2; color: var(--text-main); }
 .brand-text p { font-size: 11px; color: var(--text-muted); margin: 0; font-weight: 600; }
-
 .header-actions { display: flex; gap: 8px; }
-.icon-btn {
-    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border-strong);
-    background: transparent; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-muted); padding: 0; transition: all 0.2s;
-}
+.icon-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border-strong); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); padding: 0; transition: all 0.2s; }
 .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
 .icon-btn:hover { background: var(--bg-soft); }
-
-.logout-btn {
-    background: rgba(239, 68, 68, 0.05); color: #ef4444 !important; 
-    border: 1px solid #ef4444 !important;
-    font-weight: 800; border-radius: 8px; padding: 0 12px; height: 36px;
-    font-size: 11px; cursor: pointer; display: inline-flex; align-items: center;
-    gap: 6px; width: auto; transition: all 0.2s;
-}
+.logout-btn { background: rgba(239, 68, 68, 0.05); color: #ef4444 !important; border: 1px solid #ef4444 !important; font-weight: 800; border-radius: 8px; padding: 0 12px; height: 36px; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; width: auto; transition: all 0.2s; }
 .logout-btn:hover { background: var(--red-light); }
 .logout-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
 
-.status-badge-sistem {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800;
-    text-transform: uppercase; margin: 0 auto 20px auto; letter-spacing: 0.5px; width: fit-content;
-    color: #ffffff !important;
-}
-.status-open { 
-    background: var(--green) !important; 
-    border: 1px solid var(--green) !important; 
-}
-.status-closed { 
-    background: var(--red) !important; 
-    border: 1px solid var(--red) !important; 
-}
+/* STATUS BADGE */
+.status-badge-sistem { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin: 0 auto 20px auto; letter-spacing: 0.5px; width: fit-content; color: #ffffff !important; }
+.status-open { background: var(--green) !important; border: 1px solid var(--green) !important; }
+.status-closed { background: var(--red) !important; border: 1px solid var(--red) !important; }
 .status-badge-sistem .dot { width: 6px; height: 6px; border-radius: 50%; }
 .status-open .dot { background: #ffffff !important; }
 .status-closed .dot { background: #ffffff !important; }
 
-.user-badge {
-    background: var(--bg-soft); border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px;
-    display: flex; justify-content: center; align-items: center; 
-}
+/* PROFIL */
+.user-badge { background: var(--bg-soft); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: center; align-items: center; }
 .user-info-left { display: flex; align-items: center; gap: 12px; }
-.user-avatar {
-    width: 38px; height: 38px; border-radius: 8px;
-    background: var(--blue-light); color: var(--blue);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 16px;
-}
-.user-info-left > div {
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
+.user-avatar { width: 38px; height: 38px; border-radius: 8px; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; }
+.user-info-left > div { display: flex; align-items: center; height: 100%; }
 #label-user-aktif { font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0; }
 
-/* ============================================================ */
-/* ========== 3. GILIRAN (HA Biru & AV Merah) ================= */
-/* ============================================================ */
+/* GILIRAN */
 .timer-box-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-.timer-card-admin {
-    background: var(--bg-card); border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md); padding: 12px; text-align: center; position: relative;
-}
+.timer-card-admin { background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 12px; text-align: center; position: relative; }
 .timer-card-admin.ha { border-color: var(--blue); }
 .timer-card-admin.av { border-color: var(--red); }
-
-.timer-badge-title { 
-    font-size: 10px; font-weight: 800; text-transform: uppercase; 
-    padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px;
-}
+.timer-badge-title { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
 .ha .timer-badge-title { background: var(--blue-light); color: var(--blue); }
 .av .timer-badge-title { background: var(--red-light); color: var(--red); }
-
 .promotor-nama-aktif { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; text-align: center; }
 
-/* ============================================================ */
-/* ========== 4. FORM & TOMBOL ================================ */
-/* ============================================================ */
-.input-group { margin-bottom: 16px; text-align: left; }
-.input-group label { display: block; font-size: 10px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;}
-
-select, input[type="text"], input[type="password"] {
-    width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong); background: var(--bg-card);
-    font-size: 13px; font-weight: 600; color: var(--text-main); outline: none; transition: all 0.2s;
-}
-select:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
-
-button {
-    width: 100%; padding: 14px; border-radius: 50px;
-    font-size: 12px; font-weight: 800; cursor: pointer;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    display: inline-flex; justify-content: center; align-items: center;
-    gap: 8px; transition: all 0.2s; border: none;
-}
-
+/* TOMBOL */
+button { width: 100%; padding: 14px; border-radius: 50px; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; border: none; }
 .btn-customer { background: var(--blue); color: #fff; }
 .btn-purple { background: var(--orange); color: #fff; }
 .btn-indigo { background: var(--purple); color: #fff; }
@@ -322,40 +232,24 @@ button {
 .btn-maroon:hover { background: var(--red-light); }
 .btn-disabled { background: var(--border-strong) !important; color: var(--text-muted) !important; cursor: not-allowed !important; pointer-events: none !important; }
 
-/* ============================================================ */
-/* ========== 5. DAFTAR ANTRIAN =============================== */
-/* ============================================================ */
-.live-urutan-title { 
-    font-size: 11px; font-weight: 800; color: var(--text-muted); 
-    text-transform: uppercase; margin: 20px 0 10px 0; letter-spacing: 0.5px;
-    display: flex; justify-content: space-between; align-items: center;
-}
-.badge-total-antri {
-    background: var(--bg-soft); border: 1px solid var(--border-strong);
-    padding: 4px 8px; border-radius: 6px; font-size: 10px; color: var(--text-main);
-}
+/* PETA & GPS */
+.gps-box { background: var(--bg-soft); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; }
+.gps-title { font-size: 10px; font-weight: 800; color: var(--blue); text-transform: uppercase; margin-bottom: 8px; text-align: left; }
+#map-promotor { width: 100%; height: 140px; border-radius: 8px; border: 1px solid var(--border-strong); margin-bottom: 8px; z-index: 1; }
+.info-radius { font-size: 10px; font-weight: 800; text-align: center; padding: 6px 8px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border-strong); }
+.info-radius.ok { color: var(--green); border-color: var(--green); background: var(--green-light); }
+.info-radius.err { color: var(--red); border-color: var(--red); background: var(--red-light); }
 
+/* DAFTAR ANTRIAN */
+.live-urutan-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin: 20px 0 10px 0; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+.badge-total-antri { background: var(--bg-soft); border: 1px solid var(--border-strong); padding: 4px 8px; border-radius: 6px; font-size: 10px; color: var(--text-main); }
 .list-antrian { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.list-antrian li {
-    padding: 10px 12px; background: var(--bg-soft);
-    border-radius: var(--radius-md); 
-    display: flex; justify-content: space-between; align-items: center;
-    border: 1px solid var(--border-light); font-size: 13px; font-weight: 700; color: var(--text-main);
-}
+.list-antrian li { padding: 10px 12px; background: var(--bg-soft); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-light); font-size: 13px; font-weight: 700; color: var(--text-main); }
 .list-antrian li.saya-sendiri { border: 1.5px solid var(--blue); background: var(--bg-card); box-shadow: 0 0 0 1px var(--blue); }
-
 .list-antrian li b { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-.antri-number {
-    width: 22px; height: 22px; background: var(--bg-card); border-radius: 4px;
-    border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center;
-    font-size: 10px; color: var(--text-muted);
-}
+.antri-number { width: 22px; height: 22px; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); }
 .saya-sendiri .antri-number { background: var(--blue); color: #fff; border-color: var(--blue); }
-
-.badge-status-item { 
-    font-size: 10px; font-weight: 800; padding: 5px 8px; border-radius: 4px; 
-    white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px;
-}
+.badge-status-item { font-size: 10px; font-weight: 800; padding: 5px 8px; border-radius: 4px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.3px; }
 .badge-giliran-anda { background: var(--red); color: #fff; }
 .badge-standby { background: #fef08a; color: #854d0e; }
 .badge-melayani { background: var(--green); color: #fff; }
@@ -363,28 +257,21 @@ button {
 .badge-ibadah { background: var(--purple); color: #fff; }
 
 /* ============================================================ */
-/* ========== 6. MENU AKTIVITAS & LIST DALAM POPUP ============ */
+/* ===== AKTIVITAS SECTION (SAMA DENGAN ADMIN) ================ */
 /* ============================================================ */
-.aktivitas-section { margin-top: 20px; }
-
+.aktivitas-section { margin-top: 20px; text-align: left; }
 .aktivitas-header-toggle { 
     display: flex; justify-content: space-between; align-items: center; 
     cursor: pointer; padding: 14px 16px; border-radius: var(--radius-md); 
     background: var(--bg-soft); border: 1px solid var(--border-strong); 
 }
-.aktivitas-header-toggle .judul { 
-    display: flex; align-items: center; gap: 8px; font-size: 12px; 
-    font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px;
-}
-.aktivitas-header-toggle .arrow {
-    width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-    color: var(--text-muted); border-radius: 50%; border: 1px solid var(--border-strong); transition: transform 0.3s;
-}
+.aktivitas-header-toggle .judul { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.5px; }
+.aktivitas-header-toggle .arrow { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border-radius: 50%; border: 1px solid var(--border-strong); transition: transform 0.3s; }
 .aktivitas-header-toggle.open .arrow { transform: rotate(180deg); }
-
 .aktivitas-content { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease-in-out; }
 .aktivitas-content.open { max-height: 800px; opacity: 1; padding-top: 12px; }
 
+/* Grid Aktivitas - SAMA DENGAN ADMIN */
 .aktivitas-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .aktivitas-menu-btn { 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -396,125 +283,54 @@ button {
 .aktivitas-menu-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
 .aktivitas-menu-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; }
 .aktivitas-menu-label { font-size: 10.5px; font-weight: 700; text-align: center; color: var(--text-main); }
-.aktivitas-menu-count { 
-    position: absolute; top: 8px; right: 8px; font-size: 9px; font-weight: 800; 
-    background: var(--blue); color: #fff; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; 
-    border: 1.5px solid var(--bg-card);
-}
+.aktivitas-menu-count { position: absolute; top: 8px; right: 8px; font-size: 9px; font-weight: 800; background: var(--blue); color: #fff; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; border: 1.5px solid var(--bg-card); }
 
+/* List Aktivitas */
 .aktivitas-list { list-style: none; padding: 0; margin: 0 0 6px 0; }
-.aktivitas-list li {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 12px; background: var(--bg-soft);
-    border-radius: var(--radius-md); margin-bottom: 8px;
-    font-size: 13px; color: var(--text-main); font-weight: 600;
-    border: 1px solid var(--border-light);
-}
+.aktivitas-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-soft); border-radius: var(--radius-md); margin-bottom: 8px; font-size: 13px; color: var(--text-main); font-weight: 600; border: 1px solid var(--border-light); }
 .aktivitas-list li .nama { font-weight: 700; }
-.aktivitas-list li .waktu {
-    font-weight: 800; color: var(--text-muted); font-size: 12px;
-    background: var(--bg-card); padding: 4px 8px;
-    border-radius: 6px; border: 1px solid var(--border-strong);
-    white-space: nowrap;
-}
+.aktivitas-list li .waktu { font-weight: 800; color: var(--text-muted); font-size: 12px; background: var(--bg-card); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-strong); white-space: nowrap; }
 
-/* ============================================================ */
-/* ========== 7. TABEL REKAP (MODERN) ========================= */
-/* ============================================================ */
-.rekap-wrapper { 
-    background: var(--bg-card); 
-    border: 1px solid var(--border-strong); 
-    border-radius: var(--radius-md); 
-    padding: 16px 12px; 
-    margin-bottom: 16px; 
-    overflow-x: auto; 
-}
-.rekap-label { 
-    font-size: 12px; font-weight: 800; color: var(--text-main); 
-    text-align: center; margin-bottom: 12px; padding-bottom: 8px;
-    border-bottom: 1px dashed var(--border-strong);
-}
-.rekap-tabel { 
-    width: 100%; border-collapse: separate; border-spacing: 0 6px; 
-    font-size: 12px; table-layout: fixed; 
-}
-.rekap-tabel th { 
-    background: var(--bg-soft); color: var(--text-muted); 
-    font-weight: 800; text-transform: uppercase; font-size: 10px; 
-    padding: 10px 4px; text-align: center; 
-    border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
-    white-space: nowrap; 
-}
+/* REKAP TABEL */
+.rekap-wrapper { background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 16px 12px; margin-bottom: 16px; overflow-x: auto; }
+.rekap-label { font-size: 12px; font-weight: 800; color: var(--text-main); text-align: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-strong); }
+.rekap-tabel { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 12px; table-layout: fixed; }
+.rekap-tabel th { background: var(--bg-soft); color: var(--text-muted); font-weight: 800; text-transform: uppercase; font-size: 10px; padding: 10px 4px; text-align: center; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); white-space: nowrap; }
 .rekap-tabel th:first-child { border-left: 1px solid var(--border-light); border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
 .rekap-tabel th:last-child { border-right: 1px solid var(--border-light); border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-
-.rekap-tabel td { 
-    padding: 12px 4px; text-align: center; font-weight: 800; font-size: 13px; 
-    background: var(--bg-soft);
-    border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
-    color: var(--text-main);
-}
+.rekap-tabel td { padding: 12px 4px; text-align: center; font-weight: 800; font-size: 13px; background: var(--bg-soft); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); color: var(--text-main); }
 .rekap-tabel td:first-child { border-left: 1px solid var(--border-light); border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
 .rekap-tabel td:last-child { border-right: 1px solid var(--border-light); border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-
-.rekap-tabel td.kolom-nama { 
-    text-align: left; padding-left: 12px; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    border-left: 1px solid var(--border-light);
-}
+.rekap-tabel td.kolom-nama { text-align: left; padding-left: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 1px solid var(--border-light); }
 .rekap-tabel th:nth-child(1) { width: 32%; }
 .rekap-tabel th:nth-child(2) { width: 16%; }
 .rekap-tabel th:nth-child(3) { width: 16%; }
 .rekap-tabel th:nth-child(4) { width: 21%; }
 .rekap-tabel th:nth-child(5) { width: 15%; }
-
 .rekap-tabel td.angka-deal { color: var(--green) !important; }
 .rekap-tabel td.angka-lihat { color: var(--orange) !important; }
 .rekap-tabel td.angka-nosale { color: var(--red) !important; }
 .rekap-tabel td.angka-hari { color: var(--blue) !important; }
-
-.rekap-tabel tr.total-row td { 
-    background: var(--bg-card); border-top: 2px solid var(--border-strong); border-bottom: 2px solid var(--border-strong);
-    font-weight: 900; color: var(--text-main); 
-}
+.rekap-tabel tr.total-row td { background: var(--bg-card); border-top: 2px solid var(--border-strong); border-bottom: 2px solid var(--border-strong); font-weight: 900; color: var(--text-main); }
 .rekap-tabel tr.total-row td:first-child { border-left: 2px solid var(--border-strong); }
 .rekap-tabel tr.total-row td:last-child { border-right: 2px solid var(--border-strong); }
 
-/* ============================================================ */
-/* ========== 8. POPUP & MODAL ================================ */
-/* ============================================================ */
-.popup-overlay, .modal-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); 
-    display: flex; justify-content: center; align-items: center; 
-    z-index: 99999; opacity: 0; visibility: hidden; padding: 16px; 
-    transition: all 0.3s ease; 
-}
+/* POPUP */
+.popup-overlay, .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 99999; opacity: 0; visibility: hidden; padding: 16px; transition: all 0.3s ease; }
 .popup-overlay.active, .modal-overlay.active { opacity: 1; visibility: visible; }
-
-.popup-box, .modal-box { 
-    background: var(--bg-card); border: 1px solid var(--border-strong); 
-    border-radius: var(--radius-lg); width: 100%; max-width: 400px; 
-    max-height: 85vh; display: flex; flex-direction: column; 
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
-    transform: translateY(20px); transition: transform 0.3s ease;
-}
+.popup-box, .modal-box { background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); width: 100%; max-width: 400px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: translateY(20px); transition: transform 0.3s ease; }
 .popup-overlay.active .popup-box, .modal-overlay.active .modal-box { transform: translateY(0); }
-
 .popup-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
 .popup-title, .modal-title { font-size: 15px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
 .popup-close { background: var(--bg-soft); border: 1px solid var(--border-strong); color: var(--text-main); width: 32px; height: 32px; border-radius: 6px; font-size: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.2s; }
 .popup-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
 .popup-body { padding: 16px; overflow-y: auto; flex: 1; }
-
 .modal-box { padding: 24px; text-align: center; }
 .modal-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
 .modal-actions { display: flex; gap: 8px; }
 .modal-actions button { flex: 1; padding: 12px; font-size: 12px; border-radius: 50px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; }
 
-/* ============================================================ */
-/* ========== 9. STYLING LOGIN (SAMAKAN DENGAN DASHBOARD) ===== */
-/* ============================================================ */
+/* LOGIN SCREEN */
 #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050814; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; transition: background 0.3s; }
 .fut-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px); background-size: 40px 40px; animation: futGridMove 20s linear infinite; pointer-events: none; z-index: 1; }
 @keyframes futGridMove { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
@@ -588,7 +404,7 @@ body:not(.dark-mode) .btn-google-icon { background: #ffffff !important; }
 body:not(.dark-mode) .btn-google-arrow { color: #64748b !important; }
 
 /* ============================================================ */
-/* ========== 10. MEDIA QUERIES (SAMAKAN UKURAN LOGIN) ======== */
+/* ===== MEDIA QUERIES ======================================== */
 /* ============================================================ */
 @media (max-width: 900px) {
     #login-screen { padding: 12px; align-items: flex-start; padding-top: 20px; overflow-y: auto; }
@@ -605,7 +421,6 @@ body:not(.dark-mode) .btn-google-arrow { color: #64748b !important; }
     .fut-orb-2 { width: 200px; height: 200px; }
     .fut-orb-3 { width: 220px; height: 220px; }
 }
-
 @media (max-width: 400px) {
     #login-screen { padding: 8px; }
     .fut-container { gap: 12px; }
@@ -620,88 +435,27 @@ body:not(.dark-mode) .btn-google-arrow { color: #64748b !important; }
     .btn-google-icon { width: 30px; height: 30px; }
     .btn-google-text { font-size: 13.5px; }
 }
-
 @media (max-width: 480px) { 
     body { padding: 10px; } 
     .app-container { border-radius: 24px; padding: 16px; border-width: 4px; } 
 }
 
 /* ============================================================ */
-/* ========== 11. STYLING LIST BAWA CUSTOMER ================== */
+/* ===== STYLING LIST BAWA CUSTOMER =========================== */
 /* ============================================================ */
-.list-bawa-custom {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.list-bawa-custom li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: #f8fafc; 
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    font-size: 13px;
-}
-
-.list-bawa-custom .nama-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 800;
-    color: #0f172a;
-    text-transform: uppercase; 
-}
-
-.list-bawa-custom .waktu-wrapper {
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-    white-space: nowrap;
-    font-family: monospace; 
-}
-
-.list-bawa-custom .badge-melayani-text {
-    color: #059669; 
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.total-box-custom {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 8px;
-    background: #f1f5f9;
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    font-size: 13px;
-    font-weight: 800;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-}
-
+.list-bawa-custom { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.list-bawa-custom li { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 13px; }
+.list-bawa-custom .nama-wrapper { display: flex; align-items: center; gap: 6px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+.list-bawa-custom .waktu-wrapper { font-size: 11px; font-weight: 700; color: #64748b; white-space: nowrap; font-family: monospace; }
+.list-bawa-custom .badge-melayani-text { color: #059669; font-size: 10px; font-weight: 800; }
+.total-box-custom { display: flex; justify-content: flex-start; align-items: center; gap: 8px; background: #f1f5f9; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 800; color: #475569; border: 1px solid #e2e8f0; }
 .total-box-custom .text-lihat { color: #d97706; }
 .total-box-custom .text-deal { color: #059669; }
-
-body.dark-mode .list-bawa-custom li {
-    background: #2b0007 !important;
-    border: 1px solid #ff1f3d !important;
-}
+body.dark-mode .list-bawa-custom li { background: #2b0007 !important; border: 1px solid #ff1f3d !important; }
 body.dark-mode .list-bawa-custom .nama-wrapper { color: #ffffff !important; }
 body.dark-mode .list-bawa-custom .waktu-wrapper { color: #ff99a8 !important; }
 body.dark-mode .list-bawa-custom .badge-melayani-text { color: #34d399 !important; }
-body.dark-mode .total-box-custom {
-    background: #1a0205 !important;
-    border: 1px solid #ff1f3d !important;
-    color: #ffffff !important;
-}
+body.dark-mode .total-box-custom { background: #1a0205 !important; border: 1px solid #ff1f3d !important; color: #ffffff !important; }
 </style>
 </head>
 <body class="login-active">
@@ -838,10 +592,10 @@ body.dark-mode .total-box-custom {
         </div>
 
         <div id="section-checkin-awal" style="display: none;">
-            <div class="gps-box" style="background: var(--bg-soft); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;">
-                <div style="font-size:10px; font-weight:800; color:var(--blue); text-transform:uppercase; margin-bottom:8px; text-align:left;">📍 Peta Posisi Toko & Radius</div>
-                <div id="map-promotor" style="width: 100%; height: 140px; border-radius: 8px; border: 1px solid var(--border-strong); margin-bottom: 8px; z-index: 1;"></div>
-                <div id="info-radius" class="info-radius" style="font-size: 10px; font-weight: 800; text-align: center; padding: 6px 8px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border-strong);">📡 Mendeteksi lokasi Anda...</div>
+            <div class="gps-box">
+                <div class="gps-title">📍 Peta Posisi Toko & Radius</div>
+                <div id="map-promotor"></div>
+                <div id="info-radius" class="info-radius">📡 Mendeteksi lokasi Anda...</div>
             </div>
             <button type="button" id="btn-hadir" class="btn-success btn-disabled" onclick="aksiHadirKerja()" disabled>Menunggu Lokasi...</button>
         </div>
@@ -971,9 +725,6 @@ body.dark-mode .total-box-custom {
 </div>
 
 <script>
-/* ============================================================ */
-/* ========== GLOBAL STATE ==================================== */
-/* ============================================================ */
 let daftarAntrianGlobal = [];
 let masterSalesGlobal = [];
 let statusSistemGlobal = "BUKA";
@@ -999,105 +750,34 @@ const SVG_CHECK_DEAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="no
 const SVG_ICON_LIHAT = `👀`;
 
 function waktuServer() { return Date.now() + (window.serverTimeOffset || 0); }
-function getTanggalIndo(d) {
-    const now = d ? new Date(d) : new Date(waktuServer());
-    return `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-}
-function getTanggalKey(d) {
-    const now = d ? new Date(d) : new Date(waktuServer());
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
-function getBulanKey(d) {
-    const now = d ? new Date(d) : new Date(waktuServer());
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
-function getBulanLabelIndo() {
-    const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    const now = new Date(waktuServer());
-    return `${bulanNama[now.getMonth()]} ${now.getFullYear()}`;
-}
+function getTanggalIndo(d) { const now = d ? new Date(d) : new Date(waktuServer()); return `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`; }
+function getTanggalKey(d) { const now = d ? new Date(d) : new Date(waktuServer()); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; }
+function getBulanKey(d) { const now = d ? new Date(d) : new Date(waktuServer()); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; }
+function getBulanLabelIndo() { const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; const now = new Date(waktuServer()); return `${bulanNama[now.getMonth()]} ${now.getFullYear()}`; }
 function sanitizeNama(nama) { return String(nama || "").trim().toLowerCase().replace(/\s+/g, '_'); }
-function formatJam(ts) {
-    const d = new Date(ts);
-    return `${String(d.getHours()).padStart(2,'0')}.${String(d.getMinutes()).padStart(2,'0')}`;
-}
-function hitungJarak(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
+function formatJam(ts) { const d = new Date(ts); return `${String(d.getHours()).padStart(2,'0')}.${String(d.getMinutes()).padStart(2,'0')}`; }
+function hitungJarak(lat1, lon1, lat2, lon2) { const R = 6371000; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180; const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; }
 
-function updateLiveStatus() {
-    const el = document.getElementById('live-status-text');
-    if (!el) return;
-    const total = daftarAntrianGlobal.length;
-    el.innerText = total === 0 ? 'Belum ada yang antri' : `${total} Orang Sedang Antri`;
-}
+function updateLiveStatus() { const el = document.getElementById('live-status-text'); if (!el) return; const total = daftarAntrianGlobal.length; el.innerText = total === 0 ? 'Belum ada yang antri' : `${total} Orang Sedang Antri`; }
+function applyBranding(setting) { if (!setting) return; const namaToko = setting.namaToko || "Nama Toko"; const alamat = setting.alamat || ""; const logoUrl = setting.logoUrl || ""; const titleEl = document.getElementById('page-title'); if (titleEl) titleEl.innerText = `Antrian Walk-In Promotor - ${namaToko}`; const subheadlineEl = document.getElementById('fut-subheadline'); if (subheadlineEl) subheadlineEl.innerText = alamat ? `${namaToko} · ${alamat}` : namaToko; if (logoUrl) { const logoEl = document.getElementById('logo-app'); if (logoEl) { logoEl.src = logoUrl; logoEl.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = '🛸'; }; } } }
 
-function applyBranding(setting) {
-    if (!setting) return;
-    const namaToko = setting.namaToko || "Nama Toko";
-    const alamat = setting.alamat || "";
-    const logoUrl = setting.logoUrl || "";
-    const titleEl = document.getElementById('page-title');
-    if (titleEl) titleEl.innerText = `Antrian Walk-In Promotor - ${namaToko}`;
-    const subheadlineEl = document.getElementById('fut-subheadline');
-    if (subheadlineEl) subheadlineEl.innerText = alamat ? `${namaToko} · ${alamat}` : namaToko;
-    if (logoUrl) {
-        const logoEl = document.getElementById('logo-app');
-        if (logoEl) {
-            logoEl.src = logoUrl;
-            logoEl.onerror = function() { this.style.display = 'none'; this.parentElement.innerHTML = '🛸'; };
-        }
-    }
-}
+function initParticles() { const container = document.getElementById('fut-particles'); if (!container) return; container.innerHTML = ''; for (let i = 0; i < 25; i++) { const p = document.createElement('div'); p.className = 'fut-particle'; p.style.left = Math.random() * 100 + '%'; p.style.animationDuration = (8 + Math.random() * 12) + 's'; p.style.animationDelay = (Math.random() * 10) + 's'; const colors = ['#22d3ee', '#a855f7', '#3b82f6']; const color = colors[Math.floor(Math.random() * colors.length)]; p.style.background = color; p.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`; container.appendChild(p); } }
 
-/* ============================================================ */
-/* ========== PARTICLES ======================================= */
-/* ============================================================ */
-function initParticles() {
-    const container = document.getElementById('fut-particles');
-    if (!container) return;
-    container.innerHTML = '';
-    for (let i = 0; i < 25; i++) {
-        const p = document.createElement('div');
-        p.className = 'fut-particle';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.animationDuration = (8 + Math.random() * 12) + 's';
-        p.style.animationDelay = (Math.random() * 10) + 's';
-        const colors = ['#22d3ee', '#a855f7', '#3b82f6'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        p.style.background = color;
-        p.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
-        container.appendChild(p);
-    }
-}
-
-/* ============================================================ */
-/* ========== LOGIN GOOGLE ==================================== */
-/* ============================================================ */
 async function loginDenganGoogle() {
     const btn = document.getElementById('btn-login-google');
     const txt = document.getElementById('btn-login-text');
     const errEl = document.getElementById('login-error');
     const asli = txt.innerText;
-
     btn.disabled = true;
     txt.innerText = 'MEMPROSES...';
     errEl.innerText = '';
-
     try {
         const provider = new window.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         await window.firebaseSignInWithPopup(window.firebaseAuth, provider);
     } catch (err) {
         console.error('Login gagal:', err);
-        if (err.code !== 'auth/popup-closed-by-user') {
-            errEl.innerText = '❌ ' + err.message;
-        }
+        if (err.code !== 'auth/popup-closed-by-user') { errEl.innerText = '❌ ' + err.message; }
         btn.disabled = false;
         txt.innerText = asli;
     }
@@ -1111,11 +791,9 @@ window.addEventListener('google-login-sukses', (e) => {
     localStorage.setItem('ufo_pin_verified', 'true');
     localStorage.setItem('ufo_pin_verified_at', String(waktuServer()));
     localStorage.setItem('ufo_login_google', 'true');
-
     document.getElementById('login-toast-name').innerText = data.nama;
     const toast = document.getElementById('login-toast');
     toast.classList.add('active');
-
     setTimeout(() => {
         tampilkanAplikasiUtama();
         setTimeout(() => { toast.classList.remove('active'); }, 800);
@@ -1131,22 +809,13 @@ window.addEventListener('google-login-gagal', (e) => {
     if (txt) txt.innerText = 'Lanjutkan dengan Google';
 });
 
-/* ============================================================ */
-/* ========== FIREBASE READY ================================== */
-/* ============================================================ */
 window.addEventListener('firebase-ready', () => {
     initDarkMode();
     initParticles();
     resetCheckinHarianJikaPerlu();
     restoreAktivitasState();
-
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-        setTimeout(() => { cekSesiDanTampilkan(); }, 1500);
-    } else {
-        cekSesiDanTampilkan();
-    }
-    
+    if (isMobile) { setTimeout(() => { cekSesiDanTampilkan(); }, 1500); } else { cekSesiDanTampilkan(); }
     inisialisasiRealtimeFirebase();
     cekPINVerification();
 });
@@ -1156,7 +825,6 @@ function cekSesiDanTampilkan() {
     const pinVerified = localStorage.getItem('ufo_pin_verified') === 'true';
     const verifiedAt = Number(localStorage.getItem('ufo_pin_verified_at')) || 0;
     const pinKadaluarsa = (Date.now() - verifiedAt) > DURASI_PIN_VALID;
-    
     if (cachedNama && pinVerified && !pinKadaluarsa) {
         namaSalesAktifGlobal = cachedNama;
         tampilkanAplikasiUtama();
@@ -1173,24 +841,23 @@ function tampilkanAplikasiUtama() {
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
     if (loginScreen) loginScreen.style.display = 'none';
-    
-    if (appContainer) {
-        appContainer.style.display = 'block';
-        appContainer.style.visibility = 'visible';
-    }
-    
+    if (appContainer) { appContainer.style.display = 'block'; appContainer.style.visibility = 'visible'; }
     const cachedNama = getAkunAktif();
     document.getElementById('panel-menu-utama').style.display = 'block';
     document.getElementById('label-user-aktif').innerText = cachedNama;
-    
     const avatarEl = document.getElementById('avatar-inisial');
     if (avatarEl && cachedNama) avatarEl.innerText = cachedNama.charAt(0).toUpperCase();
-
     const btnLogoutTop = document.getElementById('btn-logout-top');
     if (btnLogoutTop) btnLogoutTop.style.display = 'flex';
     renderUI();
     renderAktivitas();
     renderRekapBawaCustomer();
+
+    // TAMBAHKAN INI: Panggil peta setelah render
+    setTimeout(() => {
+        const gpsAktif = koordinatToko.lat && koordinatToko.lng;
+        if (gpsAktif) initPetaPromotor();
+    }, 500);
 }
 
 function tampilkanLayarLogin() {
@@ -1203,14 +870,7 @@ function tampilkanLayarLogin() {
     if (btnLogoutTop) btnLogoutTop.style.display = 'none';
 }
 
-function resetCheckinHarianJikaPerlu() {
-    const tglTersimpan = localStorage.getItem('ufo_checkin_tanggal');
-    const hariIni = getTanggalKey();
-    if (tglTersimpan !== hariIni) {
-        localStorage.removeItem('ufo_checkin_hari_ini');
-        localStorage.removeItem('ufo_checkin_tanggal');
-    }
-}
+function resetCheckinHarianJikaPerlu() { const tglTersimpan = localStorage.getItem('ufo_checkin_tanggal'); const hariIni = getTanggalKey(); if (tglTersimpan !== hariIni) { localStorage.removeItem('ufo_checkin_hari_ini'); localStorage.removeItem('ufo_checkin_tanggal'); } }
 
 function cekPINVerification() {
     const cachedNama = localStorage.getItem('ufo_nama_sales_aktif');
@@ -1231,54 +891,25 @@ function toggleAktivitasSection() {
     const content = document.getElementById('content-aktivitas');
     if (!header || !content) return;
     const isOpen = content.classList.contains('open');
-    if (isOpen) {
-        content.classList.remove('open');
-        header.classList.remove('open');
-        localStorage.setItem('ufo_aktivitas_open', 'false');
-    } else {
-        content.classList.add('open');
-        header.classList.add('open');
-        localStorage.setItem('ufo_aktivitas_open', 'true');
-    }
+    if (isOpen) { content.classList.remove('open'); header.classList.remove('open'); localStorage.setItem('ufo_aktivitas_open', 'false'); }
+    else { content.classList.add('open'); header.classList.add('open'); localStorage.setItem('ufo_aktivitas_open', 'true'); }
 }
 
-function restoreAktivitasState() {
-    setTimeout(() => {
-        const saved = localStorage.getItem('ufo_aktivitas_open');
-        if (saved === 'true') {
-            const header = document.getElementById('toggle-aktivitas');
-            const content = document.getElementById('content-aktivitas');
-            if (header && content) { header.classList.add('open'); content.classList.add('open'); }
-        }
-    }, 150);
-}
+function restoreAktivitasState() { setTimeout(() => { const saved = localStorage.getItem('ufo_aktivitas_open'); if (saved === 'true') { const header = document.getElementById('toggle-aktivitas'); const content = document.getElementById('content-aktivitas'); if (header && content) { header.classList.add('open'); content.classList.add('open'); } } }, 150); }
 
-/* ============================================================ */
-/* ========== REALTIME FIREBASE LISTENER ====================== */
-/* ============================================================ */
 function inisialisasiRealtimeFirebase() {
     const db = window.db;
     window.dbOnValue(window.dbRef(db, 'antrian'), (snapshot) => {
         const dataRaw = snapshot.val();
         daftarAntrianGlobal = [];
-        if (dataRaw) {
-            Object.keys(dataRaw).forEach(k => {
-                const item = dataRaw[k];
-                if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); }
-            });
-        }
-        updateLiveStatus();
-        renderUI();
-        renderAktivitas();
+        if (dataRaw) { Object.keys(dataRaw).forEach(k => { const item = dataRaw[k]; if (item && item.nama) { item._key = k; daftarAntrianGlobal.push(item); } }); }
+        updateLiveStatus(); renderUI(); renderAktivitas();
     });
     window.dbOnValue(window.dbRef(db, 'mastersales'), (snapshot) => {
         const dataRaw = snapshot.val();
         if (dataRaw) { prosesMasterSales(dataRaw); masterSalesLoaded = true; }
         else if (!masterSalesLoaded) {
-            window.dbOnValue(window.dbRef(db, 'data'), (snap2) => {
-                const d2 = snap2.val();
-                if (d2 && !masterSalesLoaded) { prosesMasterSales(d2); masterSalesLoaded = true; }
-            });
+            window.dbOnValue(window.dbRef(db, 'data'), (snap2) => { const d2 = snap2.val(); if (d2 && !masterSalesLoaded) { prosesMasterSales(d2); masterSalesLoaded = true; } });
         }
     });
     window.dbOnValue(window.dbRef(db, 'setting'), (snapshot) => {
@@ -1296,14 +927,8 @@ function inisialisasiRealtimeFirebase() {
     window.dbOnValue(window.dbRef(db, 'statistikAktivitas'), (snapshot) => {
         const dataRaw = snapshot.val();
         aktivitasGlobal = [];
-        if (dataRaw) {
-            Object.keys(dataRaw).forEach(k => {
-                const item = dataRaw[k];
-                if (item && item.nama) { item._key = k; aktivitasGlobal.push(item); }
-            });
-        }
-        renderAktivitas();
-        renderRekapBawaCustomer();
+        if (dataRaw) { Object.keys(dataRaw).forEach(k => { const item = dataRaw[k]; if (item && item.nama) { item._key = k; aktivitasGlobal.push(item); } }); }
+        renderAktivitas(); renderRekapBawaCustomer();
     });
     window.dbOnValue(window.dbRef(db, 'checkinHarian'), (snapshot) => {
         const dataCheckin = snapshot.val() || {};
@@ -1314,20 +939,11 @@ function inisialisasiRealtimeFirebase() {
         const hariIni = getTanggalKey();
         let sudahHariIni = false;
         if (dataSaya) { if (dataSaya[hariIni] || (dataSaya.tanggalKey === hariIni)) sudahHariIni = true; }
-        if (sudahHariIni) {
-            localStorage.setItem('ufo_checkin_hari_ini', 'true');
-            localStorage.setItem('ufo_checkin_tanggal', hariIni);
-        } else {
-            localStorage.removeItem('ufo_checkin_hari_ini');
-            localStorage.removeItem('ufo_checkin_tanggal');
-        }
-        renderUI();
-        renderRekapBawaCustomer();
+        if (sudahHariIni) { localStorage.setItem('ufo_checkin_hari_ini', 'true'); localStorage.setItem('ufo_checkin_tanggal', hariIni); }
+        else { localStorage.removeItem('ufo_checkin_hari_ini'); localStorage.removeItem('ufo_checkin_tanggal'); }
+        renderUI(); renderRekapBawaCustomer();
     });
-    window.dbOnValue(window.dbRef(db, 'riwayatBulanan'), (snapshot) => {
-        riwayatBulananGlobal = snapshot.val() || {};
-        renderTotalBulanan();
-    });
+    window.dbOnValue(window.dbRef(db, 'riwayatBulanan'), (snapshot) => { riwayatBulananGlobal = snapshot.val() || {}; renderTotalBulanan(); });
     window.dbOnValue(window.dbRef(db, 'lockPromotor'), (snapshot) => {
         lockGlobal = snapshot.val() || {};
         const akunSaya = sanitizeNama(getAkunAktif());
@@ -1342,21 +958,10 @@ function inisialisasiRealtimeFirebase() {
             if (sudahMulai && belumExpired) {
                 lockDataGlobal = { waktuExpired, alasan: lockSaya.alasan || "-" };
                 mulaiLockTimer(waktuExpired, lockSaya.alasan || "-");
-                if (daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya)) {
-                    window.dbRemove(window.dbRef(window.db, 'antrian/' + akunSaya));
-                }
-            } else if (!sudahMulai) {
-                lockDataGlobal = null;
-                sembunyikanLockTimer();
-            } else {
-                lockDataGlobal = null;
-                sembunyikanLockTimer();
-                autoUnlockSendiri(akunSaya, lockSaya);
-            }
-        } else {
-            lockDataGlobal = null;
-            sembunyikanLockTimer();
-        }
+                if (daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya)) { window.dbRemove(window.dbRef(window.db, 'antrian/' + akunSaya)); }
+            } else if (!sudahMulai) { lockDataGlobal = null; sembunyikanLockTimer(); }
+            else { lockDataGlobal = null; sembunyikanLockTimer(); autoUnlockSendiri(akunSaya, lockSaya); }
+        } else { lockDataGlobal = null; sembunyikanLockTimer(); }
         renderUI();
     });
     if (autoCleanupInterval) clearInterval(autoCleanupInterval);
@@ -1364,76 +969,15 @@ function inisialisasiRealtimeFirebase() {
     setTimeout(() => { cekLockExpired(); }, 2000);
 }
 
-function autoUnlockSendiri(cleanNama, lockData) {
-    if (!lockData || !lockData.locked) return;
-    window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + cleanNama), {
-        locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0
-    }).catch(() => {});
-}
-function cekLockExpired() {
-    const sekarang = waktuServer();
-    Object.keys(lockGlobal).forEach(clean => {
-        const lockData = lockGlobal[clean];
-        if (lockData && lockData.locked) {
-            const waktuExpired = Number(lockData.waktuSelesaiLock) || 0;
-            if (waktuExpired > 0 && sekarang >= waktuExpired) autoUnlockSendiri(clean, lockData);
-        }
-    });
-}
-function mulaiLockTimer(waktuExpired, alasan) {
-    const box = document.getElementById('box-lock-timer');
-    const display = document.getElementById('lock-timer-display');
-    const reasonEl = document.getElementById('lock-reason-display');
-    if (!box || !display) return;
-    box.style.display = 'block';
-    if (reasonEl) reasonEl.innerText = `Alasan: ${alasan}`;
-    if (waktuExpired === 0) { display.innerText = "∞"; if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } return; }
-    if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
-    const tick = () => {
-        const sisa = waktuExpired - waktuServer();
-        if (sisa <= 0) {
-            display.innerText = "00:00";
-            sembunyikanLockTimer();
-            if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
-            const akunSaya = sanitizeNama(getAkunAktif());
-            if (akunSaya) autoUnlockSendiri(akunSaya, lockGlobal[akunSaya]);
-            return;
-        }
-        const jam = Math.floor(sisa / 3600000);
-        const menit = Math.floor((sisa % 3600000) / 60000);
-        const detik = Math.floor((sisa % 60000) / 1000);
-        display.innerText = jam > 0 ? `${String(jam).padStart(2, '0')}:${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}` : `${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}`;
-    };
-    tick();
-    lockTimerInterval = setInterval(tick, 1000);
-}
-function sembunyikanLockTimer() {
-    const box = document.getElementById('box-lock-timer');
-    if (box) box.style.display = 'none';
-    if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; }
-}
+function autoUnlockSendiri(cleanNama, lockData) { if (!lockData || !lockData.locked) return; window.dbUpdate(window.dbRef(window.db, 'lockPromotor/' + cleanNama), { locked: false, alasan: "", waktuSelesaiLock: 0, waktuMulaiLock: 0 }).catch(() => {}); }
+function cekLockExpired() { const sekarang = waktuServer(); Object.keys(lockGlobal).forEach(clean => { const lockData = lockGlobal[clean]; if (lockData && lockData.locked) { const waktuExpired = Number(lockData.waktuSelesaiLock) || 0; if (waktuExpired > 0 && sekarang >= waktuExpired) autoUnlockSendiri(clean, lockData); } }); }
+function mulaiLockTimer(waktuExpired, alasan) { const box = document.getElementById('box-lock-timer'); const display = document.getElementById('lock-timer-display'); const reasonEl = document.getElementById('lock-reason-display'); if (!box || !display) return; box.style.display = 'block'; if (reasonEl) reasonEl.innerText = `Alasan: ${alasan}`; if (waktuExpired === 0) { display.innerText = "∞"; if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } return; } if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } const tick = () => { const sisa = waktuExpired - waktuServer(); if (sisa <= 0) { display.innerText = "00:00"; sembunyikanLockTimer(); if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } const akunSaya = sanitizeNama(getAkunAktif()); if (akunSaya) autoUnlockSendiri(akunSaya, lockGlobal[akunSaya]); return; } const jam = Math.floor(sisa / 3600000); const menit = Math.floor((sisa % 3600000) / 60000); const detik = Math.floor((sisa % 60000) / 1000); display.innerText = jam > 0 ? `${String(jam).padStart(2, '0')}:${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}` : `${String(menit).padStart(2, '0')}:${String(detik).padStart(2, '0')}`; }; tick(); lockTimerInterval = setInterval(tick, 1000); }
+function sembunyikanLockTimer() { const box = document.getElementById('box-lock-timer'); if (box) box.style.display = 'none'; if (lockTimerInterval) { clearInterval(lockTimerInterval); lockTimerInterval = null; } }
 
-function prosesMasterSales(dataRaw) {
-    let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw);
-    let names = [];
-    listSales.forEach(item => {
-        let salesObj = item;
-        if (item && item.record) salesObj = item.record;
-        let nama = salesObj && (salesObj.NAMA_PROMOTOR || salesObj.nama_promotor || salesObj.nama || salesObj.Nama_Sales || salesObj.nama_sales || salesObj.name || salesObj.promotor || salesObj.NAMA || salesObj.Nama);
-        if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim());
-    });
-    names = [...new Set(names)].sort();
-    masterSalesGlobal = names.map(n => ({ nama: n }));
-}
+function prosesMasterSales(dataRaw) { let listSales = Array.isArray(dataRaw) ? dataRaw : Object.values(dataRaw); let names = []; listSales.forEach(item => { let salesObj = item; if (item && item.record) salesObj = item.record; let nama = salesObj && (salesObj.NAMA_PROMOTOR || salesObj.nama_promotor || salesObj.nama || salesObj.Nama_Sales || salesObj.nama_sales || salesObj.name || salesObj.promotor || salesObj.NAMA || salesObj.Nama); if (nama && typeof nama === 'string' && nama.trim() !== "") names.push(nama.trim()); }); names = [...new Set(names)].sort(); masterSalesGlobal = names.map(n => ({ nama: n })); }
 
-function getAkunAktif() {
-    if (!namaSalesAktifGlobal) namaSalesAktifGlobal = localStorage.getItem('ufo_nama_sales_aktif') || "";
-    return namaSalesAktifGlobal;
-}
+function getAkunAktif() { if (!namaSalesAktifGlobal) namaSalesAktifGlobal = localStorage.getItem('ufo_nama_sales_aktif') || ""; return namaSalesAktifGlobal; }
 
-/* ============================================================ */
-/* ========== LOGOUT ========================================== */
-/* ============================================================ */
 function logoutPromotor() {
     tampilkanModalKonfirmasi("Logout", "Yakin ingin logout dari akun ini?\n\nAnda harus login Google lagi untuk masuk.", async () => {
         localStorage.removeItem('ufo_nama_sales_aktif');
@@ -1449,9 +993,6 @@ function logoutPromotor() {
 }
 window.logoutPromotor = logoutPromotor;
 
-/* ============================================================ */
-/* ========== GPS & PETA ====================================== */
-/* ============================================================ */
 function initPetaPromotor() {
     const gpsAktif = koordinatToko.lat && koordinatToko.lng;
     if (!gpsAktif) {
@@ -1521,9 +1062,6 @@ function updatePetaLokasiSaya() {
     mapPromotor.fitBounds(bounds, { padding: [30, 30], maxZoom: 17 });
 }
 
-/* ============================================================ */
-/* ========== AKSI PROMOTOR =================================== */
-/* ============================================================ */
 function aksiHadirKerja() {
     if (statusSistemGlobal !== "BUKA") { tampilkanModal("Antrian Tutup", "Sistem antrian sedang ditutup."); return; }
     const akunSaya = sanitizeNama(getAkunAktif());
@@ -1545,24 +1083,16 @@ function aksiHadirKerja() {
         }
         const gpsAktif = koordinatToko.lat && koordinatToko.lng;
         if (gpsAktif && !posisiSaya.ok) { tampilkanModal("Di Luar Radius", "Anda harus berada di dalam radius toko untuk check-in."); return; }
-        
         const kat = "HA"; 
         const nama = getAkunAktif();
         const clean = sanitizeNama(nama);
         const tglKey = getTanggalKey();
         const waktuSekarang = waktuServer();
-        
-        window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { 
-            nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 
-        }).then(() => {
-            window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { 
-                nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang 
-            });
-            
+        window.dbSet(window.dbRef(window.db, 'antrian/' + clean), { nama: nama, status: "Standby", waktuStandby: waktuSekarang, kategori: kat, subkategori: kat, timerMulai: 0, timerAksi: "", posisiTerkunci: 0 }).then(() => {
+            window.dbSet(window.dbRef(window.db, 'checkinHarian/' + clean + '/' + tglKey), { nama: nama, tanggal: getTanggalIndo(), tanggalKey: tglKey, waktu: waktuSekarang });
             localStorage.setItem('ufo_checkin_hari_ini', 'true');
             localStorage.setItem('ufo_checkin_tanggal', tglKey);
             catatAktivitas(nama, "CheckIn", kat);
-            
             tampilkanModal("Check-in Berhasil", "Anda berhasil check-in dan sudah masuk ke dalam antrian.");
             renderUI();
         });
@@ -1694,25 +1224,9 @@ function bukaModalKeluarIstirahat() {
 }
 window.bukaModalKeluarIstirahat = bukaModalKeluarIstirahat;
 
-function catatAktivitas(nama, aksi, hasil, extra) {
-    const payload = { nama: nama, aksi: aksi, waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: hasil || "" };
-    if (extra) Object.assign(payload, extra);
-    window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), payload);
-}
-function catatAktivitasIbadah(nama, aksi, waktuSekarang, posisi, waktuMulaiSebelumnya) {
-    const payload = { nama: nama, aksi: aksi, waktu: waktuSekarang, tanggal: getTanggalIndo(), hasil: "", kategori: "Ibadah", posisi: posisi || 0 };
-    if (aksi === "MulaiIbadah") payload.waktuMulai = waktuSekarang;
-    if (aksi === "SelesaiIbadah") {
-        payload.waktuMulai = waktuMulaiSebelumnya || waktuSekarang;
-        payload.waktuSelesai = waktuSekarang;
-        payload.durasiDetik = Math.floor((waktuSekarang - (waktuMulaiSebelumnya||waktuSekarang)) / 1000);
-    }
-    window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), payload);
-}
+function catatAktivitas(nama, aksi, hasil, extra) { const payload = { nama: nama, aksi: aksi, waktu: waktuServer(), tanggal: getTanggalIndo(), hasil: hasil || "" }; if (extra) Object.assign(payload, extra); window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), payload); }
+function catatAktivitasIbadah(nama, aksi, waktuSekarang, posisi, waktuMulaiSebelumnya) { const payload = { nama: nama, aksi: aksi, waktu: waktuSekarang, tanggal: getTanggalIndo(), hasil: "", kategori: "Ibadah", posisi: posisi || 0 }; if (aksi === "MulaiIbadah") payload.waktuMulai = waktuSekarang; if (aksi === "SelesaiIbadah") { payload.waktuMulai = waktuMulaiSebelumnya || waktuSekarang; payload.waktuSelesai = waktuSekarang; payload.durasiDetik = Math.floor((waktuSekarang - (waktuMulaiSebelumnya||waktuSekarang)) / 1000); } window.dbPush(window.dbRef(window.db, 'statistikAktivitas'), payload); }
 
-/* ============================================================ */
-/* ========== RENDER UI ======================================= */
-/* ============================================================ */
 function renderUI() {
     const badge = document.getElementById('badge-status-sistem');
     const badgeText = document.getElementById('badge-status-text');
@@ -1720,24 +1234,20 @@ function renderUI() {
         badgeText.innerText = statusSistemGlobal === "BUKA" ? "STATUS ANTRIAN: OPEN" : "STATUS ANTRIAN: CLOSED";
         badge.className = statusSistemGlobal === "BUKA" ? "status-badge-sistem status-open" : "status-badge-sistem status-closed";
     }
-    
     let listHA = "", listAV = "";
     let urutHA = 1, urutAV = 1;
     const akunSaya = sanitizeNama(getAkunAktif());
     const sorted = [...daftarAntrianGlobal].sort((a,b) => (a.waktuStandby||0) - (b.waktuStandby||0));
     const dataStandby = sorted.filter(item => item.status === "Standby");
-    
     const elHa = document.getElementById('promotor-nama-ha');
     const elAv = document.getElementById('promotor-nama-av');
     if (elHa) elHa.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "HA") || {}).nama || "Belum Ada"}</div>`;
     if (elAv) elAv.innerHTML = `<div>${(dataStandby.find(i => String(i.kategori).toUpperCase() === "AV") || {}).nama || "Belum Ada"}</div>`;
-    
     sorted.forEach(item => {
         let kat = String(item.kategori || "HA").toUpperCase();
         let itemHtml = "";
         const isSaya = sanitizeNama(item.nama) === akunSaya;
         const clsSaya = isSaya ? ' class="saya-sendiri"' : '';
-        
         if (item.status === "Standby") {
             let urut = kat === "HA" ? urutHA : urutAV;
             if (kat === "HA") urutHA++; else urutAV++;
@@ -1753,21 +1263,17 @@ function renderUI() {
         if (kat === "HA") listHA += itemHtml;
         else if (kat === "AV") listAV += itemHtml;
     });
-    
     const elListHA = document.getElementById('list-HA');
     const elListAV = document.getElementById('list-AV');
     if (elListHA) elListHA.innerHTML = listHA || "<li><span style='color:var(--text-muted); font-size:11px;'>Belum ada antrian</span></li>";
     if (elListAV) elListAV.innerHTML = listAV || "<li><span style='color:var(--text-muted); font-size:11px;'>Belum ada antrian</span></li>";
-    
     const elBadgeHa = document.getElementById('total-ha-badge');
     const elBadgeAv = document.getElementById('total-av-badge');
     if (elBadgeHa) elBadgeHa.innerText = `${urutHA - 1} PROMOTOR`;
     if (elBadgeAv) elBadgeAv.innerText = `${urutAV - 1} PROMOTOR`;
-
     const itemSaya = daftarAntrianGlobal.find(it => sanitizeNama(it.nama) === akunSaya);
     const statusSaya = itemSaya ? itemSaya.status : "belum_ada";
     const sedangDiLock = lockDataGlobal && (lockDataGlobal.waktuExpired === 0 || waktuServer() < lockDataGlobal.waktuExpired);
-    
     if (sedangDiLock) {
         const secCheckin = document.getElementById('section-checkin-awal');
         const secNormal = document.getElementById('section-normal');
@@ -1775,16 +1281,12 @@ function renderUI() {
         if (secNormal) secNormal.style.display = 'none';
         return;
     }
-    
     const secCheckin = document.getElementById('section-checkin-awal');
     const secNormal = document.getElementById('section-normal');
     if (!secCheckin || !secNormal) return;
-    
     let sudahCheckinToday = localStorage.getItem('ufo_checkin_hari_ini') === 'true' && localStorage.getItem('ufo_checkin_tanggal') === getTanggalKey();
-    
     if (statusSaya !== "belum_ada") { 
-        secCheckin.style.display = 'none'; 
-        secNormal.style.display = 'block'; 
+        secCheckin.style.display = 'none'; secNormal.style.display = 'block'; 
     } else if (!sudahCheckinToday) {
         secCheckin.style.display = 'block';
         secNormal.style.display = 'none';
@@ -1794,19 +1296,11 @@ function renderUI() {
             const gpsBox = document.querySelector('.gps-box');
             if (gpsBox) gpsBox.style.display = 'none';
             const infoEl = document.getElementById('info-radius');
-            if (infoEl) {
-                infoEl.innerHTML = `✅ <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`;
-                infoEl.className = "info-radius ok";
-                infoEl.style.display = 'flex';
-            }
+            if (infoEl) { infoEl.innerHTML = `✅ <span>GPS toko dinonaktifkan — check-in dari mana saja</span>`; infoEl.className = "info-radius ok"; infoEl.style.display = 'flex'; }
             const btnHadir = document.getElementById('btn-hadir');
             if (btnHadir) { btnHadir.classList.remove('btn-disabled'); btnHadir.disabled = false; btnHadir.innerText = "Konfirmasi Kehadiran & Masuk Antri"; }
         }
-    } else { 
-        secCheckin.style.display = 'none'; 
-        secNormal.style.display = 'block'; 
-    }
-    
+    } else { secCheckin.style.display = 'none'; secNormal.style.display = 'block'; }
     const elGroupKat = document.getElementById('group-pilih-kategori-normal');
     if (elGroupKat) elGroupKat.style.display = statusSaya === "belum_ada" ? "block" : "none";
     const elDaftar = document.getElementById('btn-daftar-antrian');
@@ -1825,10 +1319,7 @@ function renderUI() {
         else if (statusSaya === "Dipanggil CS") { btnCS.style.display = "block"; btnCS.className = "btn-success"; btnCS.innerText = "KEMBALI ANTRI DARI CS"; }
         else btnCS.style.display = "none";
     }
-    if (elIbadah) {
-        if (statusSaya === "Ibadah") { elIbadah.className = "btn-indigo"; elIbadah.innerText = "SELESAI IBADAH"; }
-        else { elIbadah.className = "btn-indigo"; elIbadah.innerText = "SEDANG IBADAH"; }
-    }
+    if (elIbadah) { if (statusSaya === "Ibadah") { elIbadah.className = "btn-indigo"; elIbadah.innerText = "SELESAI IBADAH"; } else { elIbadah.className = "btn-indigo"; elIbadah.innerText = "SEDANG IBADAH"; } }
 }
 
 function renderAktivitas() {
@@ -1858,12 +1349,7 @@ function renderAktivitas() {
         else {
             totalBox.style.display = 'flex';
             totalBox.className = 'total-box-custom';
-            totalBox.innerHTML = `
-                <span>TOTAL:</span> 
-                <span class="text-lihat">👀 ${totalLihat} Lihat</span> 
-                <span>|</span> 
-                <span class="text-deal">✓ ${totalDeal} Deal</span>
-            `;
+            totalBox.innerHTML = `<span>TOTAL:</span> <span class="text-lihat">👀 ${totalLihat} Lihat</span> <span>|</span> <span class="text-deal">✓ ${totalDeal} Deal</span>`;
         }
     }
     const elListBawa = document.getElementById('list-bawa');
@@ -1880,12 +1366,7 @@ function renderAktivitas() {
                     else if (a.hasil === "Lihat") namaLabel = `${a.nama} <span class="check-deal">${SVG_ICON_LIHAT}</span>`;
                     else namaLabel = `${a.nama}`;
                 } else { rangeLabel = `(${formatJam(mulai)} - ...)`; namaLabel = `${a.nama}`; }
-                return `
-                    <li>
-                        <div class="nama-wrapper">${namaLabel}</div>
-                        <div class="waktu-wrapper">${rangeLabel}</div>
-                    </li>
-                `;
+                return `<li><div class="nama-wrapper">${namaLabel}</div><div class="waktu-wrapper">${rangeLabel}</div></li>`;
             }).join('');
     }
     const listIbadah = gabungRentang(list, "MulaiIbadah", "SelesaiIbadah");
@@ -1893,12 +1374,7 @@ function renderAktivitas() {
     if (elCountIbadah) elCountIbadah.innerText = listIbadah.length;
     const elListIbadah = document.getElementById('list-ibadah');
     if (elListIbadah) elListIbadah.innerHTML = listIbadah.length === 0 ? '<div class="aktivitas-empty">Belum ada aktivitas ibadah</div>'
-        : listIbadah.map(a => `
-            <li>
-                <span class="nama">${a.nama} <span style="font-size:10px; color:var(--text-muted); font-weight:700;">#${a.posisi||'-'}</span></span>
-                <span class="waktu">${a.label}</span>
-            </li>
-        `).join('');
+        : listIbadah.map(a => `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--text-muted); font-weight:700;">#${a.posisi||'-'}</span></span><span class="waktu">${a.label}</span></li>`).join('');
     const listKeluar = list.filter(a => a.aksi === "KeluarAntrian").sort((a,b) => (b.waktu||0) - (a.waktu||0));
     const elCountKeluar = document.getElementById('count-keluar');
     if (elCountKeluar) elCountKeluar.innerText = listKeluar.length;
@@ -1910,10 +1386,7 @@ function renderAktivitas() {
     if (elCountAutokick) elCountAutokick.innerText = listAutokick.length;
     const elListAutokick = document.getElementById('list-autokick');
     if (elListAutokick) elListAutokick.innerHTML = listAutokick.length === 0 ? '<div class="aktivitas-empty">Tidak ada pelanggaran hari ini 👍</div>'
-        : listAutokick.map(a => {
-            const teksAlasan = a.alasan ? a.alasan : (a.kategori || "");
-            return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--danger); font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`;
-        }).join('');
+        : listAutokick.map(a => { const teksAlasan = a.alasan ? a.alasan : (a.kategori || ""); return `<li><span class="nama">${a.nama} <span style="font-size:10px; color:var(--danger); font-weight:700;">${teksAlasan}</span></span><span class="waktu">${formatJam(a.waktu)}</span></li>`; }).join('');
 }
 
 function renderRekapBawaCustomer() {
@@ -1935,10 +1408,7 @@ function renderRekapBawaCustomer() {
         if (!tglKey.startsWith(bulanIni)) return;
         const clean = sanitizeNama(a.nama); if (!clean) return;
         if (!perPromotor[clean]) perPromotor[clean] = { nama: a.nama, deal: 0, lihat: 0, noSale: 0, hari: 0 };
-        if (a.aksi === "BawaCustomer" && a.waktuSelesai) {
-            if (a.hasil === "Deal") perPromotor[clean].deal++;
-            else if (a.hasil === "Lihat") perPromotor[clean].lihat++;
-        }
+        if (a.aksi === "BawaCustomer" && a.waktuSelesai) { if (a.hasil === "Deal") perPromotor[clean].deal++; else if (a.hasil === "Lihat") perPromotor[clean].lihat++; }
     });
     Object.keys(perPromotor).forEach(clean => {
         const dataCheckinPromotor = checkinHarianGlobal[clean];
@@ -1948,19 +1418,10 @@ function renderRekapBawaCustomer() {
         if (dataCheckinPromotor.tanggalKey && /^\d{4}-\d{2}-\d{2}$/.test(dataCheckinPromotor.tanggalKey) && dataCheckinPromotor.tanggalKey.startsWith(bulanIni)) hariSet.add(dataCheckinPromotor.tanggalKey);
         perPromotor[clean].hari = hariSet.size;
         let noSaleCount = 0;
-        hariSet.forEach(tglKeyHari => {
-            const p = tglKeyHari.split('-');
-            const tglIndoHari = `${p[2]}-${p[1]}-${p[0]}`;
-            const adaDeal = aktivitasGlobal.some(a => sanitizeNama(a.nama) === clean && a.tanggal === tglIndoHari && a.aksi === "BawaCustomer" && a.hasil === "Deal");
-            if (!adaDeal) noSaleCount++;
-        });
+        hariSet.forEach(tglKeyHari => { const p = tglKeyHari.split('-'); const tglIndoHari = `${p[2]}-${p[1]}-${p[0]}`; const adaDeal = aktivitasGlobal.some(a => sanitizeNama(a.nama) === clean && a.tanggal === tglIndoHari && a.aksi === "BawaCustomer" && a.hasil === "Deal"); if (!adaDeal) noSaleCount++; });
         perPromotor[clean].noSale = noSaleCount;
     });
-    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => {
-        if (b.deal !== a.deal) return b.deal - a.deal;
-        if (b.lihat !== a.lihat) return b.lihat - a.lihat;
-        return a.nama.localeCompare(b.nama);
-    });
+    const arr = Object.values(perPromotor).filter(p => p.hari > 0 || p.deal > 0 || p.lihat > 0).sort((a, b) => { if (b.deal !== a.deal) return b.deal - a.deal; if (b.lihat !== a.lihat) return b.lihat - a.lihat; return a.nama.localeCompare(b.nama); });
     if (arr.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="aktivitas-empty">Belum ada data bulan ini</td></tr>'; return; }
     let totalDeal = 0, totalLihat = 0, totalNoSale = 0;
     arr.forEach(p => { totalDeal += p.deal; totalLihat += p.lihat; totalNoSale += p.noSale; });
@@ -1989,73 +1450,26 @@ function renderTotalBulanan() {
     });
     const keysSorted = Object.keys(perBulan).sort().reverse();
     if (keysSorted.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="aktivitas-empty">Belum ada data tahun ini</td></tr>'; return; }
-    tbody.innerHTML = keysSorted.map(bulanKey => {
-        const p = perBulan[bulanKey];
-        const parts = bulanKey.split('-');
-        const namaBln = namaBulan[parseInt(parts[1]) - 1];
-        return `<tr><td class="kolom-nama">${namaBln} ${parts[0]}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td></tr>`;
-    }).join('');
+    tbody.innerHTML = keysSorted.map(bulanKey => { const p = perBulan[bulanKey]; const parts = bulanKey.split('-'); const namaBln = namaBulan[parseInt(parts[1]) - 1]; return `<tr><td class="kolom-nama">${namaBln} ${parts[0]}</td><td class="angka-deal">${p.deal}</td><td class="angka-lihat">${p.lihat}</td></tr>`; }).join('');
 }
 
 function gabungRentang(list, aksiMulai, aksiSelesai) {
     const perNama = {};
     list.forEach(a => {
-        if (a.aksi === aksiMulai) {
-            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null };
-            else perNama[a.nama].mulai = a.waktuMulai || a.waktu;
-        } else if (a.aksi === aksiSelesai) {
-            if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: a.waktuSelesai || a.waktu };
-            else perNama[a.nama].selesai = a.waktuSelesai || a.waktu;
-        }
+        if (a.aksi === aksiMulai) { if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: null }; else perNama[a.nama].mulai = a.waktuMulai || a.waktu; }
+        else if (a.aksi === aksiSelesai) { if (!perNama[a.nama]) perNama[a.nama] = { nama: a.nama, posisi: a.posisi, mulai: a.waktuMulai || a.waktu, selesai: a.waktuSelesai || a.waktu }; else perNama[a.nama].selesai = a.waktuSelesai || a.waktu; }
     });
-    return Object.values(perNama).sort((a,b) => (b.mulai||0) - (a.mulai||0)).map(a => {
-        const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`;
-        return { ...a, label };
-    });
+    return Object.values(perNama).sort((a,b) => (b.mulai||0) - (a.mulai||0)).map(a => { const label = a.selesai ? `(${formatJam(a.mulai)} - ${formatJam(a.selesai)})` : `(${formatJam(a.mulai)} - ...)`; return { ...a, label }; });
 }
 
-/* ============================================================ */
-/* ========== THEME (DARK/LIGHT) ============================== */
-/* ============================================================ */
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    const isDark = document.body.classList.contains('dark-mode');
-    localStorage.setItem('ufo_theme', isDark ? 'dark' : 'light');
-}
+function toggleDarkMode() { document.body.classList.toggle('dark-mode'); const isDark = document.body.classList.contains('dark-mode'); localStorage.setItem('ufo_theme', isDark ? 'dark' : 'light'); }
 window.toggleDarkMode = toggleDarkMode;
-
-function initDarkMode() {
-    const saved = localStorage.getItem('ufo_theme');
-    const isDark = (saved === 'dark');
-    if (isDark) document.body.classList.add('dark-mode');
-    else document.body.classList.remove('dark-mode');
-}
+function initDarkMode() { const saved = localStorage.getItem('ufo_theme'); const isDark = (saved === 'dark'); if (isDark) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); }
 window.initDarkMode = initDarkMode;
+window.addEventListener('storage', (e) => { if (e.key === 'ufo_theme') { const isDark = e.newValue === 'dark'; if (isDark) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); } });
 
-window.addEventListener('storage', (e) => {
-    if (e.key === 'ufo_theme') {
-        const isDark = e.newValue === 'dark';
-        if (isDark) document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-    }
-});
-
-/* ============================================================ */
-/* ========== MODAL & POPUP =================================== */
-/* ============================================================ */
-function tampilkanModal(j, d) {
-    document.getElementById('modal-title').innerText = j;
-    document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()" style="background:var(--blue); color:#fff;">OK</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-}
-function tampilkanModalKonfirmasi(j, d, cb) {
-    document.getElementById('modal-title').innerText = j;
-    document.getElementById('modal-desc').innerText = d;
-    document.getElementById('modal-actions').innerHTML = `<button type="button" style="background:var(--bg-soft); color:var(--text-main); border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya" style="background:var(--blue); color:#fff;">Ya</button>`;
-    document.getElementById('custom-modal').classList.add('active');
-    document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); };
-}
+function tampilkanModal(j, d) { document.getElementById('modal-title').innerText = j; document.getElementById('modal-desc').innerText = d; document.getElementById('modal-actions').innerHTML = `<button type="button" class="btn-customer" onclick="tutupModal()" style="background:var(--blue); color:#fff;">OK</button>`; document.getElementById('custom-modal').classList.add('active'); }
+function tampilkanModalKonfirmasi(j, d, cb) { document.getElementById('modal-title').innerText = j; document.getElementById('modal-desc').innerText = d; document.getElementById('modal-actions').innerHTML = `<button type="button" style="background:var(--bg-soft); color:var(--text-main); border:1px solid var(--border-strong);" onclick="tutupModal()">Batal</button><button type="button" class="btn-customer" id="btn-modal-ya" style="background:var(--blue); color:#fff;">Ya</button>`; document.getElementById('custom-modal').classList.add('active'); document.getElementById('btn-modal-ya').onclick = () => { tutupModal(); cb(); }; }
 function tutupModal() { document.getElementById('custom-modal').classList.remove('active'); }
 window.tampilkanModal = tampilkanModal;
 window.tampilkanModalKonfirmasi = tampilkanModalKonfirmasi;
@@ -2067,10 +1481,8 @@ function bukaPopupAktivitas(jenis) {
     const body = document.getElementById('popup-aktivitas-body');
     if (!popup || !title || !body) return;
     let kontenAsli = '';
-    if (jenis === 'bawa') {
-        title.innerText = 'Bawa Customer';
-        kontenAsli = (document.getElementById('total-bawa-box').outerHTML) + (document.getElementById('list-bawa').outerHTML);
-    } else if (jenis === 'ibadah') { title.innerText = 'Aktivitas Ibadah'; kontenAsli = document.getElementById('list-ibadah').outerHTML; }
+    if (jenis === 'bawa') { title.innerText = 'Bawa Customer'; kontenAsli = (document.getElementById('total-bawa-box').outerHTML) + (document.getElementById('list-bawa').outerHTML); }
+    else if (jenis === 'ibadah') { title.innerText = 'Aktivitas Ibadah'; kontenAsli = document.getElementById('list-ibadah').outerHTML; }
     else if (jenis === 'keluar') { title.innerText = 'Keluar Antrian'; kontenAsli = document.getElementById('list-keluar').outerHTML; }
     else if (jenis === 'autokick') { title.innerText = 'Autokick (Pelanggaran)'; kontenAsli = document.getElementById('list-autokick').outerHTML; }
     else if (jenis === 'rekap') { title.innerText = 'List Bawa Customer Promotor'; kontenAsli = document.querySelectorAll('#content-aktivitas .rekap-wrapper')[0].outerHTML; }
@@ -2079,24 +1491,13 @@ function bukaPopupAktivitas(jenis) {
     popup.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
-function tutupPopupAktivitas() {
-    const popup = document.getElementById('popup-aktivitas');
-    if (!popup) return;
-    popup.classList.remove('active');
-    document.body.style.overflow = '';
-}
+function tutupPopupAktivitas() { const popup = document.getElementById('popup-aktivitas'); if (!popup) return; popup.classList.remove('active'); document.body.style.overflow = ''; }
 window.bukaPopupAktivitas = bukaPopupAktivitas;
 window.tutupPopupAktivitas = tutupPopupAktivitas;
 
-document.addEventListener('click', (e) => {
-    const popup = document.getElementById('popup-aktivitas');
-    if (popup && e.target === popup) tutupPopupAktivitas();
-});
+document.addEventListener('click', (e) => { const popup = document.getElementById('popup-aktivitas'); if (popup && e.target === popup) tutupPopupAktivitas(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupPopupAktivitas(); });
-
-document.addEventListener('DOMContentLoaded', () => {
-    initParticles();
-});
+document.addEventListener('DOMContentLoaded', () => { initParticles(); });
 </script>
 </body>
 </html>
